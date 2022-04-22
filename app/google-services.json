@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "458204751165",
+    "project_id": "laundry2-df1d1",
+    "storage_bucket": "laundry2-df1d1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:458204751165:android:e0c097b4522899d6e69154",
+        "android_client_info": {
+          "package_name": "com.example.laundry2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "458204751165-6p7k75nt7jduqskrn85dgqhae413fn3o.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.laundry2",
+            "certificate_hash": "07240846e00fe2ea5e35d3a5137f95ea83475280"
+          }
+        },
+        {
+          "client_id": "458204751165-tjls7ldk5jh6dgiucmvabaqbelqa3nfc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCFh0pgJpZOlQ7psc_7knkvqrLV25bjqJY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "458204751165-tjls7ldk5jh6dgiucmvabaqbelqa3nfc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

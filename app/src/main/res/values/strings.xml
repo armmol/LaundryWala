@@ -1,0 +1,60 @@
+<resources>
+    <string name="app_name">LaundryWala</string>
+    <string name="password">Password</string>
+    <string name="name">Name</string>
+    <string name="login">Login</string>
+    <string name="WebClientIDForGoogleSignIn">458204751165-tjls7ldk5jh6dgiucmvabaqbelqa3nfc.apps.googleusercontent.com</string>
+    <string name="e_mail">E-mail</string>
+    <string name="select_user_type">SELECT USER TYPE</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="forgot_password">Forgot Password</string>
+    <string name="don_t_have_an_account_sign_up">Don\'t have an account? Sign up.</string>
+    <string name="send_password_reset_link">Send Password Reset Link</string>
+    <string name="address">Address</string>
+    <string name="laundryhouse">Laundry House</string>
+    <string name="customer">Customer</string>
+    <string name="courier">Courier</string>
+    <string name="area">Area</string>
+    <string name="paysera_id">PaySera ID</string>
+    <string name="upi_id">UPI ID</string>
+    <string name="Api_Key">AIzaSyDW84TkYVNVnBQQ5SPbYm5kkmk_RNQb1y8</string>
+    <string name="have_an_account_log_in">Have an account? Log In.</string>
+    <string name="shirts">Shirts</string>
+    <string name="shirts_any">Shirts (Any)</string>
+    <string name="bedsheets_duvets">Bedsheets/Duvets</string>
+    <string name="carpets_rugs">Carpets/Rugs</string>
+    <string name="suits_blazers_coats">Suits/Blazers/Coats</string>
+    <string name="pants_any">Pants (Any)</string>
+    <string name="jackets_woolens">Jackets/Woolens</string>
+    <string name="items">Items</string>
+    <string name="_0">0</string>
+    <string name="select_items_from_above_to_add_to_basket">Select Items from above to add to basket</string>
+    <string name="laundry_basket">Laundry Basket</string>
+    <string name="failed_try_again">Failed, try again.</string>
+    <string name="switch_to_go_offline">Switch to go Offline</string>
+    <string name="switch_to_go_online">Switch to go Online</string>
+    <string name="online">Online</string>
+    <string name="offline">Offline</string>
+    <integer name="Login">100</integer>
+    <integer name="Signup">101</integer>
+    <integer name="LOCATION_SERVICE_ID">786</integer>
+    <string name="ACTION_START_LOCATION_SERVICE">Start Location Service</string>
+    <string name="ACTION_STOP_LOCATION_SERVICE">Stop Location Service</string>
+    <string name="start_tracking">Start Tracking</string>
+    <string name="order_history">Order History</string>
+    <string-array name="Authentication_type">
+        <item></item>
+        <item>Customer</item>
+        <item>Laundry House</item>
+        <item>Courier</item>
+    </string-array>
+    <string-array name="Order_Status">
+        <item></item>
+        <item>Order Not Assigned to Courier</item>
+        <item>Pick Up Phase</item>
+        <item>In Process</item>
+        <item>Delivery Phase</item>
+        <item>Completed</item>
+    </string-array>
+</resources>
