@@ -4,6 +4,8 @@
     <string name="name">Name</string>
     <string name="login">Login</string>
     <string name="WebClientIDForGoogleSignIn">458204751165-tjls7ldk5jh6dgiucmvabaqbelqa3nfc.apps.googleusercontent.com</string>
+    <string name="Api_Key">AIzaSyDW84TkYVNVnBQQ5SPbYm5kkmk_RNQb1y8</string>
+    <string name="PayPal_ClientID">AcUFKfY0Zx38SI7yvmoxbf3UaapoFq_5fbnj-28dJ-x2JpySEAphEbHkjhP-TF6so2b8gN8JmdDRprE0</string>
     <string name="e_mail">E-mail</string>
     <string name="select_user_type">SELECT USER TYPE</string>
     <string name="confirm_password">Confirm Password</string>
@@ -18,7 +20,6 @@
     <string name="area">Area</string>
     <string name="paysera_id">PaySera ID</string>
     <string name="upi_id">UPI ID</string>
-    <string name="Api_Key">AIzaSyDW84TkYVNVnBQQ5SPbYm5kkmk_RNQb1y8</string>
     <string name="have_an_account_log_in">Have an account? Log In.</string>
     <string name="shirts">Shirts</string>
     <string name="shirts_any">Shirts (Any)</string>
