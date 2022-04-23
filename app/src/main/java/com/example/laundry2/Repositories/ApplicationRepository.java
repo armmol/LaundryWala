@@ -39,7 +39,10 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.paypal.android.sdk.payments.PayPalConfiguration;
+import com.paypal.android.sdk.payments.PayPalPayment;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -698,5 +701,14 @@ public class ApplicationRepository {
                 latLngs.add (new LatLng (documentSnapshot.get ("latitude", Double.class), documentSnapshot.get ("longitude", Double.class)));
             userLatLngListMutableLiveData.postValue (latLngs);
         });
+    }
+
+    public void Paypal(String amount){
+        PayPalConfiguration payPalConfiguration = new PayPalConfiguration ()
+                .environment (PayPalConfiguration.ENVIRONMENT_SANDBOX)
+                .clientId (application.getString (R.string.PayPal_ClientID));
+        PayPalPayment payPalPayment = new PayPalPayment (new BigDecimal (String.valueOf (amount)), "EUR",
+                "LaundryWala Payment", PayPalPayment.PAYMENT_INTENT_SALE);
+
     }
 }
