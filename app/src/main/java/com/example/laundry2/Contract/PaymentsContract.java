@@ -5,9 +5,9 @@ import androidx.lifecycle.MutableLiveData;
 import com.example.laundry2.DataClasses.AuthState;
 
 public interface PaymentsContract {
-    void payWithGooglePay ();
+    void canPayWithGooglePay ();
 
-    void payWithPaySera ();
+    void loadPaymentDataForGPay(long cents);
 
     MutableLiveData<AuthState> getAuthStateMutableLiveData ();
 }

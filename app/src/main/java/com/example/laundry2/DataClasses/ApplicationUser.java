@@ -8,24 +8,20 @@ public class ApplicationUser {
     String authype;
     String address;
     String area;
-    String upiID;
-    String paySeraID;
     int orders;
     boolean active;
     String orderID;
 
 
     public ApplicationUser (String address, String area, String authype, String email, double latitude,
-                            double longitude, String name, String paySeraID, String upiID, int orders, boolean active, String orderID) {
+                            double longitude, String name, int orders, boolean active, String orderID) {
         this.email = email;
         this.latitude = latitude;
         this.longitude = longitude;
         this.name = name;
         this.address = address;
         this.area = area;
-        this.upiID = upiID;
         this.authype = authype;
-        this.paySeraID = paySeraID;
         this.orders = orders;
         this.active = active;
         this.orderID = orderID;
@@ -85,22 +81,6 @@ public class ApplicationUser {
 
     public void setArea (String area) {
         this.area = area;
-    }
-
-    public String getUpiID () {
-        return upiID;
-    }
-
-    public void setUpiID (String upiID) {
-        this.upiID = upiID;
-    }
-
-    public String getPaySeraID () {
-        return paySeraID;
-    }
-
-    public void setPaySeraID (String paySeraID) {
-        this.paySeraID = paySeraID;
     }
 
     public String getAuthype () {

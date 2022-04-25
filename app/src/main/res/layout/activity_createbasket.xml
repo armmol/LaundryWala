@@ -249,7 +249,7 @@
             android:id="@+id/btn_confrimandpay_createbasket"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Confirm and pay"
+            android:text="@string/confirm_and_pay"
             app:layout_constraintBottom_toBottomOf="@+id/card_laundrybasket"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.458"
@@ -267,6 +267,17 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/card_laundrybasket"
             app:layout_constraintTop_toTopOf="@+id/card_laundrybasket" />
+
+        <TextView
+            android:id="@+id/deliveryprice_createbasket"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#FF1744"
+            app:layout_constraintBottom_toTopOf="@+id/card_laundrybasket"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.076"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView13" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

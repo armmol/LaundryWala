@@ -17,6 +17,10 @@
         android:theme="@style/Theme.Laundry2">
 
         <meta-data
+            android:name="com.google.android.gms.wallet.api.enabled"
+            android:value="true"/>
+
+        <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDW84TkYVNVnBQQ5SPbYm5kkmk_RNQb1y8" />
 

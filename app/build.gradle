@@ -33,74 +33,60 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
     buildFeatures {
         viewBinding true
     }
-}
 
-dependencies {
+    dependencies {
 
-    implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'com.google.android.material:material:1.5.0'
-    implementation 'com.google.android.gms:play-services-location:19.0.1'
-    implementation 'com.google.android.gms:play-services-maps:18.0.2'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
-    implementation 'com.google.android.libraries.places:places:2.6.0'
-    implementation 'androidx.lifecycle:lifecycle-service:2.4.1'
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+        implementation 'androidx.appcompat:appcompat:1.4.1'
+        implementation 'com.google.android.material:material:1.5.0'
+        implementation 'com.google.android.gms:play-services-location:19.0.1'
+        implementation 'com.google.android.gms:play-services-maps:18.0.2'
+        implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
+        implementation 'com.google.android.libraries.places:places:2.6.0'
+        implementation 'androidx.lifecycle:lifecycle-service:2.4.1'
+        implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
 
-    // Import the BoM for the Firebase platform
-    implementation platform('com.google.firebase:firebase-bom:29.2.1')
+        testImplementation 'junit:junit:4.13.2'
+        androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+        androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
-    // Declare the dependency for the Firebase Authentication library
-    // When using the BoM, you don't specify versions in Firebase library dependencies
-    implementation 'com.google.firebase:firebase-auth'
 
-    // Also declare the dependency for the Google Play services library and specify its version
-    implementation 'com.google.android.gms:play-services-auth:20.1.0'
-    implementation 'com.google.firebase:firebase-database:20.0.4'
-    implementation 'com.google.firebase:firebase-firestore:24.1.1'
-    implementation 'com.google.firebase:firebase-auth:21.0.3'
-    implementation 'com.google.firebase:firebase-analytics'
-    implementation 'com.google.android.gms:play-services-location:19.0.1'
+        // Import the BoM for the Firebase platform
+        implementation platform('com.google.firebase:firebase-bom:29.2.1')
 
-    //Room
-    def room_version = "2.4.2"
+        // Declare the dependency for the Firebase Authentication library
+        // When using the BoM, you don't specify versions in Firebase library dependencies
+        implementation 'com.google.firebase:firebase-auth'
 
-    implementation "androidx.room:room-runtime:$room_version"
-    annotationProcessor "androidx.room:room-compiler:$room_version"
+        // Also declare the dependency for the Google Play services library and specify its version
+        implementation 'com.google.android.gms:play-services-auth:20.1.0'
+        implementation 'com.google.firebase:firebase-database:20.0.4'
+        implementation 'com.google.firebase:firebase-firestore:24.1.1'
+        implementation 'com.google.firebase:firebase-auth:21.0.3'
+        implementation 'com.google.firebase:firebase-analytics'
+        implementation 'com.google.android.gms:play-services-location:19.0.1'
 
-    // optional - RxJava2 support for Room
-    implementation "androidx.room:room-rxjava2:$room_version"
+        implementation "androidx.core:core-ktx:1.7.0"
+        //Hilt
+        implementation 'com.google.dagger:hilt-android:2.41'
+        annotationProcessor 'com.google.dagger:hilt-compiler:2.41'
 
-    // optional - RxJava3 support for Room
-    implementation "androidx.room:room-rxjava3:$room_version"
+        // For instrumentation tests
+        androidTestImplementation 'com.google.dagger:hilt-android-testing:2.41'
+        androidTestAnnotationProcessor 'com.google.dagger:hilt-compiler:2.41'
 
-    // optional - Guava support for Room, including Optional and ListenableFuture
-    implementation "androidx.room:room-guava:$room_version"
+        // For local unit tests
+        testImplementation 'com.google.dagger:hilt-android-testing:2.41'
+        testAnnotationProcessor 'com.google.dagger:hilt-compiler:2.41'
 
-    // optional - Test helpers
-    testImplementation "androidx.room:room-testing:$room_version"
-
-    // optional - Paging 3 Integration
-    implementation "androidx.room:room-paging:2.5.0-alpha01"
-
-    //Hilt
-    implementation 'com.google.dagger:hilt-android:2.41'
-    annotationProcessor 'com.google.dagger:hilt-compiler:2.41'
-
-    // For instrumentation tests
-    androidTestImplementation  'com.google.dagger:hilt-android-testing:2.41'
-    androidTestAnnotationProcessor 'com.google.dagger:hilt-compiler:2.41'
-
-    // For local unit tests
-    testImplementation 'com.google.dagger:hilt-android-testing:2.41'
-    testAnnotationProcessor 'com.google.dagger:hilt-compiler:2.41'
-
-    //Paypal
-    implementation 'com.paypal.sdk:paypal-android-sdk:2.15.3'
-
+        //G-pay Wallet
+        implementation 'com.google.android.gms:play-services-wallet:19.1.0'
+        //Paypal
+        implementation('com.paypal.checkout:android-sdk:0.6.1')
+    }
 }

@@ -28,11 +28,9 @@ import java.util.List;
 
 public class activity_profile extends AppCompatActivity {
 
-    private static final String TAG = "Profile";
     private AuthenticationViewModel viewModel;
     private ActivityProfileBinding binding;
     private LatLng latLng;
-    private double latitude = 0, longitude = 0;
     private final ActivityResultLauncher<Intent> findaddress =
             registerForActivityResult (new ActivityResultContracts.StartActivityForResult ()
                     , new ActivityResultCallback<ActivityResult> () {
@@ -46,9 +44,10 @@ public class activity_profile extends AppCompatActivity {
                                     latLng = place.getLatLng ();
                                 }
                             } else
-                                binding.edtxtAddressProfile.setText (getString(R.string.failed_try_again));
+                                binding.edtxtAddressProfile.setText (getString (R.string.failed_try_again));
                         }
                     });
+    private double latitude = 0, longitude = 0;
 
     @Override
     protected void onCreate (@Nullable Bundle savedInstanceState) {
@@ -66,9 +65,8 @@ public class activity_profile extends AppCompatActivity {
         viewModel.getCurrentSignInUser ().observe (this, user ->
                 binding.edtxtEmailProfile.setText (user.getEmail ()));
 
-
         binding.btnSaveProfile.setOnClickListener (view -> {
-            if(latLng!=null){
+            if (latLng != null) {
                 latitude = latLng.latitude;
                 longitude = latLng.longitude;
             }
@@ -76,9 +74,7 @@ public class activity_profile extends AppCompatActivity {
                     binding.edtxtNameProfile.getText ().toString (),
                     binding.edtxtAddressProfile.getText ().toString (),
                     binding.txtAreaProfile.getText ().toString (),
-                    latitude, longitude,
-                    binding.edtxtUpiidProfile.getText ().toString (),
-                    binding.edtxtPayseraidProfile.getText ().toString ());
+                    latitude, longitude);
         });
 
         binding.imgbtnFindaddress.setOnClickListener (view -> {
@@ -87,12 +83,10 @@ public class activity_profile extends AppCompatActivity {
                     , fieldList).build (activity_profile.this));
         });
 
-        binding.btnLogoutProfile.setOnClickListener (view -> {
-            viewModel.signOut ();
-        });
+        binding.btnLogoutProfile.setOnClickListener (view -> viewModel.signOut ());
 
         viewModel.getLogoutMutableLiveData ().observe (this, aBoolean -> {
-            if(aBoolean)
+            if (aBoolean)
                 startActivity (new Intent (activity_profile.this, activity_login.class));
         });
         OnBackPressedCallback callback = new OnBackPressedCallback (true) {
@@ -115,17 +109,13 @@ public class activity_profile extends AppCompatActivity {
             binding.edtxtAddressProfile.setText (applicationUser.getAddress ());
             binding.edtxtNameProfile.setText (applicationUser.getName ());
             binding.edtxtEmailProfile.setText (applicationUser.getEmail ());
-            binding.edtxtUpiidProfile.setText (applicationUser.getUpiID ());
-            binding.edtxtPayseraidProfile.setText (applicationUser.getPaySeraID ());
-
-            OnBackPressedCallback callback = new OnBackPressedCallback (true /* enabled by default */) {
+            OnBackPressedCallback callback = new OnBackPressedCallback (true ) {
                 @Override
                 public void handleOnBackPressed () {
                     startActivity (new Intent (activity_profile.this, activity_home.class)
                             .putExtra ("authtype", getIntent ().getExtras ().get ("authtype").toString ()));
                 }
             };
-
             activity_profile.this.getOnBackPressedDispatcher ().addCallback (callback);
         });
     }

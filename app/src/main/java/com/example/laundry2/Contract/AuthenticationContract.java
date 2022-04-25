@@ -54,7 +54,7 @@ public interface AuthenticationContract {
     void loadApplicationUserData (String authtype);
 
     void enterIntoDB (String authtype, String name, String address, String area,
-                      double latitude, double longitude, String upiid, String payseraid);
+                      double latitude, double longitude);
 
     void updateOrderStatus (String status, String orderId);
 

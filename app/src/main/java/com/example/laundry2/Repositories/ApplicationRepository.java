@@ -20,6 +20,7 @@ import com.example.laundry2.DataClasses.Courier;
 import com.example.laundry2.DataClasses.LaundryHouse;
 import com.example.laundry2.DataClasses.LaundryItem;
 import com.example.laundry2.DataClasses.Order;
+import com.example.laundry2.PaymentUtil.PaymentsUtil;
 import com.example.laundry2.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -31,6 +32,11 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.wallet.IsReadyToPayRequest;
+import com.google.android.gms.wallet.PaymentData;
+import com.google.android.gms.wallet.PaymentDataRequest;
+import com.google.android.gms.wallet.PaymentsClient;
 import com.google.android.libraries.places.api.Places;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
@@ -39,10 +45,10 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.paypal.android.sdk.payments.PayPalConfiguration;
-import com.paypal.android.sdk.payments.PayPalPayment;
 
-import java.math.BigDecimal;
+import org.json.JSONObject;
+
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -60,6 +66,10 @@ public class ApplicationRepository {
     private final Application application;
     private final LocationRequest mLocationRequest;
     private final LocationCallback mLocationCallback;
+    private final PaymentsClient paymentsClient;
+    // LiveData with the result of whether the user can pay using Google Pay
+    private final MutableLiveData<Boolean> _canUseGooglePay;
+    private final MutableLiveData<Task<PaymentData>> paymentDataTaskMutableLiveData;
     private final MutableLiveData<Location> currentLocationMutableLiveData;
     private final MutableLiveData<List<LatLng>> userLatLngListMutableLiveData;
     private final MutableLiveData<Boolean> serviceState;
@@ -79,6 +89,13 @@ public class ApplicationRepository {
     private final ArrayList<LaundryItem> laundryItems;
 
 
+    public MutableLiveData<Boolean> get_canUseGooglePay(){
+        return _canUseGooglePay;
+    }
+
+    public MutableLiveData<Task<PaymentData>> getpaymentDataTaskMutableLiveData(){
+        return paymentDataTaskMutableLiveData;
+    }
     public MutableLiveData<Location> getCurrentLocationMutableLiveData () {
         return currentLocationMutableLiveData;
     }
@@ -144,6 +161,9 @@ public class ApplicationRepository {
         this.application = application;
         mAuth = FirebaseAuth.getInstance ();
         firebaseFirestore = FirebaseFirestore.getInstance ();
+        paymentsClient = PaymentsUtil.createPaymentsClient (application);
+        _canUseGooglePay = new MutableLiveData<> ();
+        paymentDataTaskMutableLiveData = new MutableLiveData<> ();
         currentLocationMutableLiveData = new MutableLiveData<> ();
         serviceState = new MutableLiveData<> ();
         userMutableLiveData = new MutableLiveData<> ();
@@ -160,6 +180,7 @@ public class ApplicationRepository {
         courierListMutableLiveData = new MutableLiveData<> ();
         orderPlacementSuccessMutableLiveData = new MutableLiveData<> ();
         userLatLngListMutableLiveData = new MutableLiveData<> ();
+
         if (mAuth.getCurrentUser () != null) {
             userMutableLiveData.postValue (mAuth.getCurrentUser ());
             logoutMutableLiveData.postValue (false);
@@ -410,11 +431,9 @@ public class ApplicationRepository {
     }
 
     public void enterDataIntoDB (String authtype, String name, String address, String area,
-                                 double latitude, double longitude, String UpiId, String PayseraId) {
+                                 double latitude, double longitude) {
         if (name.trim ().isEmpty () || address.trim ().isEmpty () || area.isEmpty ())
             authStateMutableLiveData.postValue (new AuthState ("Please complete Empty Fields", false));
-        if (PayseraId.trim ().isEmpty () && UpiId.trim ().isEmpty ())
-            authStateMutableLiveData.postValue (new AuthState ("Please fill at least one payment method information", false));
         else {
             FirebaseUser user = mAuth.getCurrentUser ();
             if (user != null) {
@@ -429,14 +448,12 @@ public class ApplicationRepository {
                             UserInfo.put ("latitude", latitude);
                             UserInfo.put ("longitude", longitude);
                         }
-                        UserInfo.put ("upiID", UpiId);
-                        UserInfo.put ("paySeraID", PayseraId);
                         df.update (UserInfo);
                         df.get ();
                         authStateMutableLiveData.postValue (new AuthState ("Updated Successfully", true));
                     } else {
                         df.set (new ApplicationUser (address, area, authtype, user.getEmail (), latitude, longitude,
-                                name, PayseraId, UpiId, 0, false, ""));
+                                name, 0, false, ""));
                         df.get ();
                         authStateMutableLiveData.postValue (new AuthState ("Added to database successfully", true));
                     }
@@ -536,7 +553,7 @@ public class ApplicationRepository {
                 basketsize.postValue (laundryItems.size ());
                 break;
             case 5:
-                laundryItems.add (new LaundryItem ("Carpet/Rug", 10));
+                laundryItems.add (new LaundryItem ("Carpet/Rug", 5));
                 laundryitemlistMutableLiveData.postValue (laundryItems);
                 basketsize.postValue (laundryItems.size ());
                 break;
@@ -546,7 +563,7 @@ public class ApplicationRepository {
                 basketsize.postValue (laundryItems.size ());
                 break;
             case 7:
-                laundryItems.add (new LaundryItem ("Towel", 0.3));
+                laundryItems.add (new LaundryItem ("Towel", 0.5));
                 laundryitemlistMutableLiveData.postValue (laundryItems);
                 basketsize.postValue (laundryItems.size ());
                 break;
@@ -561,7 +578,7 @@ public class ApplicationRepository {
                 basketsize.postValue (laundryItems.size ());
                 break;
             case "Pant":
-                laundryItems.remove (new LaundryItem ("Pant", 0.2));
+                laundryItems.remove (new LaundryItem ("Pant", 0.1));
                 laundryitemlistMutableLiveData.postValue (laundryItems);
                 basketsize.postValue (laundryItems.size ());
                 break;
@@ -576,7 +593,7 @@ public class ApplicationRepository {
                 basketsize.postValue (laundryItems.size ());
                 break;
             case "Carpet/Rug":
-                laundryItems.remove (new LaundryItem ("Carpet/Rug", 10));
+                laundryItems.remove (new LaundryItem ("Carpet/Rug", 5));
                 laundryitemlistMutableLiveData.postValue (laundryItems);
                 basketsize.postValue (laundryItems.size ());
                 break;
@@ -586,7 +603,7 @@ public class ApplicationRepository {
                 basketsize.postValue (laundryItems.size ());
                 break;
             case "Towel":
-                laundryItems.remove (new LaundryItem ("Towel", 0.3));
+                laundryItems.remove (new LaundryItem ("Towel", 0.05));
                 laundryitemlistMutableLiveData.postValue (laundryItems);
                 basketsize.postValue (laundryItems.size ());
                 break;
@@ -636,9 +653,9 @@ public class ApplicationRepository {
                                         (Objects.requireNonNull (documentSnapshot.get ("latitude", double.class))),
                                         (Objects.requireNonNull (documentSnapshot.get ("longitude", double.class))),
                                         address.latitude, address.longitude, results);
-
+                                DecimalFormat df = new DecimalFormat ("0.0");
                                 if ((int) results[0] > 3000) {
-                                    temp.setDeliveryprice (2.5 + ((int) results[0] - 3000) * 0.01);
+                                    temp.setDeliveryprice (Math.round((2.5 + ((int) results[0] - 3000) * 0.002)*10.0)/10.0);
                                 } else
                                     temp.setDeliveryprice (2.5);
                                 mArrayList.add (temp);
@@ -703,12 +720,31 @@ public class ApplicationRepository {
         });
     }
 
-    public void Paypal(String amount){
-        PayPalConfiguration payPalConfiguration = new PayPalConfiguration ()
-                .environment (PayPalConfiguration.ENVIRONMENT_SANDBOX)
-                .clientId (application.getString (R.string.PayPal_ClientID));
-        PayPalPayment payPalPayment = new PayPalPayment (new BigDecimal (String.valueOf (amount)), "EUR",
-                "LaundryWala Payment", PayPalPayment.PAYMENT_INTENT_SALE);
+    public void fetchCanUseGooglePay() {
+        final JSONObject isReadyToPayJson = PaymentsUtil.getIsReadyToPayRequest();
+        if (isReadyToPayJson == null) {
+            _canUseGooglePay.setValue(false);
+            return;
+        }
 
+        // The call to isReadyToPay is asynchronous and returns a Task. We need to provide an
+        // OnCompleteListener to be triggered when the result of the call is known.
+        IsReadyToPayRequest request = IsReadyToPayRequest.fromJson(isReadyToPayJson.toString());
+        Task<Boolean> task = paymentsClient.isReadyToPay(request);
+        task.addOnCompleteListener(
+                completedTask -> {
+                    if (completedTask.isSuccessful()) {
+                        _canUseGooglePay.setValue(completedTask.getResult());
+                    } else {
+                        Log.w("isReadyToPay failed", completedTask.getException());
+                        _canUseGooglePay.setValue(false);
+                    }
+                });
+    }
+    public void getLoadPaymentDataTask(final long priceCents) {
+        JSONObject paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceCents);
+        PaymentDataRequest request =
+                PaymentDataRequest.fromJson(paymentDataRequestJson.toString());
+        paymentDataTaskMutableLiveData.postValue ( paymentsClient.loadPaymentData(request));
     }
 }

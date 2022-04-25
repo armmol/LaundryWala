@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="264dp"
+        android:layout_height="162dp"
+        android:background="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/textView11"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/select_payment_option"
+            android:textColor="@color/purple_700"
+            android:textSize="20sp"
+            android:textStyle="bold|italic"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.497"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.paypal.checkout.paymentbutton.PayPalButton
+            android:id="@+id/paypalbtn"
+            android:layout_width="241dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btn_Gpay">
+
+        </com.paypal.checkout.paymentbutton.PayPalButton>
+
+        <RelativeLayout
+            android:id="@+id/btn_Gpay"
+            android:layout_width="242dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/googlepay_button_no_shadow_background"
+            android:clickable="true"
+            android:contentDescription="@string/googlepay_button_content_description"
+            android:focusable="true"
+            android:paddingTop="2sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView11">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:duplicateParentState="true"
+                android:gravity="center_vertical"
+                android:orientation="vertical"
+                android:weightSum="2">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:duplicateParentState="true"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/googlepay_button_content" />
+
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:duplicateParentState="true"
+                android:scaleType="fitXY"
+                android:src="@drawable/googlepay_button_overlay" />
+        </RelativeLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

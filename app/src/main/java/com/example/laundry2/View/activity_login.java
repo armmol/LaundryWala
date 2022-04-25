@@ -87,7 +87,7 @@ public class activity_login extends AppCompatActivity {
 
         authenticationViewModel.getCurrentSignInUser ().observe (this, user -> {
             if (!spinnerItem.equals ("")) {
-                startActivity (new Intent (activity_login.this, activity_profile.class)
+                startActivity (new Intent (activity_login.this, activity_home.class)
                         .putExtra ("authtype", spinnerItem));
             }
         });

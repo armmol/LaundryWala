@@ -68,10 +68,9 @@ public class LaundryHousesAdapter extends RecyclerView.Adapter<LaundryHousesAdap
             area = itemView.findViewById (R.id.txt_laundryhouse_address);
             deliverycost = itemView.findViewById (R.id.txt_laundryhouse_deliverycost);
             active = itemView.findViewById (R.id.checkBox_active);
+            active.setEnabled (false);
 
-            itemView.setOnClickListener (view -> {
-                listener.onClick (laundryHouseList.get (getAdapterPosition ()));
-            });
+            itemView.setOnClickListener (view -> listener.onClick (laundryHouseList.get (getAdapterPosition ())));
         }
     }
 

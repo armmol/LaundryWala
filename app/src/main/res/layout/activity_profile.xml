@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+<layout xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
 
@@ -16,16 +16,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="144dp"
             android:layout_marginEnd="16dp"
-            android:editable="false"
             android:ems="10"
             android:hint="@string/e_mail"
-            android:inputType="none"
+            android:inputType="none|textEmailAddress"
             android:minHeight="48dp"
             app:layout_constraintEnd_toEndOf="@+id/txt_authtype_profile"
+            app:layout_constraintHorizontal_bias="0.498"
             app:layout_constraintStart_toStartOf="@+id/txt_authtype_profile"
-            app:layout_constraintTop_toBottomOf="@+id/txt_authtype_profile" />
+            app:layout_constraintTop_toBottomOf="@+id/txt_authtype_profile"
+            android:importantForAutofill="no" />
 
         <EditText
             android:id="@+id/edtxt_name_profile"
@@ -49,62 +50,32 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
-            android:editable="false"
             android:ems="10"
             android:hint="@string/address"
-            android:inputType="textPersonName"
+            android:inputType="none|textNoSuggestions|textPersonName"
             android:minHeight="48dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/edtxt_name_profile"
-            app:layout_constraintTop_toBottomOf="@+id/edtxt_name_profile" />
-
-        <EditText
-            android:id="@+id/edtxt_upiid_profile"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            android:ems="10"
-            android:hint="@string/upi_id"
-            android:inputType="textPersonName"
-            android:minHeight="48dp"
-            app:layout_constraintEnd_toEndOf="@+id/txt_area_profile"
-            app:layout_constraintStart_toStartOf="@+id/txt_area_profile"
-            app:layout_constraintTop_toBottomOf="@+id/txt_area_profile" />
-
-        <EditText
-            android:id="@+id/edtxt_payseraid_profile"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            android:ems="10"
-            android:hint="@string/paysera_id"
-            android:inputType="textPersonName"
-            android:minHeight="48dp"
-            app:layout_constraintEnd_toEndOf="@+id/edtxt_upiid_profile"
-            app:layout_constraintStart_toStartOf="@+id/edtxt_upiid_profile"
-            app:layout_constraintTop_toBottomOf="@+id/edtxt_upiid_profile" />
+            app:layout_constraintTop_toBottomOf="@+id/edtxt_name_profile"
+            tools:ignore="DuplicateSpeakableTextCheck" />
 
         <Button
             android:id="@+id/btn_save_profile"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Save"
+            android:text="@string/save"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.455"
+            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.828" />
+            app:layout_constraintVertical_bias="0.824" />
 
         <Button
             android:id="@+id/btn_logout_profile"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Logout"
+            android:text="@string/logout"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/btn_save_profile"
             app:layout_constraintHorizontal_bias="0.0"
@@ -141,12 +112,14 @@
             android:layout_height="0dp"
             android:layout_marginBottom="5dp"
             android:background="#00FFFFFF"
+            android:contentDescription="@string/address"
             app:layout_constraintBottom_toBottomOf="@+id/edtxt_address_profile"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/edtxt_address_profile"
-            app:layout_constraintVertical_bias="1.0" />
+            app:layout_constraintVertical_bias="1.0"
+            tools:ignore="TouchTargetSizeCheck" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

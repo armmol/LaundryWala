@@ -143,8 +143,8 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
 
     @Override
     public void enterIntoDB (String authtype, String name, String address, String area,
-                             double latitude, double longitude, String upiid, String payseraid) {
-        repository.enterDataIntoDB (authtype, name, address, area, latitude, longitude, upiid, payseraid);
+                             double latitude, double longitude) {
+        repository.enterDataIntoDB (authtype, name, address, area, latitude, longitude);
     }
 
     @Override

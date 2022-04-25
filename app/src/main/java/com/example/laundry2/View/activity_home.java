@@ -87,9 +87,14 @@ public class activity_home extends AppCompatActivity {
                     laundryHousesAdapter = new LaundryHousesAdapter (activity_home.this, laundryHouses);
                     binding.recyclerViewUserhome.setAdapter (laundryHousesAdapter);
                     laundryHousesAdapter.setOnItemClickListener (laundryHouse -> {
-                        i.putExtra ("laundryhouseuid", laundryHouse.getUid ());
-                        i.putExtra ("authtype", getIntent ().getStringExtra ("authtype"));
-                        startActivity (i);
+                        if(laundryHouse.isActive ()) {
+                            i.putExtra ("laundryhouseuid", laundryHouse.getUid ());
+                            i.putExtra ("deliveryprice", laundryHouse.getDeliveryprice ());
+                            i.putExtra ("authtype", getIntent ().getStringExtra ("authtype"));
+                            startActivity (i);
+                        }
+                        else
+                            Toast.makeText (this, "This Laundry House is not active at the moment :(", Toast.LENGTH_SHORT).show ();
                     });
                 });
                 binding.swiperefreshlayoutHome.setOnRefreshListener (() -> {
@@ -113,19 +118,14 @@ public class activity_home extends AppCompatActivity {
                             ordersAdapter.setOnOrderClickListener (order ->
                                     viewModel.updateOrderStatus (status, order.getOrderId ())));
                     ordersAdapter.setOnAssignClickListener (order -> {
-                        View mview = LayoutInflater.from (activity_home.this).inflate (layout.activity_assigncouriers, null);
-                        window = new PopupWindow (mview);
-                        window.setHeight (ViewGroup.LayoutParams.WRAP_CONTENT);
-                        window.setWidth (ViewGroup.LayoutParams.WRAP_CONTENT);
-                        window.setFocusable (true);
-                        window.showAtLocation (mview, Gravity.CENTER, 0, 0);
-                        SwipeRefreshLayout swipeRefreshLayout = mview.findViewById (id.swiperefreshlayout_assignorder);
+                        View popupWindowView = createPopUpWindow (layout.activity_assigncouriers);
+                        SwipeRefreshLayout swipeRefreshLayout = popupWindowView.findViewById (id.swiperefreshlayout_assignorder);
                         viewModel.loadAllCouriers ();
                         swipeRefreshLayout.setOnRefreshListener (() -> {
                             viewModel.loadAllCouriers ();
                             swipeRefreshLayout.setRefreshing (false);
                         });
-                        RecyclerView recyclerView = mview.findViewById (id.recyclerview_assigncouriers);
+                        RecyclerView recyclerView = popupWindowView.findViewById (id.recyclerview_assigncouriers);
                         recyclerView.setLayoutManager (new LinearLayoutManager (getApplicationContext ()));
                         viewModel.getCouriers ().observe (this, couriers -> {
                             for (Courier courier : couriers) {
@@ -229,5 +229,15 @@ public class activity_home extends AppCompatActivity {
                 startActivity (new Intent ());
             Toast.makeText (this, "Permission denied", Toast.LENGTH_SHORT).show ();
         }
+    }
+
+    private View createPopUpWindow (int layout) {
+        View popupWindowView = LayoutInflater.from (activity_home.this).inflate (layout, null);
+        window = new PopupWindow (popupWindowView);
+        window.setHeight (ViewGroup.LayoutParams.WRAP_CONTENT);
+        window.setWidth (ViewGroup.LayoutParams.WRAP_CONTENT);
+        window.setFocusable (true);
+        window.showAtLocation (popupWindowView, Gravity.CENTER, 0, 0);
+        return popupWindowView;
     }
 }
