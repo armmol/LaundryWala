@@ -52,8 +52,8 @@ public class LaundryBasketViewModel extends AndroidViewModel implements LaundryB
     }
 
     @Override
-    public void createOrder(String laundryHouseUID){
-        laundryBasketRepository.createOrder (laundryHouseUID);
+    public void createOrder(String laundryHouseUID, double deliveryCost){
+        laundryBasketRepository.createOrder (laundryHouseUID, deliveryCost);
     }
 
     @Override

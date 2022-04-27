@@ -14,7 +14,7 @@ import com.example.laundry2.R;
 
 import java.util.List;
 
-public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapter.MyViewHolder>{
+public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapter.MyViewHolder> {
     private final Context context;
     private List<Order> orders;
     private onItemClickListener listener;
@@ -35,8 +35,9 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
     public void onBindViewHolder (@NonNull MyViewHolder holder, int position) {
         holder.orderId.setText (orders.get (position).getOrderId ());
         holder.orderTime.setText (orders.get (position).getDateTime ());
-        holder.orderCost.setText (String.format ("%s €",orders.get (position).getTotalCost ()));
+        holder.orderCost.setText (String.format ("%s €", orders.get (position).getTotalCost ()));
         holder.orderStatus.setText (orders.get (position).getStatus ());
+        holder.deliveryCost.setText (String.format ("%s €", orders.get (position).getDeliveryCost ()));
     }
 
     @Override
@@ -52,9 +53,17 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
         this.orders = orders;
     }
 
+    public void setOnItemClickListener (onItemClickListener listener) {
+        this.listener = listener;
+    }
+
+    public interface onItemClickListener {
+        void onClick (Order order);
+    }
+
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
-        TextView orderId, orderStatus, orderTime, orderCost;
+        TextView orderId, orderStatus, orderTime, orderCost, deliveryCost;
 
         public MyViewHolder (@NonNull View itemView) {
             super (itemView);
@@ -63,16 +72,9 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
             orderStatus = itemView.findViewById (R.id.textView_card_orderhistory_orderstatus);
             orderTime = itemView.findViewById (R.id.textView_card_orderhistory_ordertime);
             orderCost = itemView.findViewById (R.id.textView_card_orderhistory_ordercost);
+            deliveryCost = itemView.findViewById (R.id.textView_card_orderhistory_deliveryCost);
 
-            itemView.setOnClickListener ( view -> listener.onClick (orders.get (getAdapterPosition ())));
+            itemView.setOnClickListener (view -> listener.onClick (orders.get (getAdapterPosition ())));
         }
-    }
-
-    public interface onItemClickListener {
-        void onClick (Order order);
-    }
-
-    public void setOnItemClickListener (onItemClickListener listener) {
-        this.listener = listener;
     }
 }

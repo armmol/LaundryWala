@@ -137,8 +137,8 @@ public class PaymentsUtil {
 
     public static String centsToString (long cents) {
         return new BigDecimal (cents)
-                .divide (CENTS_IN_A_UNIT, RoundingMode.HALF_EVEN)
-                .setScale (2, RoundingMode.HALF_EVEN)
+                .divide (CENTS_IN_A_UNIT)
+                .setScale (2, RoundingMode.UNNECESSARY)
                 .toString ();
     }
 }

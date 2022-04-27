@@ -91,7 +91,18 @@
                 app:layout_constraintTop_toTopOf="@+id/imageButton_map"
                 app:srcCompat="@android:drawable/ic_menu_recent_history" />
 
+            <Button
+                android:id="@+id/button_Arrived_Courier"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="I have Arrived"
+                app:layout_constraintBottom_toBottomOf="@+id/imageButton_orderhistory"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.498"
+                app:layout_constraintStart_toEndOf="@+id/imageButton_profile"
+                app:layout_constraintTop_toBottomOf="@+id/recyclerView_userhome" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
 </layout>

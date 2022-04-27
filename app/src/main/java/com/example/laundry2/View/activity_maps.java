@@ -31,7 +31,7 @@ public class activity_maps extends FragmentActivity implements OnMapReadyCallbac
 
     private GoogleMap mMap;
     private LocationViewModel locationViewModel;
-    private String authsType;
+    private String authType;
     int flag = 0;
 
     @SuppressLint("MissingPermission")
@@ -41,24 +41,22 @@ public class activity_maps extends FragmentActivity implements OnMapReadyCallbac
         setContentView (R.layout.activity_maps);
 
         locationViewModel = new ViewModelProvider (this).get (LocationViewModel.class);
-        authsType = getIntent ().getStringExtra ("authtype");
-        if (authsType.equals (getString (R.string.courier))) {
-            locationViewModel.getCurrentLocationMutableLiveData ().observe (this, location -> {
-                locationViewModel.updateLiveLocation (locationViewModel.getCurrentSignedInUser ().getValue ().getUid (), location);
-                //Toast.makeText (this, location.toString (), Toast.LENGTH_SHORT).show ();
-            });
+        authType = getIntent ().getStringExtra ("authtype");
+        if (authType.equals (getString (R.string.courier))) {
+            locationViewModel.getCurrentLocationMutableLiveData ().observe (this, location ->
+                    locationViewModel.updateLiveLocation (locationViewModel.getCurrentSignedInUser ().getValue ().getUid (), location));
         }
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager ()
                 .findFragmentById (R.id.map);
         mapFragment.getMapAsync (this);
-        OnBackPressedCallback callback = new OnBackPressedCallback (true /* enabled by default */) {
+        OnBackPressedCallback callback = new OnBackPressedCallback (true) {
             @Override
             public void handleOnBackPressed () {
                 flag = 1;
                 startActivity (new Intent (activity_maps.this, activity_home.class)
-                        .putExtra ("authtype", getIntent ().getExtras ().get ("authtype").toString ()));
+                        .putExtra ("authtype", authType));
             }
         };
         this.getOnBackPressedDispatcher ().addCallback (callback);
@@ -69,9 +67,9 @@ public class activity_maps extends FragmentActivity implements OnMapReadyCallbac
                 ActivityCompat.checkSelfPermission (this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions (this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 131);
         } else {
-            if (authsType.equals (getString (R.string.courier)))
+            if (authType.equals (getString (R.string.courier)))
                 startLocationUpdates ();
-            else if (authsType.equals (getString (R.string.customer)))
+            else if (authType.equals (getString (R.string.customer))||authType.equals (getString (R.string.laundryhouse)))
                 getCourierUpdates ();
         }
     }
@@ -100,7 +98,7 @@ public class activity_maps extends FragmentActivity implements OnMapReadyCallbac
     protected void onStart () {
         super.onStart ();
         flag = 0;
-        authsType = getIntent ().getStringExtra ("authtype");
+        authType = getIntent ().getStringExtra ("authtype");
         getPermissions ();
     }
 
@@ -119,13 +117,13 @@ public class activity_maps extends FragmentActivity implements OnMapReadyCallbac
             customer_location.position (getIntent ().getParcelableExtra ("CustomerLatLng"));
             mMap.addMarker (customer_location);
         }
-        if (authsType.equals (getString (R.string.customer))) {
+        else {
             getCourierUpdates ();
-            customerMap ();
+            courierTrackingMap ();
         }
     }
 
-    private void customerMap () {
+    private void courierTrackingMap () {
         MarkerOptions markerOptions = new MarkerOptions ().title ("Your Courier is here");
         locationViewModel.getCurrentLocationMutableLiveData ().observe (this, location -> {
             Log.d ("Update Location", location.getLatitude () + "," + location.getLongitude ());

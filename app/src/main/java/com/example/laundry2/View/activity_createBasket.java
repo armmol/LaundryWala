@@ -3,6 +3,7 @@ package com.example.laundry2.View;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -35,6 +36,7 @@ import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.wallet.PaymentData;
 import com.paypal.checkout.PayPalCheckout;
+import com.paypal.checkout.approve.OnApprove;
 import com.paypal.checkout.config.CheckoutConfig;
 import com.paypal.checkout.config.Environment;
 import com.paypal.checkout.config.PaymentButtonIntent;
@@ -52,13 +54,14 @@ import com.paypal.checkout.paymentbutton.PaymentButton;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.DecimalFormat;
+import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 
 
 public class activity_createBasket extends AppCompatActivity {
+
     private RelativeLayout googlePayButton;
     private PaymentButton payPalButton;
     private ActivityCreatebasketBinding binding;
@@ -66,7 +69,7 @@ public class activity_createBasket extends AppCompatActivity {
     private PaymentsViewModel paymentsViewModel;
     private LaundryItemsAdapter adapter;
     private String laundryHouseUid;
-    private double deliveryprice;
+    private double deliveryCost;
     private final ActivityResultLauncher<IntentSenderRequest> resolvePaymentForResult = registerForActivityResult (
             new ActivityResultContracts.StartIntentSenderForResult (),
             result -> {
@@ -76,7 +79,7 @@ public class activity_createBasket extends AppCompatActivity {
                         if (resultData != null) {
                             PaymentData paymentData = PaymentData.getFromIntent (result.getData ());
                             if (paymentData != null) {
-                                handlePaymentSuccess (paymentData);
+                                handleGPayPaymentSuccess (paymentData);
                             }
                         }
                         break;
@@ -105,22 +108,22 @@ public class activity_createBasket extends AppCompatActivity {
         binding.imgbtnJackets.setOnClickListener (view -> viewModel.addItem (4));
         binding.imgbtnCarpets.setOnClickListener (view -> viewModel.addItem (5));
         binding.imgbtnBedsheets.setOnClickListener (view -> viewModel.addItem (6));
-        deliveryprice = getIntent ().getExtras().getDouble ("deliveryprice", 0.0);
-        binding.deliverypriceCreatebasket.setText (String.format ("Delivery Cost - %s",deliveryprice));
+        deliveryCost = getIntent ().getExtras ().getDouble ("deliveryprice", 0.0);
+        binding.deliverypriceCreatebasket.setText (String.format ("Delivery Cost - %s", deliveryCost));
 
         viewModel.getLaundryItems ().observe (this, laundryItemList -> {
             binding.txtLaundrybasketcounter.setText (MessageFormat.format ("{0}", laundryItemList.size ()));
             //Cost for the payment
             double a = 0;
-            DecimalFormat df = new DecimalFormat ("0.0");
             for (LaundryItem item : laundryItemList) {
                 a += item.getCost ();
             }
-            a+= deliveryprice;
-            String cost = "" + df.format (a);
-            binding.txtLaundrybasketcost.setText (String.format ("%s €", cost));
+            a += deliveryCost;
+            String cost = "" + new BigDecimal (a).setScale (2, BigDecimal.ROUND_HALF_DOWN).doubleValue ();
+            if (laundryItemList.size () != 0)
+                binding.txtLaundrybasketcost.setText (String.format ("%s €", cost));
             binding.cardLaundrybasket.setOnClickListener (view -> {
-                if (!binding.txtLaundrybasketcounter.getText () .equals ("0")) {
+                if (laundryItemList.size () != 0) {
                     View popupWindowView = createPopUpWindow (R.layout.activity_confirmorder);
                     RecyclerView recyclerView = popupWindowView.findViewById (R.id.recyclerView_confirmorder);
                     adapter = new LaundryItemsAdapter (this, laundryItemList);
@@ -131,7 +134,7 @@ public class activity_createBasket extends AppCompatActivity {
                     Toast.makeText (this, "Nothing in Basket", Toast.LENGTH_SHORT).show ();
             });
             binding.btnConfrimandpayCreatebasket.setOnClickListener (view -> {
-                if (!binding.txtLaundrybasketcounter.getText () .equals ("0"))
+                if (laundryItemList.size () != 0)
                     paymentOnclick (cost);
                 else
                     Toast.makeText (this, "Nothing in Basket", Toast.LENGTH_SHORT).show ();
@@ -139,6 +142,7 @@ public class activity_createBasket extends AppCompatActivity {
             viewModel.orderPlacementStatus ().observe (this, isPlaced -> {
                 if (isPlaced)
                     Toast.makeText (this, "Order Placed Successfully", Toast.LENGTH_SHORT).show ();
+
                 else
                     Toast.makeText (this, "Order could not be Placed", Toast.LENGTH_SHORT).show ();
             });
@@ -166,43 +170,48 @@ public class activity_createBasket extends AppCompatActivity {
                     ArrayList<PurchaseUnit> purchaseUnits = new ArrayList<> ();
                     purchaseUnits.add (
                             new PurchaseUnit.Builder ().amount (new Amount.Builder ()
-                                    .currencyCode (CurrencyCode.USD).value (cost).build ()).build ());
+                                    .currencyCode (CurrencyCode.EUR).value (cost).build ()).build ());
                     Order order = new Order (OrderIntent.CAPTURE, new AppContext.Builder ()
                             .userAction (UserAction.PAY_NOW).build (), purchaseUnits, ProcessingInstruction.NO_INSTRUCTION);
                     createOrderActions.create (order, (CreateOrderActions.OnOrderCreated) null);
-                },
-                approval -> approval.getOrderActions ().capture (result -> {
-                    viewModel.createOrder (laundryHouseUid);
-                    startActivity (new Intent (activity_createBasket.this, activity_home.class)
-                            .putExtra ("authtype", getString (R.string.customer)));
+                }, (OnApprove) approval -> approval.getOrderActions ().capture (result -> {
+                    viewModel.createOrder (laundryHouseUid, deliveryCost);
+                    activity_createBasket.this.startActivity (new Intent (activity_createBasket.this, activity_home.class)
+                            .putExtra ("authtype", activity_createBasket.this.getString (R.string.customer)));
                     Log.i ("CaptureOrder", String.format ("CaptureOrderResult: %s", result));
-                }));
+                }), (shippingChangeData, shippingChangeActions) -> Toast.makeText (this, "Shipping Address for PayPal was changed", Toast.LENGTH_SHORT).show (), () -> {
+                    Toast.makeText (this, "Payment Cancelled", Toast.LENGTH_SHORT).show ();
+                }, errorInfo -> Toast.makeText (this, "Error during payment", Toast.LENGTH_SHORT).show ());
     }
 
     public void requestPayment (String cost) {
         googlePayButton.setClickable (false);
-        String[] eurotocents = cost.split ("\\.");
-        cost = eurotocents[0] + eurotocents[1]+"0";
+        String[] euroToCents = cost.split ("\\.");
+        if(euroToCents[1].length ()>1)
+            cost = euroToCents[0] + euroToCents[1];
+        else
+            cost = euroToCents[0]+euroToCents[1]+"0";
         long totalPriceCents = Long.parseLong (cost);
         paymentsViewModel.loadPaymentDataForGPay (totalPriceCents);
-        paymentsViewModel.getPaymentDataTaskMutableLiveData ().observe (this, task -> task.addOnCompleteListener (completedTask -> {
-            if (completedTask.isSuccessful ()) {
-                handlePaymentSuccess (completedTask.getResult ());
-            } else {
-                Exception exception = completedTask.getException ();
-                if (exception instanceof ResolvableApiException) {
-                    PendingIntent resolution = ((ResolvableApiException) exception).getResolution ();
-                    resolvePaymentForResult.launch (new IntentSenderRequest.Builder (resolution).build ());
-                } else if (exception instanceof ApiException) {
-                    ApiException apiException = (ApiException) exception;
-                    handleError (apiException.getStatusCode (), apiException.getMessage ());
-                } else {
-                    handleError (CommonStatusCodes.INTERNAL_ERROR, "Unexpected non API" +
-                            " exception when trying to deliver the task result to an activity!");
-                }
-            }
-            googlePayButton.setClickable (true);
-        }));
+        paymentsViewModel.getPaymentDataTaskMutableLiveData ().observe (this, task ->
+                task.addOnCompleteListener (completedTask -> {
+                    if (completedTask.isSuccessful ()) {
+                        handleGPayPaymentSuccess (completedTask.getResult ());
+                    } else {
+                        Exception exception = completedTask.getException ();
+                        if (exception instanceof ResolvableApiException) {
+                            PendingIntent resolution = ((ResolvableApiException) exception).getResolution ();
+                            resolvePaymentForResult.launch (new IntentSenderRequest.Builder (resolution).build ());
+                        } else if (exception instanceof ApiException) {
+                            ApiException apiException = (ApiException) exception;
+                            handleError (apiException.getStatusCode (), apiException.getMessage ());
+                        } else {
+                            handleError (CommonStatusCodes.INTERNAL_ERROR, "Unexpected non API" +
+                                    " exception when trying to deliver the task result to an activity!");
+                        }
+                    }
+                    googlePayButton.setClickable (true);
+                }));
 
     }
 
@@ -214,7 +223,7 @@ public class activity_createBasket extends AppCompatActivity {
         }
     }
 
-    private void handlePaymentSuccess (PaymentData paymentData) {
+    private void handleGPayPaymentSuccess (PaymentData paymentData) {
         final String paymentInfo = paymentData.toJson ();
         try {
             JSONObject paymentMethodData = new JSONObject (paymentInfo).getJSONObject ("paymentMethodData");
@@ -226,7 +235,7 @@ public class activity_createBasket extends AppCompatActivity {
             Log.d ("Google Pay token", paymentMethodData
                     .getJSONObject ("tokenizationData")
                     .getString ("token"));
-            viewModel.createOrder (laundryHouseUid);
+            viewModel.createOrder (laundryHouseUid, deliveryCost);
             startActivity (new Intent (activity_createBasket.this, activity_home.class)
                     .putExtra ("authtype", getString (R.string.customer)));
         } catch (JSONException e) {

@@ -31,6 +31,7 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
     private final MutableLiveData<List<Order>> orderMutableLiveData;
     private final MutableLiveData<Boolean> logoutMutableLiveData;
     private final MutableLiveData<List<Courier>> courierListMutableLiveData;
+    private final MutableLiveData<Boolean> courierArrivalMutableLiveData;
 
     public AuthenticationViewModel (Application application) {
         super (application);
@@ -44,6 +45,7 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
         logoutMutableLiveData = repository.getLogoutMutableLiveData ();
         courierListMutableLiveData = repository.getCourierListMutableLiveData ();
         userLatLngMutableLiveData = repository.getUserLatLngListMutableLiveData ();
+        courierArrivalMutableLiveData = repository.getCourierArrivalMutableLiveData ();
     }
 
     @Override
@@ -92,6 +94,11 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
     }
 
     @Override
+    public MutableLiveData<Boolean> getCourierArrivalMutableLiveData () {
+        return courierArrivalMutableLiveData;
+    }
+
+    @Override
     public void loginEmail (String email, String password, String authtype) {
         repository.loginEmail (email, password, authtype);
     }
@@ -117,8 +124,8 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
     }
 
     @Override
-    public void loadAllOrders () {
-        repository.loadAllOrders ();
+    public void loadAllOrders (String authType) {
+        repository.loadAllOrders (authType);
     }
 
     @Override
@@ -167,5 +174,14 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
         repository.unassignOrder (courierId, orderId);
     }
 
+    @Override
+    public void notifyOfArrival (String OrderId, boolean value) {
+        repository.notifyOfArrival (OrderId, value);
+    }
+
+    @Override
+    public void getNotified (String orderId) {
+        repository.getNotified (orderId);
+    }
 
 }

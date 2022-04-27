@@ -31,7 +31,7 @@ public class activity_profile extends AppCompatActivity {
     private AuthenticationViewModel viewModel;
     private ActivityProfileBinding binding;
     private LatLng latLng;
-    private final ActivityResultLauncher<Intent> findaddress =
+    private final ActivityResultLauncher<Intent> findAddress =
             registerForActivityResult (new ActivityResultContracts.StartActivityForResult ()
                     , new ActivityResultCallback<ActivityResult> () {
                         @Override
@@ -40,7 +40,7 @@ public class activity_profile extends AppCompatActivity {
                                 if (result.getData () != null) {
                                     Place place = Autocomplete.getPlaceFromIntent (result.getData ());
                                     binding.edtxtAddressProfile.setText (place.getAddress ());
-                                    binding.txtAreaProfile.setText (place.getName ());
+                                    binding.txtAreaProfile.setText (place.getAddress ().split (",")[1]);
                                     latLng = place.getLatLng ();
                                 }
                             } else
@@ -79,7 +79,7 @@ public class activity_profile extends AppCompatActivity {
 
         binding.imgbtnFindaddress.setOnClickListener (view -> {
             List<Place.Field> fieldList = Arrays.asList (Place.Field.ADDRESS, Place.Field.LAT_LNG, Place.Field.NAME);
-            findaddress.launch (new Autocomplete.IntentBuilder (AutocompleteActivityMode.OVERLAY
+            findAddress.launch (new Autocomplete.IntentBuilder (AutocompleteActivityMode.OVERLAY
                     , fieldList).build (activity_profile.this));
         });
 

@@ -62,6 +62,7 @@ public class CouriersAdapter extends RecyclerView.Adapter<CouriersAdapter.MyView
 
             couriername = itemView.findViewById (R.id.txt_card_couriername);
             checkBox = itemView.findViewById (R.id.checkBox_Active_CouriersCard);
+            checkBox.setEnabled (false);
             itemView.setOnClickListener (view -> {
                 listener.onClick (couriers.get (getAdapterPosition ()));
             });

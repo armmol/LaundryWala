@@ -33,6 +33,8 @@ public interface AuthenticationContract {
 
     MutableLiveData<List<LatLng>> getLatLngMutableLiveData();
 
+    MutableLiveData<Boolean> getCourierArrivalMutableLiveData();
+
     void loginEmail (String email, String password, String authtype);
 
     void signupEmail (String email, String password, String confirmpassword, String authtype);
@@ -45,7 +47,7 @@ public interface AuthenticationContract {
 
     void loadAllLaundryHouses ();
 
-    void loadAllOrders ();
+    void loadAllOrders (String authtype);
 
     void loadAllCouriers ();
 
@@ -63,5 +65,9 @@ public interface AuthenticationContract {
     void assignOrder(String courierId, String orderId);
 
     void usassignOrder(String courierId, String orderId);
+
+    void notifyOfArrival(String OrderId, boolean value);
+
+    void getNotified(String orderId);
 }
 

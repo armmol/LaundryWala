@@ -17,7 +17,7 @@ public interface LaundryBasketContract {
 
     MutableLiveData<List<LaundryItem>> getLaundryItems();
 
-    void createOrder (String laundryHouseUID);
+    void createOrder (String laundryHouseUID, double deliveryCost);
 
     void addItem (int number);
 

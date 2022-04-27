@@ -62,7 +62,8 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.MyViewHold
         holder.ordercost.setText (String.format ("%s €",this.orders.get (position).getTotalCost ()));
         holder.ordername.setText (String.format ("Order ID-%s", this.orders.get (position).getOrderId ()));
         holder.ordertime.setText (this.orders.get (position).getDateTime ());
-        holder.courierId.setText (String.format ("Courier assigned-%s",this.orders.get (position).getCourierId ()));
+        holder.courierId.setText (String.format ("Courier ID-%s",this.orders.get (position).getCourierId ()));
+        holder.orderStatus.setText (orders.get (position).getStatus ());
     }
 
     @Override
@@ -72,7 +73,7 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.MyViewHold
 
     public class MyViewHolder extends RecyclerView.ViewHolder{
 
-        TextView ordername, ordercost, ordertime, courierId;
+        TextView ordername, ordercost, ordertime, courierId, orderStatus;
         Button assign, changestatus;
         Spinner spinner;
         public MyViewHolder (@NonNull View itemView) {
@@ -80,6 +81,7 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.MyViewHold
             ordername = itemView.findViewById (R.id.txt_ordernumber);
             ordertime = itemView.findViewById (R.id.txt_card_ordertime_display);
             ordercost = itemView.findViewById (R.id.txt_card_ordercost_display);
+            orderStatus = itemView.findViewById (R.id.txt_card_orders_orderstatus);
             assign = itemView.findViewById (R.id.button_assign);
             courierId = itemView.findViewById (R.id.txt_card_order_courierID);
             changestatus = itemView.findViewById (R.id.button_changestatus);

@@ -53,7 +53,7 @@ public class activity_orderHistory extends AppCompatActivity {
             binding.textView10.setText (getString (R.string.start_tracking));
         }
         binding.recyclerViewOrderhistory.setLayoutManager (new LinearLayoutManager (this));
-        viewModel.loadAllOrders ();
+        viewModel.loadAllOrders (authType);
         viewModel.getOrders ().observe (this, orders -> {
             List<Order> refinedList = new ArrayList<> (orders);
             for (Order order : orders) {
@@ -77,7 +77,9 @@ public class activity_orderHistory extends AppCompatActivity {
                             i.putExtra ("courierId", order1.getCourierId ());
                             getPermissions ();
                         } else
-                            Toast.makeText (this, "Order has not started. Please try after sometime", Toast.LENGTH_SHORT).show ();
+                            Toast.makeText (this, "Order is not in pick/delivery phase or\n " +
+                                    "no courier is assigned to order yet.\n" +
+                                    "Please try after some time.", Toast.LENGTH_SHORT).show ();
                     });
                 } else {
                     View windowView = LayoutInflater.from (activity_orderHistory.this).inflate (R.layout.activity_confirmorder, null);
@@ -100,7 +102,7 @@ public class activity_orderHistory extends AppCompatActivity {
             @Override
             public void handleOnBackPressed () {
                 startActivity (new Intent (activity_orderHistory.this, activity_home.class)
-                        .putExtra ("authtype", getIntent ().getExtras ().get ("authtype").toString ()));
+                        .putExtra ("authtype", authType));
             }
         };
         this.getOnBackPressedDispatcher ().addCallback (callback);

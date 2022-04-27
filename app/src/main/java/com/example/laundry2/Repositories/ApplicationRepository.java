@@ -48,7 +48,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.json.JSONObject;
 
-import java.text.DecimalFormat;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -86,16 +86,78 @@ public class ApplicationRepository {
     private final MutableLiveData<List<LaundryItem>> laundryitemlistMutableLiveData;
     private final MutableLiveData<List<Courier>> courierListMutableLiveData;
     private final MutableLiveData<Boolean> orderPlacementSuccessMutableLiveData;
+    private final MutableLiveData<Boolean> courierArrivalMutableLiveData;
     private final ArrayList<LaundryItem> laundryItems;
 
 
-    public MutableLiveData<Boolean> get_canUseGooglePay(){
+    @SuppressLint("MissingPermission")
+    public ApplicationRepository (Application application) {
+        this.application = application;
+        mAuth = FirebaseAuth.getInstance ();
+        firebaseFirestore = FirebaseFirestore.getInstance ();
+        paymentsClient = PaymentsUtil.createPaymentsClient (application);
+        _canUseGooglePay = new MutableLiveData<> ();
+        paymentDataTaskMutableLiveData = new MutableLiveData<> ();
+        currentLocationMutableLiveData = new MutableLiveData<> ();
+        serviceState = new MutableLiveData<> ();
+        userMutableLiveData = new MutableLiveData<> ();
+        laundryHouseMutableLiveData = new MutableLiveData<> ();
+        applicationUserMutableLiveData = new MutableLiveData<> ();
+        googleSignInClientMutableLiveData = new MutableLiveData<> ();
+        authStateMutableLiveData = new MutableLiveData<> ();
+        orderListMutableLiveData = new MutableLiveData<> ();
+        logoutMutableLiveData = new MutableLiveData<> ();
+        orderMutableLiveData = new MutableLiveData<> ();
+        laundryitemlistMutableLiveData = new MutableLiveData<> ();
+        basketsize = new MutableLiveData<> ();
+        laundryItems = new ArrayList<> ();
+        courierListMutableLiveData = new MutableLiveData<> ();
+        orderPlacementSuccessMutableLiveData = new MutableLiveData<> ();
+        userLatLngListMutableLiveData = new MutableLiveData<> ();
+        courierArrivalMutableLiveData = new MutableLiveData<> ();
+
+        if (mAuth.getCurrentUser () != null) {
+            userMutableLiveData.postValue (mAuth.getCurrentUser ());
+            logoutMutableLiveData.postValue (false);
+        }
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder (GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken (application.getString (R.string.WebClientIDForGoogleSignIn))
+                .requestEmail ()
+                .build ();
+        googleSignInClientMutableLiveData.postValue (GoogleSignIn.getClient (application.getBaseContext (), gso));
+        Places.initialize (application, application.getString (R.string.Api_Key));
+
+        serviceState.setValue (false);
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient (application.getBaseContext ());
+        fusedLocationProviderClient.getLastLocation ().addOnSuccessListener (currentLocationMutableLiveData::postValue);
+        mLocationRequest = LocationRequest.create ()
+                .setPriority (LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setInterval (4000)
+                .setFastestInterval (2000);
+        mLocationCallback = new LocationCallback () {
+            @Override
+            public void onLocationResult (@NonNull LocationResult locationResult) {
+                if (locationResult != null) {
+                    for (Location location : locationResult.getLocations ())
+                        currentLocationMutableLiveData.postValue (location);
+                }
+            }
+
+            @Override
+            public void onLocationAvailability (@NonNull LocationAvailability locationAvailability) {
+                super.onLocationAvailability (locationAvailability);
+            }
+        };
+    }
+
+    public MutableLiveData<Boolean> get_canUseGooglePay () {
         return _canUseGooglePay;
     }
 
-    public MutableLiveData<Task<PaymentData>> getpaymentDataTaskMutableLiveData(){
+    public MutableLiveData<Task<PaymentData>> getpaymentDataTaskMutableLiveData () {
         return paymentDataTaskMutableLiveData;
     }
+
     public MutableLiveData<Location> getCurrentLocationMutableLiveData () {
         return currentLocationMutableLiveData;
     }
@@ -156,63 +218,8 @@ public class ApplicationRepository {
         return userLatLngListMutableLiveData;
     }
 
-    @SuppressLint("MissingPermission")
-    public ApplicationRepository (Application application) {
-        this.application = application;
-        mAuth = FirebaseAuth.getInstance ();
-        firebaseFirestore = FirebaseFirestore.getInstance ();
-        paymentsClient = PaymentsUtil.createPaymentsClient (application);
-        _canUseGooglePay = new MutableLiveData<> ();
-        paymentDataTaskMutableLiveData = new MutableLiveData<> ();
-        currentLocationMutableLiveData = new MutableLiveData<> ();
-        serviceState = new MutableLiveData<> ();
-        userMutableLiveData = new MutableLiveData<> ();
-        laundryHouseMutableLiveData = new MutableLiveData<> ();
-        applicationUserMutableLiveData = new MutableLiveData<> ();
-        googleSignInClientMutableLiveData = new MutableLiveData<> ();
-        authStateMutableLiveData = new MutableLiveData<> ();
-        orderListMutableLiveData = new MutableLiveData<> ();
-        logoutMutableLiveData = new MutableLiveData<> ();
-        orderMutableLiveData = new MutableLiveData<> ();
-        laundryitemlistMutableLiveData = new MutableLiveData<> ();
-        basketsize = new MutableLiveData<> ();
-        laundryItems = new ArrayList<> ();
-        courierListMutableLiveData = new MutableLiveData<> ();
-        orderPlacementSuccessMutableLiveData = new MutableLiveData<> ();
-        userLatLngListMutableLiveData = new MutableLiveData<> ();
-
-        if (mAuth.getCurrentUser () != null) {
-            userMutableLiveData.postValue (mAuth.getCurrentUser ());
-            logoutMutableLiveData.postValue (false);
-        }
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder (GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken (application.getString (R.string.WebClientIDForGoogleSignIn))
-                .requestEmail ()
-                .build ();
-        googleSignInClientMutableLiveData.postValue (GoogleSignIn.getClient (application.getBaseContext (), gso));
-        Places.initialize (application, application.getString (R.string.Api_Key));
-
-        serviceState.setValue (false);
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient (application.getBaseContext ());
-        fusedLocationProviderClient.getLastLocation ().addOnSuccessListener (currentLocationMutableLiveData::postValue);
-        mLocationRequest = LocationRequest.create ()
-                .setPriority (LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setInterval (4000)
-                .setFastestInterval (2000);
-        mLocationCallback = new LocationCallback () {
-            @Override
-            public void onLocationResult (@NonNull LocationResult locationResult) {
-                if (locationResult != null) {
-                    for (Location location : locationResult.getLocations ())
-                        currentLocationMutableLiveData.postValue (location);
-                }
-            }
-
-            @Override
-            public void onLocationAvailability (@NonNull LocationAvailability locationAvailability) {
-                super.onLocationAvailability (locationAvailability);
-            }
-        };
+    public MutableLiveData<Boolean> getCourierArrivalMutableLiveData () {
+        return courierArrivalMutableLiveData;
     }
 
     public void getOrder (String orderId) {
@@ -464,7 +471,7 @@ public class ApplicationRepository {
         }
     }
 
-    public void createOrder (String laundryHouseUID) {
+    public void createOrder (String laundryHouseUID, double deliveryCost) {
         FirebaseUser user = mAuth.getCurrentUser ();
         if (user != null) {
             DocumentReference df = firebaseFirestore.collection ("Customer").document (user.getUid ());
@@ -475,7 +482,7 @@ public class ApplicationRepository {
                         int ordernumber = documentSnapshot.get ("orders", int.class);
                         String orderId = mAuth.getUid () + "_" + ordernumber + "_" + laundryHouseUID;
                         Order order = new Order (orderId, "", laundryItems,
-                                Calendar.getInstance ().getTime ().toString (), "Order Not Started");
+                                Calendar.getInstance ().getTime ().toString (), "Order Not Started", deliveryCost, false);
                         orderMutableLiveData.postValue (order);
 
                         //Enter Order Object into Database
@@ -507,12 +514,35 @@ public class ApplicationRepository {
             DocumentReference dforder = firebaseFirestore.collection ("Order")
                     .document (orderId);
             if (documentSnapshot1.get ("dateTime") != null) {
-                Map<String, Object> UserInfo = new HashMap<> ();
-                UserInfo.put ("status", Status);
-                dforder.update (UserInfo);
+                Map<String, Object> OrderInfo = new HashMap<> ();
+                OrderInfo.put ("status", Status);
+                dforder.update (OrderInfo);
                 dforder.get ();
                 authStateMutableLiveData.postValue (new AuthState ("Order Status changed successfully", true));
             }
+        });
+    }
+
+    public void notifyOfArrival (String orderId, boolean value) {
+        firebaseFirestore.collection ("Order").document (orderId)
+                .get ().addOnSuccessListener (documentSnapshot1 -> {
+            DocumentReference dforder = firebaseFirestore.collection ("Order")
+                    .document (orderId);
+            if (documentSnapshot1.get ("dateTime") != null) {
+                Map<String, Object> OrderInfo = new HashMap<> ();
+                OrderInfo.put ("courierHasArrived", value);
+                dforder.update (OrderInfo);
+                dforder.get ();
+                authStateMutableLiveData.postValue (new AuthState ("Notified successfully", true));
+            }
+        });
+    }
+
+    public void getNotified (String orderId) {
+        firebaseFirestore.collection ("Order").document (orderId).addSnapshotListener ((documentSnapshot, error) -> {
+//            if (documentSnapshot.get ("courierHasArrived", Boolean.class)) {
+//                courierArrivalMutableLiveData.postValue (true);
+//            }
         });
     }
 
@@ -653,9 +683,9 @@ public class ApplicationRepository {
                                         (Objects.requireNonNull (documentSnapshot.get ("latitude", double.class))),
                                         (Objects.requireNonNull (documentSnapshot.get ("longitude", double.class))),
                                         address.latitude, address.longitude, results);
-                                DecimalFormat df = new DecimalFormat ("0.0");
                                 if ((int) results[0] > 3000) {
-                                    temp.setDeliveryprice (Math.round((2.5 + ((int) results[0] - 3000) * 0.002)*10.0)/10.0);
+                                    temp.setDeliveryprice (BigDecimal.valueOf (2.5 + ((int) results[0] - 3000) * 0.002)
+                                            .setScale (2, BigDecimal.ROUND_HALF_DOWN).doubleValue ());
                                 } else
                                     temp.setDeliveryprice (2.5);
                                 mArrayList.add (temp);
@@ -669,7 +699,7 @@ public class ApplicationRepository {
         }).addOnFailureListener (e -> Log.d (TAG, "Failed to get data from firestore"));
     }
 
-    public void loadAllOrders () {
+    public void loadAllOrders (String authtype) {
         ArrayList<Order> mArrayList = new ArrayList<> ();
         firebaseFirestore.collection ("Order")
                 .get ().addOnSuccessListener (queryDocumentSnapshots -> {
@@ -677,7 +707,25 @@ public class ApplicationRepository {
                 Order order = (dsnap.toObject (Order.class));
                 mArrayList.add (order);
             }
-            orderListMutableLiveData.postValue (mArrayList);
+
+            List<Order> refinedList = new ArrayList<> (mArrayList);
+            for (Order order : mArrayList) {
+                String[] check = order.getOrderId ().split ("_");
+                if (authtype.equals (application.getString (R.string.courier))) {
+                    if (order.getStatus ().equals ("Completed") ||
+                            !order.getCourierId ().equals (mAuth.getUid ()))
+                        refinedList.remove (order);
+                } else if (authtype.equals (application.getString (R.string.customer))) {
+                    if (order.getStatus ().equals ("Completed") ||
+                            !check[0].equals (mAuth.getUid ()))
+                        refinedList.remove (order);
+                } else if (authtype.equals (application.getString (R.string.laundryhouse))) {
+                    if (order.getStatus ().equals ("Completed") ||
+                            !check[2].equals (mAuth.getUid ()))
+                        refinedList.remove (order);
+                }
+            }
+            orderListMutableLiveData.postValue (refinedList);
         }).addOnFailureListener (e -> Log.d (TAG, "Failed to get Orders"));
     }
 
@@ -720,31 +768,32 @@ public class ApplicationRepository {
         });
     }
 
-    public void fetchCanUseGooglePay() {
-        final JSONObject isReadyToPayJson = PaymentsUtil.getIsReadyToPayRequest();
+    public void fetchCanUseGooglePay () {
+        final JSONObject isReadyToPayJson = PaymentsUtil.getIsReadyToPayRequest ();
         if (isReadyToPayJson == null) {
-            _canUseGooglePay.setValue(false);
+            _canUseGooglePay.setValue (false);
             return;
         }
 
         // The call to isReadyToPay is asynchronous and returns a Task. We need to provide an
         // OnCompleteListener to be triggered when the result of the call is known.
-        IsReadyToPayRequest request = IsReadyToPayRequest.fromJson(isReadyToPayJson.toString());
-        Task<Boolean> task = paymentsClient.isReadyToPay(request);
-        task.addOnCompleteListener(
+        IsReadyToPayRequest request = IsReadyToPayRequest.fromJson (isReadyToPayJson.toString ());
+        Task<Boolean> task = paymentsClient.isReadyToPay (request);
+        task.addOnCompleteListener (
                 completedTask -> {
-                    if (completedTask.isSuccessful()) {
-                        _canUseGooglePay.setValue(completedTask.getResult());
+                    if (completedTask.isSuccessful ()) {
+                        _canUseGooglePay.setValue (completedTask.getResult ());
                     } else {
-                        Log.w("isReadyToPay failed", completedTask.getException());
-                        _canUseGooglePay.setValue(false);
+                        Log.w ("isReadyToPay failed", completedTask.getException ());
+                        _canUseGooglePay.setValue (false);
                     }
                 });
     }
-    public void getLoadPaymentDataTask(final long priceCents) {
-        JSONObject paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest(priceCents);
+
+    public void getLoadPaymentDataTask (final long priceCents) {
+        JSONObject paymentDataRequestJson = PaymentsUtil.getPaymentDataRequest (priceCents);
         PaymentDataRequest request =
-                PaymentDataRequest.fromJson(paymentDataRequestJson.toString());
-        paymentDataTaskMutableLiveData.postValue ( paymentsClient.loadPaymentData(request));
+                PaymentDataRequest.fromJson (paymentDataRequestJson.toString ());
+        paymentDataTaskMutableLiveData.postValue (paymentsClient.loadPaymentData (request));
     }
 }

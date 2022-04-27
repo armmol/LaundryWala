@@ -21,13 +21,13 @@ public class LaundryItemsAdapter extends RecyclerView.Adapter<LaundryItemsAdapte
     private List<LaundryItem> laundryitems;
     private onItemClickListener listener;
 
-    public List<LaundryItem> getLaundryitems () {
-        return laundryitems;
-    }
-
     public LaundryItemsAdapter (Context context, List<LaundryItem> laundryitems) {
         this.laundryitems = laundryitems;
         this.context = context;
+    }
+
+    public List<LaundryItem> getLaundryitems () {
+        return laundryitems;
     }
 
     public void setLaundryitems (List<LaundryItem> laundryitems) {
@@ -53,6 +53,14 @@ public class LaundryItemsAdapter extends RecyclerView.Adapter<LaundryItemsAdapte
         return laundryitems.size ();
     }
 
+    public void setOnItemClickListener (onItemClickListener listener) {
+        this.listener = listener;
+    }
+
+    public interface onItemClickListener {
+        void onClick (LaundryItem laundryItem);
+    }
+
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
         TextView laundryitemname, laundryitemcost;
@@ -66,18 +74,12 @@ public class LaundryItemsAdapter extends RecyclerView.Adapter<LaundryItemsAdapte
             delete = itemView.findViewById (R.id.imgbtn_card_laundrybasket_delete);
 
             delete.setOnClickListener (view -> {
-                listener.onClick (laundryitems.get (getAdapterPosition ()));
-                laundryitems.remove (getAdapterPosition ());
-                notifyItemRemoved (getAdapterPosition ());
+                if (getAdapterPosition () > -1) {
+                    listener.onClick (laundryitems.get (getAdapterPosition ()));
+                    laundryitems.remove (getAdapterPosition ());
+                    notifyItemRemoved (getAdapterPosition ());
+                }
             });
         }
-    }
-
-    public interface onItemClickListener {
-        void onClick (LaundryItem laundryItem);
-    }
-
-    public void setOnItemClickListener (onItemClickListener listener) {
-        this.listener = listener;
     }
 }
