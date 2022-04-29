@@ -155,8 +155,8 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
     }
 
     @Override
-    public void updateOrderStatus (String status, String orderId) {
-        repository.updateOrderStatus (status, orderId);
+    public void updateOrderStatus (String authtype, String status, String orderId) {
+        repository.updateOrderStatus (authtype, status, orderId);
     }
 
     @Override
@@ -170,18 +170,28 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
     }
 
     @Override
-    public void usassignOrder (String courierId, String orderId) {
-        repository.unassignOrder (courierId, orderId);
+    public void unassignOrder (String orderId) {
+        repository.unassignOrder ( orderId);
     }
 
     @Override
-    public void notifyOfArrival (String OrderId, boolean value) {
-        repository.notifyOfArrival (OrderId, value);
+    public void notifyOfArrival (String OrderId,String Uid, String title, String message) {
+        repository.notifyOfArrival (OrderId, Uid, title, message);
     }
 
     @Override
     public void getNotified (String orderId) {
         repository.getNotified (orderId);
+    }
+
+    @Override
+    public void changeOrderPickDropStatus (String orderId, String authType, String type, boolean value) {
+        repository.changeOrderPickDropStatus (orderId,authType,type, value);
+    }
+
+    @Override
+    public void SubscribeCourierToChannel (String orderId) {
+        repository.subscribeCourierToChannel (orderId);
     }
 
 }

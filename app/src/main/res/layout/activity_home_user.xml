@@ -16,6 +16,55 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/confirmOrderWindow"
+                android:layout_width="331dp"
+                android:layout_height="213dp"
+                android:background="@color/white"
+                android:visibility="invisible"
+                app:layout_constraintBottom_toBottomOf="@+id/imageButton_orderhistory"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <CheckBox
+                    android:id="@+id/checkBox_Yes"
+                    android:layout_width="258dp"
+                    android:layout_height="50dp"
+                    android:text="YES"
+                    android:textColor="@color/black"
+                    app:layout_constraintBottom_toTopOf="@+id/checkBox_no"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.86" />
+
+                <CheckBox
+                    android:id="@+id/checkBox_no"
+                    android:layout_width="258dp"
+                    android:layout_height="50dp"
+                    android:text="NO"
+                    android:textColor="@color/black"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.749" />
+
+                <TextView
+                    android:id="@+id/textView_notification"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Confirm Order Pick Up"
+                    android:textColor="@color/black"
+                    app:layout_constraintBottom_toTopOf="@+id/checkBox_Yes"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.502"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.748" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerView_userhome"
                 android:layout_width="384dp"
@@ -89,18 +138,37 @@
                 app:layout_constraintEnd_toStartOf="@+id/imageButton_map"
                 app:layout_constraintStart_toEndOf="@+id/imageButton_profile"
                 app:layout_constraintTop_toTopOf="@+id/imageButton_map"
-                app:srcCompat="@android:drawable/ic_menu_recent_history" />
+                app:srcCompat="@android:drawable/ic_menu_recent_history"
+                tools:ignore="SpeakableTextPresentCheck" />
 
             <Button
-                android:id="@+id/button_Arrived_Courier"
+                android:id="@+id/button_Arrived_Courier_atCustomer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="I have Arrived"
+                android:layout_marginEnd="16dp"
+                android:text="Arrived at Customer Location"
+                android:visibility="invisible"
                 app:layout_constraintBottom_toBottomOf="@+id/imageButton_orderhistory"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.498"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/txt_userGreeting"
+                app:layout_constraintVertical_bias="0.868" />
+
+            <Button
+                android:id="@+id/button_Arrived_Courier_atLaundryHouse"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:text="Arrived at Laundry House"
+                android:visibility="invisible"
+                app:layout_constraintBottom_toBottomOf="@+id/imageButton_orderhistory"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="1.0"
                 app:layout_constraintStart_toEndOf="@+id/imageButton_profile"
-                app:layout_constraintTop_toBottomOf="@+id/recyclerView_userhome" />
+                app:layout_constraintTop_toTopOf="@+id/txt_userGreeting"
+                app:layout_constraintVertical_bias="0.956" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

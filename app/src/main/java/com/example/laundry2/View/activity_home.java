@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.PopupWindow;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -33,6 +34,8 @@ import com.example.laundry2.DataClasses.Courier;
 import com.example.laundry2.DataClasses.Order;
 import com.example.laundry2.databinding.ActivityHomeUserBinding;
 
+import java.util.ArrayList;
+
 
 public class activity_home extends AppCompatActivity {
 
@@ -45,6 +48,7 @@ public class activity_home extends AppCompatActivity {
     private String applicationUserUid;
     private Intent iCourier;
     private String area;
+    private ArrayList<String> items = null;
 
     @Override
     protected void onCreate (@Nullable Bundle savedInstanceState) {
@@ -53,40 +57,62 @@ public class activity_home extends AppCompatActivity {
         binding = DataBindingUtil.setContentView (this, layout.activity_home_user);
         binding.recyclerViewUserhome.setLayoutManager (new LinearLayoutManager (activity_home.this));
         viewModel = new ViewModelProvider (this).get (AuthenticationViewModel.class);
+        if (getIntent ().hasExtra ("items")) items = getIntent ().getStringArrayListExtra ("items");
+        String authtype = getIntent ().getStringExtra ("authtype");
         viewModel.getState ().observe (this, authState -> {
             if (authState.isValid ()) {
                 Toast.makeText (getApplicationContext (), authState.getType (), Toast.LENGTH_SHORT).show ();
             }
         });
         iCourier = new Intent (activity_home.this, activity_maps.class)
-                .putExtra ("authtype", getIntent ().getStringExtra ("authtype"));
+                .putExtra ("authtype", authtype);
         if (binding.switchActivestatus.isChecked ())
             binding.switchActivestatus.setText (getString (string.switch_to_go_offline));
         else binding.switchActivestatus.setText (getString (string.switch_to_go_online));
-        viewModel.loadApplicationUserData (getIntent ().getExtras ().getString ("authtype"));
+        viewModel.loadApplicationUserData (authtype);
         viewModel.getApplicationUserData ().observe (this, applicationUser -> {
             binding.switchActivestatus.setChecked (applicationUser.isActive ());
             area = applicationUser.getArea ();
         });
         viewModel.getCurrentSignInUser ().observe (this, user -> applicationUserUid = user.getUid ());
         binding.switchActivestatus.setOnCheckedChangeListener ((compoundButton, b) -> {
-            viewModel.changeActiveStatus (b, getIntent ().getStringExtra ("authtype"), applicationUserUid);
+            viewModel.changeActiveStatus (b, authtype, applicationUserUid);
             if (binding.switchActivestatus.isChecked ())
                 binding.switchActivestatus.setText (getString (string.switch_to_go_offline));
             else binding.switchActivestatus.setText (getString (string.switch_to_go_online));
         });
 
-
-        String authtype = getIntent ().getExtras ().getString ("authtype");
         switch (authtype) {
             case "Customer":
-                binding.buttonArrivedCourier.setVisibility (View.INVISIBLE);
+                if (getIntent ().hasExtra ("fromNotification")) {
+                    binding.confirmOrderWindow.setVisibility (View.VISIBLE);
+                    binding.recyclerViewUserhome.setVisibility (View.INVISIBLE);
+                    String orderId = getIntent ().getStringExtra ("orderId");
+                    String type = getIntent ().getStringExtra ("type");
+                    binding.textViewNotification.setText (String.format ("%s %s", binding.textViewNotification.getText (), type));
+                    binding.checkBoxYes.setOnClickListener (view -> {
+                        viewModel.changeOrderPickDropStatus (orderId, authtype, type, true);
+                        binding.checkBoxYes.setChecked (true);
+                        Toast.makeText (this, "thank you for your response", Toast.LENGTH_SHORT).show ();
+                        binding.confirmOrderWindow.setVisibility (View.INVISIBLE);
+                        binding.recyclerViewUserhome.setVisibility (View.VISIBLE);
+                    });
+                    binding.checkBoxNo.setOnClickListener (view -> {
+                        viewModel.changeOrderPickDropStatus (orderId, authtype, type, false);
+                        binding.checkBoxYes.setChecked (true);
+                        Toast.makeText (this, "thank you for your response", Toast.LENGTH_SHORT).show ();
+                        binding.confirmOrderWindow.setVisibility (View.INVISIBLE);
+                        binding.recyclerViewUserhome.setVisibility (View.VISIBLE);
+                    });
+                }
                 binding.switchActivestatus.setVisibility (View.INVISIBLE);
-                viewModel.loadAllOrders (getString (string.customer));
-                viewModel.getOrders ().observe (this, orders -> {
-                    for (Order order : orders) {
-                        viewModel.getNotified (order.getOrderId ());
-                    }
+                viewModel.getCourierArrivalMutableLiveData ().observe (this, isHere -> {
+                    viewModel.loadAllOrders (getString (string.customer));
+                    viewModel.getOrders ().observe (this, orders -> {
+                        for (Order order : orders) {
+                            viewModel.getNotified (order.getOrderId ());
+                        }
+                    });
                 });
                 viewModel.getApplicationUserData ().observe (this, applicationUser -> {
                     area = applicationUser.getArea ();
@@ -98,9 +124,8 @@ public class activity_home extends AppCompatActivity {
                             binding.recyclerViewUserhome.setAdapter (laundryHousesAdapter);
                             laundryHousesAdapter.setOnItemClickListener (laundryHouse -> {
                                 if (laundryHouse.isActive ()) {
-                                    i.putExtra ("laundryhouseuid", laundryHouse.getUid ());
-                                    i.putExtra ("deliveryprice", laundryHouse.getDeliveryprice ());
-                                    i.putExtra ("authtype", getIntent ().getStringExtra ("authtype"));
+                                    i.putExtra ("laundryhouseuid", laundryHouse.getUid ()).putExtra ("deliveryprice", laundryHouse.getDeliveryprice ())
+                                            .putExtra ("authtype", authtype).putExtra ("items", items);
                                     startActivity (i);
                                 } else
                                     Toast.makeText (this, "This Laundry House is not active at the moment :(", Toast.LENGTH_SHORT).show ();
@@ -110,6 +135,7 @@ public class activity_home extends AppCompatActivity {
                             viewModel.loadAllLaundryHouses ();
                             binding.swiperefreshlayoutHome.setRefreshing (false);
                         });
+
                     } else {
                         createPopUpWindow (layout.activity_wrongarea);
                         binding.swiperefreshlayoutHome.setOnRefreshListener (() -> {
@@ -120,7 +146,6 @@ public class activity_home extends AppCompatActivity {
                 });
                 break;
             case "Laundry House":
-                binding.buttonArrivedCourier.setVisibility (View.INVISIBLE);
                 viewModel.loadAllOrders (getString (string.laundryhouse));
                 viewModel.getOrders ().observe (this, orders -> {
                     ordersAdapter = new OrdersAdapter (activity_home.this, orders, authtype);
@@ -129,8 +154,9 @@ public class activity_home extends AppCompatActivity {
                             ordersAdapter.setOnOrderClickListener (order -> {
                                 if (!status.equals ("")) {
                                     if (status.equals ("In Process") || status.equals ("Completed"))
-                                        viewModel.usassignOrder (order.getCourierId (), order.getOrderId ());
-                                    viewModel.updateOrderStatus (status, order.getOrderId ());
+                                        viewModel.unassignOrder (order.getOrderId ());
+                                    viewModel.updateOrderStatus (authtype, status, order.getOrderId ());
+                                    viewModel.loadAllOrders (authtype);
                                 } else
                                     Toast.makeText (this, "Status cannot be empty", Toast.LENGTH_SHORT).show ();
                             }));
@@ -146,7 +172,7 @@ public class activity_home extends AppCompatActivity {
                         recyclerView.setLayoutManager (new LinearLayoutManager (getApplicationContext ()));
                         viewModel.getCouriers ().observe (this, couriers -> {
                             for (Courier courier : couriers) {
-                                if (!courier.getOrderId ().equals ("") && courier.isActive ())
+                                if (courier.isActive ())
                                     couriers.remove (courier);
                             }
                             couriersAdapter = new CouriersAdapter (this, couriers);
@@ -165,21 +191,21 @@ public class activity_home extends AppCompatActivity {
                 break;
             case "Courier":
                 binding.imageButtonMap.setVisibility (View.INVISIBLE);
-                binding.buttonArrivedCourier.setVisibility (View.INVISIBLE);
                 binding.imageButtonOrderhistory.setVisibility (View.INVISIBLE);
                 viewModel.loadAllOrders (getString (string.courier));
                 viewModel.getOrders ().observe (this, orders -> {
-                    binding.buttonArrivedCourier.setVisibility (View.VISIBLE);
                     ordersAdapter = new OrdersAdapter (activity_home.this, orders, authtype);
                     binding.recyclerViewUserhome.setAdapter (ordersAdapter);
                     ordersAdapter.onItemSelectedListenerCustom (status -> {
                         ordersAdapter.setOnOrderClickListener (order -> {
-                            if (!status.equals ("")) {
-                                if (status.equals ("In Process") || status.equals ("Completed"))
-                                    viewModel.usassignOrder (order.getCourierId (), order.getOrderId ());
-                                viewModel.updateOrderStatus (status, order.getOrderId ());
-                            } else
+                            if (status.equals ("")) {
                                 Toast.makeText (this, "Status cannot be empty", Toast.LENGTH_SHORT).show ();
+                            } else {
+                                if (status.equals ("In Process") || status.equals ("Completed"))
+                                    viewModel.unassignOrder (order.getOrderId ());
+                                viewModel.updateOrderStatus (authtype, status, order.getOrderId ());
+                                viewModel.loadAllOrders (authtype);
+                            }
                         });
                         ordersAdapter.setOnAssignClickListener (order -> {
                             viewModel.getUserAndLaundryHouseMarkerLocation (order.getOrderId ());
@@ -192,9 +218,16 @@ public class activity_home extends AppCompatActivity {
                             });
                         });
                     });
-                    binding.buttonArrivedCourier.setOnClickListener (view -> viewModel.notifyOfArrival (orders.get (0).getOrderId (), true));
+                    if (orders.size () != 0) {
+                        binding.buttonArrivedCourierAtCustomer.setVisibility (View.VISIBLE);
+                        binding.buttonArrivedCourierAtLaundryHouse.setVisibility (View.VISIBLE);
+                        String[] check = orders.get (0).getOrderId ().split ("_");
+                        binding.buttonArrivedCourierAtCustomer.setOnClickListener (view -> viewModel.notifyOfArrival (orders.get (0).getOrderId (), check[0], "Courier Arrival", String.format ("Arrived at Customer location\n" +
+                                "-For Pick Up-%s", orders.get (0).getOrderId ())));
+                        binding.buttonArrivedCourierAtLaundryHouse.setOnClickListener (view -> viewModel.notifyOfArrival (orders.get (0).getOrderId (), check[2], "Courier Arrival", String.format ("Arrived at LaundryHouse location\n" +
+                                "OrderId-%s", orders.get (0).getOrderId ())));
+                    }
                 });
-
                 binding.swiperefreshlayoutHome.setOnRefreshListener (() -> {
                     viewModel.loadAllOrders (getString (string.courier));
                     binding.swiperefreshlayoutHome.setRefreshing (false);
@@ -203,27 +236,29 @@ public class activity_home extends AppCompatActivity {
             default:
                 Toast.makeText (this, "There is no Data to show", Toast.LENGTH_SHORT).show ();
         }
-
         viewModel.getCurrentSignInUser ().observe (this, firebaseUser ->
                 binding.txtUserGreeting.setText (String.format ("Hello, %s", firebaseUser.getEmail ())));
-
         binding.imageButtonProfile.setOnClickListener (view ->
                 startActivity (new Intent (activity_home.this, activity_profile.class)
-                        .putExtra ("authtype", getIntent ().getExtras ().get ("authtype").toString ())));
-
+                        .putExtra ("authtype", authtype)
+                        .putStringArrayListExtra ("items", items)));
         binding.imageButtonOrderhistory.setOnClickListener (view ->
                 startActivity (new Intent (activity_home.this, activity_orderHistory.class)
-                        .putExtra ("authtype", getIntent ().getExtras ().get ("authtype").toString ())));
-
+                        .putExtra ("authtype", authtype)
+                        .putStringArrayListExtra ("items", items)));
         binding.imageButtonMap.setOnClickListener (view ->
                 startActivity (new Intent (activity_home.this, activity_orderHistory.class)
-                        .putExtra ("authtype", getIntent ().getExtras ().get ("authtype").toString ())
-                        .putExtra ("entry", "track")));
-
-
-        viewModel.getApplicationUserData ().observe (this, applicationUser -> {
-
-        });
+                        .putExtra ("authtype", authtype)
+                        .putExtra ("entry", "track")
+                        .putStringArrayListExtra ("items", items)));
+        OnBackPressedCallback callback = new OnBackPressedCallback (true) {
+            @Override
+            public void handleOnBackPressed () {
+                startActivity (new Intent (activity_home.this, activity_home.class)
+                        .putExtra ("authtype", authtype).putStringArrayListExtra ("items", items));
+            }
+        };
+        activity_home.this.getOnBackPressedDispatcher ().addCallback (callback);
     }
 
     private void getPermissions () {
@@ -257,21 +292,9 @@ public class activity_home extends AppCompatActivity {
         window.showAtLocation (popupWindowView, Gravity.CENTER, 0, 0);
         return popupWindowView;
     }
-//
-//    private List<Order> createRefinedList (List<Order> orders, int pos) {
-//        List<Order> refinedList = new ArrayList<> (orders);
-//        for (Order order : orders) {
-//            String[] check = order.getOrderId ().split ("_");
-//            if (pos == 3) {
-//                if (order.getStatus ().equals ("Completed") ||
-//                        !order.getCourierId ().equals (viewModel.getCurrentSignInUser ().getValue ().getUid ()))
-//                    refinedList.remove (order);
-//            } else {
-//                if (order.getStatus ().equals ("Completed") ||
-//                        !check[pos].equals (viewModel.getCurrentSignInUser ().getValue ().getUid ()))
-//                    refinedList.remove (order);
-//            }
-//        }
-//        return refinedList;
-//    }
+
+    @Override
+    protected void onStart () {
+        super.onStart ();
+    }
 }

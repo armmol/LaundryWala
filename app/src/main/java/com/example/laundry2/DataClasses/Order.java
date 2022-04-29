@@ -12,19 +12,27 @@ public class Order {
     String status;
     double deliveryCost;
     boolean courierHasArrived;
+    boolean customerPickUp;
+    boolean customerDrop;
+    boolean laundryHousePickUp;
+    boolean laundryHouseDrop;
 
     public Order () {
     }
 
-
-    public Order (String orderId, String courierId, ArrayList<LaundryItem> items, String dateTime, String status, double deliveryCost, boolean courierHasArrived) {
+    public Order (String orderId, String courierId, ArrayList<LaundryItem> items, String dateTime, String status, double deliveryCost,
+                  boolean courierHasArrived, boolean customerPickUp, boolean customerDrop, boolean laundryHousePickUp, boolean laundryHouseDrop) {
         this.orderId = orderId;
         this.items = items;
         this.dateTime = dateTime;
         this.status = status;
         this.courierId = courierId;
-        this. deliveryCost = deliveryCost;
+        this.deliveryCost = deliveryCost;
         this.courierHasArrived = courierHasArrived;
+        this.customerPickUp = customerPickUp;
+        this.customerDrop = customerDrop;
+        this.laundryHouseDrop = laundryHouseDrop;
+        this.laundryHousePickUp = laundryHousePickUp;
     }
 
     public double getTotalCost () {
@@ -32,7 +40,7 @@ public class Order {
         for (LaundryItem item : this.items) {
             c += item.cost;
         }
-        return new BigDecimal (c).setScale (2, BigDecimal.ROUND_DOWN).doubleValue ();
+        return new BigDecimal (c).setScale (2, BigDecimal.ROUND_DOWN).doubleValue () + this.deliveryCost;
     }
 
     public String getStatus () {
@@ -84,11 +92,44 @@ public class Order {
         this.deliveryCost = deliveryCost;
     }
 
-    public boolean isCourierHasArrived () {
+    public boolean getCourierHasArrived () {
         return courierHasArrived;
     }
 
     public void setCourierHasArrived (boolean courierHasArrived) {
         this.courierHasArrived = courierHasArrived;
     }
+
+    public boolean getCustomerPickUp () {
+        return customerPickUp;
+    }
+
+    public void setCustomerPickUp (boolean customerPickUp) {
+        this.customerPickUp = customerPickUp;
+    }
+
+    public boolean getCustomerDrop () {
+        return customerDrop;
+    }
+
+    public void setCustomerDrop (boolean customerDrop) {
+        this.customerDrop = customerDrop;
+    }
+
+    public boolean getLaundryHousePickUp () {
+        return laundryHousePickUp;
+    }
+
+    public void setLaundryHousePickUp (boolean laundryHousePickUp) {
+        this.laundryHousePickUp = laundryHousePickUp;
+    }
+
+    public boolean getLaundryHouseDrop () {
+        return laundryHouseDrop;
+    }
+
+    public void setLaundryHouseDrop (boolean laundryHouseDrop) {
+        this.laundryHouseDrop = laundryHouseDrop;
+    }
+
 }

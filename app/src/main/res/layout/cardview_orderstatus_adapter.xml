@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="310dp"
+        android:layout_height="193dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <CheckBox
+                android:id="@+id/cardview_orderstatus_checkBox4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Order Dropped to Customer"
+                app:layout_constraintEnd_toEndOf="@+id/cardview_orderstatus_checkBox3"
+                app:layout_constraintStart_toStartOf="@+id/cardview_orderstatus_checkBox3"
+                app:layout_constraintTop_toBottomOf="@+id/cardview_orderstatus_checkBox3" />
+
+            <CheckBox
+                android:id="@+id/cardview_orderstatus_checkBox3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Order Picked Up From Laundry House'"
+                app:layout_constraintEnd_toEndOf="@+id/cardview_orderstatus_checkBox2"
+                app:layout_constraintStart_toStartOf="@+id/cardview_orderstatus_checkBox2"
+                app:layout_constraintTop_toBottomOf="@+id/cardview_orderstatus_checkBox2" />
+
+            <CheckBox
+                android:id="@+id/cardview_orderstatus_checkBox2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Order Dropped to Laundry House"
+                app:layout_constraintEnd_toEndOf="@+id/cardview_orderstatus_checkBox"
+                app:layout_constraintStart_toStartOf="@+id/cardview_orderstatus_checkBox"
+                app:layout_constraintTop_toBottomOf="@+id/cardview_orderstatus_checkBox" />
+
+            <CheckBox
+                android:id="@+id/cardview_orderstatus_checkBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Order Picked Up from Customer"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+</androidx.constraintlayout.widget.ConstraintLayout>

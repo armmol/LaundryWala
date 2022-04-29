@@ -8,6 +8,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.PopupWindow;
 import android.widget.Toast;
 
@@ -24,13 +25,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.laundry2.Adapters.LaundryItemsAdapter;
 import com.example.laundry2.Adapters.OrderHistoryAdapter;
 import com.example.laundry2.AuthenticationViewModel;
-import com.example.laundry2.DataClasses.Order;
 import com.example.laundry2.LocationViewModel;
 import com.example.laundry2.R;
 import com.example.laundry2.databinding.ActivityOrderhistoryBinding;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class activity_orderHistory extends AppCompatActivity {
 
@@ -38,6 +37,7 @@ public class activity_orderHistory extends AppCompatActivity {
     private AuthenticationViewModel viewModel;
     private LocationViewModel locationViewModel;
     private String authType;
+    private ArrayList<String> items = null;
     private Intent i;
 
     @Override
@@ -46,31 +46,21 @@ public class activity_orderHistory extends AppCompatActivity {
         binding = DataBindingUtil.setContentView (this, R.layout.activity_orderhistory);
         viewModel = new ViewModelProvider (this).get (AuthenticationViewModel.class);
         locationViewModel = new ViewModelProvider (this).get (LocationViewModel.class);
-        i = new Intent (activity_orderHistory.this, activity_maps.class)
-                .putExtra ("authtype", getIntent ().getExtras ().get ("authtype").toString ());
         authType = getIntent ().getStringExtra ("authtype");
+        if (getIntent ().hasExtra ("items")) items = getIntent ().getStringArrayListExtra ("items");
+        i = new Intent (activity_orderHistory.this, activity_maps.class)
+                .putExtra ("authtype", authType).putStringArrayListExtra ("items", items);
+
         if (getIntent ().hasExtra ("entry")) {
             binding.textView10.setText (getString (R.string.start_tracking));
         }
         binding.recyclerViewOrderhistory.setLayoutManager (new LinearLayoutManager (this));
         viewModel.loadAllOrders (authType);
         viewModel.getOrders ().observe (this, orders -> {
-            List<Order> refinedList = new ArrayList<> (orders);
-            for (Order order : orders) {
-                String[] check = order.getOrderId ().split ("_");
-                if (authType.equals (getString (R.string.laundryhouse))) {
-                    if (!check[2].equals (viewModel.getCurrentSignInUser ().getValue ().getUid ()))
-                        refinedList.remove (order);
-                } else if (authType.equals (getString (R.string.customer))) {
-                    if (!check[0].equals (viewModel.getCurrentSignInUser ().getValue ().getUid ()))
-                        refinedList.remove (order);
-                }
-            }
-
-            OrderHistoryAdapter adapter = new OrderHistoryAdapter (this, refinedList);
-            binding.recyclerViewOrderhistory.setAdapter (adapter);
-            adapter.setOnItemClickListener (order -> {
-                if (getIntent ().hasExtra ("entry")) {
+            if (getIntent ().hasExtra ("entry")) {
+                OrderHistoryAdapter adapter = new OrderHistoryAdapter (this, orders, 1);
+                binding.recyclerViewOrderhistory.setAdapter (adapter);
+                adapter.setOnItemClickListener (order -> {
                     locationViewModel.getCustomerOrder (order.getOrderId ());
                     locationViewModel.getOrder ().observe (this, order1 -> {
                         if (!order1.getCourierId ().equals ("")) {
@@ -79,30 +69,44 @@ public class activity_orderHistory extends AppCompatActivity {
                         } else
                             Toast.makeText (this, "Order is not in pick/delivery phase or\n " +
                                     "no courier is assigned to order yet.\n" +
-                                    "Please try after some time.", Toast.LENGTH_SHORT).show ();
+                                    "Please try after some time.", Toast.LENGTH_LONG).show ();
                     });
-                } else {
-                    View windowView = LayoutInflater.from (activity_orderHistory.this).inflate (R.layout.activity_confirmorder, null);
-                    PopupWindow window = new PopupWindow (windowView);
-                    window.setHeight (ViewGroup.LayoutParams.WRAP_CONTENT);
-                    window.setWidth (ViewGroup.LayoutParams.WRAP_CONTENT);
-                    window.setFocusable (true);
-                    window.showAtLocation (windowView, Gravity.CENTER, 0, 0);
+                });
+            } else {
+                OrderHistoryAdapter adapter = new OrderHistoryAdapter (this, orders, 0);
+                binding.recyclerViewOrderhistory.setAdapter (adapter);
+                adapter.setOnItemClickListener ( order -> {
+                    View windowView = createPopUpWindow (R.layout.activity_confirmorder);
                     RecyclerView recyclerView = windowView.findViewById (R.id.recyclerView_confirmorder);
-                    LaundryItemsAdapter laundryItemsAdapter = new LaundryItemsAdapter (this, order.getItems ());
+                    LaundryItemsAdapter laundryItemsAdapter = new LaundryItemsAdapter (this, order.getItems (),1);
                     recyclerView.setLayoutManager (new LinearLayoutManager (getApplicationContext ()));
                     recyclerView.setAdapter (laundryItemsAdapter);
                     laundryItemsAdapter.setOnItemClickListener (laundryItem ->
                             Toast.makeText (this, "Cannot change order Once placed", Toast.LENGTH_SHORT).show ());
-                }
-
-            });
+                });
+                adapter.setOnStatusCheckListener (order -> {
+                    View windowView = createPopUpWindow (R.layout.cardview_orderstatus_adapter);
+                    CheckBox checkBox1,checkBox2,checkBox3,checkBox4;
+                    checkBox1 = windowView.findViewById (R.id.cardview_orderstatus_checkBox);
+                    checkBox2 = windowView.findViewById (R.id.cardview_orderstatus_checkBox2);
+                    checkBox3 = windowView.findViewById (R.id.cardview_orderstatus_checkBox3);
+                    checkBox4 = windowView.findViewById (R.id.cardview_orderstatus_checkBox4);
+                    checkBox1.setChecked (order.getCustomerPickUp ());
+                    checkBox2.setChecked (order.getLaundryHouseDrop ());
+                    checkBox3.setChecked (order.getLaundryHousePickUp ());
+                    checkBox4.setChecked (order.getCustomerDrop ());
+                    checkBox1.setEnabled (false);
+                    checkBox2.setEnabled (false);
+                    checkBox3.setEnabled (false);
+                    checkBox4.setEnabled (false);
+                });
+            }
         });
         OnBackPressedCallback callback = new OnBackPressedCallback (true /* enabled by default */) {
             @Override
             public void handleOnBackPressed () {
                 startActivity (new Intent (activity_orderHistory.this, activity_home.class)
-                        .putExtra ("authtype", authType));
+                        .putExtra ("authtype", authType).putStringArrayListExtra ("items", items));
             }
         };
         this.getOnBackPressedDispatcher ().addCallback (callback);
@@ -128,5 +132,20 @@ public class activity_orderHistory extends AppCompatActivity {
                 startActivity (new Intent ());
             Toast.makeText (this, "Permission denied", Toast.LENGTH_SHORT).show ();
         }
+    }
+
+    private View createPopUpWindow (int layout) {
+        View popupWindowView = LayoutInflater.from (activity_orderHistory.this).inflate (layout, null);
+        PopupWindow window = new PopupWindow (popupWindowView);
+        window.setHeight (ViewGroup.LayoutParams.WRAP_CONTENT);
+        window.setWidth (ViewGroup.LayoutParams.WRAP_CONTENT);
+        window.setFocusable (true);
+        window.showAtLocation (popupWindowView, Gravity.CENTER, 0, 0);
+        return popupWindowView;
+    }
+
+    @Override
+    protected void onStart () {
+        super.onStart ();
     }
 }

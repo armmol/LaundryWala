@@ -63,18 +63,30 @@
     <string name="save">Save</string>
     <string name="select_payment_option">SELECT PAYMENT OPTION</string>
     <string name="confirm_and_pay">Confirm and pay</string>
+    <string name="CloudMessagingServerKey">AAAAaq8hpT0:APA91bGKqTKAGgbRAVO1_R34M3UkreGzwgEwNQxZ-xUg0DPURspqSWvr-ExRvyLTbtnUWGW7lm2tsFiEUn88L9GWC2PopHG86kiCKqg_lvR0EZQ3YDotiaFmsyIAbtg1WI4IE7yc6GB7</string>
+    <string name="confirm">Confirm</string>
+    <string name="change">Change</string>
     <string-array name="Authentication_type">
         <item></item>
         <item>Customer</item>
         <item>Laundry House</item>
         <item>Courier</item>
     </string-array>
-    <string-array name="Order_Status">
-        <item></item>
-        <item>Order Not Assigned to Courier</item>
+    <string-array name="Order_Status_Courier">
         <item>Pick Up Phase</item>
         <item>In Process</item>
+        <item>Customer did not Show, assign new Courier</item>
         <item>Delivery Phase</item>
         <item>Completed</item>
+    </string-array>
+    <string-array name="Order_Status_LaundryHouse">
+        <item></item>
+        <item>Order Not Assigned to Courier</item>
+        <item>Order Was Picked Up From Laundry House</item>
+        <item>Order Was Not Picked Up From Laundry House</item>
+        <item>Order Was Delivered to Laundry House</item>
+        <item>Order Was Not Delivered to Laundry House</item>
+<!--        <item>Order Was Picked Up From Customer</item>-->
+<!--        <item>Order Was Not Picked Up From Customer</item>-->
     </string-array>
 </resources>

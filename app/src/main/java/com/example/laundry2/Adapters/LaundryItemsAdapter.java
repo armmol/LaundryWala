@@ -20,10 +20,12 @@ public class LaundryItemsAdapter extends RecyclerView.Adapter<LaundryItemsAdapte
     private final Context context;
     private List<LaundryItem> laundryitems;
     private onItemClickListener listener;
+    private int orderhistory;
 
-    public LaundryItemsAdapter (Context context, List<LaundryItem> laundryitems) {
+    public LaundryItemsAdapter (Context context, List<LaundryItem> laundryitems, int orderhistory) {
         this.laundryitems = laundryitems;
         this.context = context;
+        this.orderhistory =orderhistory;
     }
 
     public List<LaundryItem> getLaundryitems () {
@@ -73,6 +75,9 @@ public class LaundryItemsAdapter extends RecyclerView.Adapter<LaundryItemsAdapte
             laundryitemcost = itemView.findViewById (R.id.txt_card_laundry_itemcost);
             delete = itemView.findViewById (R.id.imgbtn_card_laundrybasket_delete);
 
+            if(orderhistory == 1){
+                delete.setVisibility (View.INVISIBLE);
+            }
             delete.setOnClickListener (view -> {
                 if (getAdapterPosition () > -1) {
                     listener.onClick (laundryitems.get (getAdapterPosition ()));

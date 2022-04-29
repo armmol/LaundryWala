@@ -12,6 +12,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.laundry2.DataClasses.ApplicationUser;
@@ -20,6 +21,9 @@ import com.example.laundry2.DataClasses.Courier;
 import com.example.laundry2.DataClasses.LaundryHouse;
 import com.example.laundry2.DataClasses.LaundryItem;
 import com.example.laundry2.DataClasses.Order;
+import com.example.laundry2.Database.ApplicationDatabase;
+import com.example.laundry2.Database.LaundryItemCache;
+import com.example.laundry2.Database.OrderDao;
 import com.example.laundry2.PaymentUtil.PaymentsUtil;
 import com.example.laundry2.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -38,6 +42,7 @@ import com.google.android.gms.wallet.PaymentData;
 import com.google.android.gms.wallet.PaymentDataRequest;
 import com.google.android.gms.wallet.PaymentsClient;
 import com.google.android.libraries.places.api.Places;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -45,6 +50,7 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import org.json.JSONObject;
 
@@ -88,14 +94,25 @@ public class ApplicationRepository {
     private final MutableLiveData<Boolean> orderPlacementSuccessMutableLiveData;
     private final MutableLiveData<Boolean> courierArrivalMutableLiveData;
     private final ArrayList<LaundryItem> laundryItems;
-
+    private final OrderDao orderDao;
+    private LiveData<List<LaundryItemCache>> laundryItemCaches = new MutableLiveData<> ();
 
     @SuppressLint("MissingPermission")
     public ApplicationRepository (Application application) {
         this.application = application;
+
+        //Firebase
         mAuth = FirebaseAuth.getInstance ();
         firebaseFirestore = FirebaseFirestore.getInstance ();
+        subscribeToChannel (mAuth.getUid ());
+        FirebaseMessaging.getInstance ().setAutoInitEnabled (true);
+        FirebaseAnalytics.getInstance (application).setAnalyticsCollectionEnabled (true);
+        //DataBase
+        ApplicationDatabase applicationDatabase = ApplicationDatabase.getDatabase (application);
+        orderDao = applicationDatabase.orderDao ();
+        //Payments
         paymentsClient = PaymentsUtil.createPaymentsClient (application);
+        //MutableLiveData
         _canUseGooglePay = new MutableLiveData<> ();
         paymentDataTaskMutableLiveData = new MutableLiveData<> ();
         currentLocationMutableLiveData = new MutableLiveData<> ();
@@ -222,6 +239,10 @@ public class ApplicationRepository {
         return courierArrivalMutableLiveData;
     }
 
+    public LiveData<List<LaundryItemCache>> getLaundryItemCaches () {
+        return laundryItemCaches;
+    }
+
     public void getOrder (String orderId) {
         firebaseFirestore.collection ("Order")
                 .document (orderId).get ().addOnSuccessListener (documentSnapshot ->
@@ -314,6 +335,7 @@ public class ApplicationRepository {
                     if (task.isSuccessful ()) {
                         // Sign in success, update UI with the signed-in user's information
                         Log.d (TAG, "signInWithCredential:success");
+                        logoutMutableLiveData.postValue (false);
                         documentExists (authtype, requestcode);
                     } else {
                         // If sign in fails, display a message to the user.
@@ -335,7 +357,8 @@ public class ApplicationRepository {
                 if (task.isSuccessful ()) {
                     Log.d (TAG, "signInWithEmail:success");
                     userMutableLiveData.postValue (mAuth.getCurrentUser ());
-                    authStateMutableLiveData.postValue (new AuthState ("signInWithEmail:success", true));
+                    logoutMutableLiveData.postValue (false);
+                    authStateMutableLiveData.postValue (new AuthState ("Successfully logged in as" + authtype, true));
                 } else {
                     Log.d (TAG, "Registration failed");
                     authStateMutableLiveData.postValue (new AuthState ("Registration failed", false));
@@ -352,6 +375,7 @@ public class ApplicationRepository {
                 if (task.isSuccessful ()) {
                     Log.d (TAG, "EmailLogin:success");
                     userMutableLiveData.postValue (mAuth.getCurrentUser ());
+                    logoutMutableLiveData.postValue (false);
                     authStateMutableLiveData.postValue (new AuthState ("Successfully logged in as " + authtype, true));
                 } else {
                     // If sign in fails, display a message to the user.
@@ -412,11 +436,13 @@ public class ApplicationRepository {
                 }));
     }
 
-    public void unassignOrder (String courierId, String orderId) {
-        firebaseFirestore.collection ("Courier").document (courierId).get ().addOnSuccessListener (courierDocumentSnapshot ->
-                firebaseFirestore.collection ("Order").document (orderId).get ().addOnSuccessListener (orderDocumentSnapshot -> {
+    public void unassignOrder ( String orderId) {
+
+        firebaseFirestore.collection ("Order").document (orderId).get ().addOnSuccessListener (orderDocumentSnapshot -> {
+            if (orderDocumentSnapshot.getString ("dateTime") != null) {
+                firebaseFirestore.collection ("Courier").document (orderDocumentSnapshot.getString ("courierId")).get ().addOnSuccessListener (courierDocumentSnapshot -> {
                     if (!courierDocumentSnapshot.getString ("orderId").equals ("") && !orderDocumentSnapshot.getString ("courierId").equals ("")) {
-                        DocumentReference df = firebaseFirestore.collection ("Courier").document (courierId);
+                        DocumentReference df = firebaseFirestore.collection ("Courier").document (orderDocumentSnapshot.getString ("courierId"));
                         DocumentReference df1 = firebaseFirestore.collection ("Order").document (orderId);
 
                         //Update Courier OrderId
@@ -434,7 +460,9 @@ public class ApplicationRepository {
                     } else {
                         authStateMutableLiveData.setValue (new AuthState ("Order already unassigned to Courier", true));
                     }
-                }));
+                });
+            }
+        });
     }
 
     public void enterDataIntoDB (String authtype, String name, String address, String area,
@@ -477,14 +505,13 @@ public class ApplicationRepository {
             DocumentReference df = firebaseFirestore.collection ("Customer").document (user.getUid ());
             firebaseFirestore.collection ("Customer").document (Objects.requireNonNull (mAuth.getUid ())).get ()
                     .addOnSuccessListener (documentSnapshot -> {
-
                         //Create Order Object
                         int ordernumber = documentSnapshot.get ("orders", int.class);
                         String orderId = mAuth.getUid () + "_" + ordernumber + "_" + laundryHouseUID;
                         Order order = new Order (orderId, "", laundryItems,
-                                Calendar.getInstance ().getTime ().toString (), "Order Not Started", deliveryCost, false);
+                                Calendar.getInstance ().getTime ().toString (), "Order Not Started", deliveryCost,
+                                false, false, false, false, false);
                         orderMutableLiveData.postValue (order);
-
                         //Enter Order Object into Database
                         firebaseFirestore.collection ("Order").document (orderId)
                                 .get ().addOnSuccessListener (documentSnapshot1 -> {
@@ -498,7 +525,6 @@ public class ApplicationRepository {
                                 orderPlacementSuccessMutableLiveData.postValue (false);
                         }).addOnFailureListener (e ->
                                 orderPlacementSuccessMutableLiveData.postValue (false));
-
                         //Update number of orders for customer
                         Map<String, Object> UserInfo = new HashMap<> ();
                         UserInfo.put ("orders", ordernumber + 1);
@@ -508,7 +534,7 @@ public class ApplicationRepository {
         }
     }
 
-    public void updateOrderStatus (String Status, String orderId) {
+    public void updateOrderStatus (String authtype, String Status, String orderId) {
         firebaseFirestore.collection ("Order").document (orderId)
                 .get ().addOnSuccessListener (documentSnapshot1 -> {
             DocumentReference dforder = firebaseFirestore.collection ("Order")
@@ -523,77 +549,131 @@ public class ApplicationRepository {
         });
     }
 
-    public void notifyOfArrival (String orderId, boolean value) {
+    public void changeOrderPickDropStatus (String orderId, String authType, String type, boolean value) {
+        firebaseFirestore.collection ("Order").document (orderId).get ().addOnSuccessListener (documentSnapshot -> {
+            DocumentReference dforder = firebaseFirestore.collection ("Order")
+                    .document (orderId);
+            if (documentSnapshot.get ("dateTime") != null) {
+                Map<String, Object> OrderInfo = new HashMap<> ();
+                switch (authType) {
+                    case "Customer":
+                        if (type.equals ("For Pick Up"))
+                            OrderInfo.put ("customerPickUp", value);
+                        else
+                            OrderInfo.put ("customerDrop", value);
+                        authStateMutableLiveData.postValue (new AuthState ("Order Status changed successfully", true));
+                        break;
+                    case "Laundry House":
+                        if (type.equals ("For Pick Up"))
+                            OrderInfo.put ("laundryHousePickUp", value);
+                        else
+                            OrderInfo.put ("laundryHouseDrop", value);
+                        authStateMutableLiveData.postValue (new AuthState ("Order Status changed successfully", true));
+                        break;
+                    default:
+                        authStateMutableLiveData.postValue (new AuthState ("Order NOT UPDATED", true));
+                }
+                dforder.update (OrderInfo);
+                dforder.get ();
+            }
+        });
+    }
+
+    public void subscribeCourierToChannel (String orderId) {
+        String[] check = orderId.split ("_");
+        subscribeToChannel (check[0]);
+        subscribeToChannel (check[2]);
+    }
+
+    private void subscribeToChannel (String Uid) {
+        FirebaseMessaging.getInstance ().subscribeToTopic (Uid);
+        Log.d (TAG, "Subscribed to" + Uid);
+    }
+
+    private void unsubscribeToChannel (String Uid) {
+        FirebaseMessaging.getInstance ().unsubscribeFromTopic (Uid);
+        Log.d (TAG, "Unsubscribed from" + Uid);
+    }
+
+    public void notifyOfArrival (String orderId, String Uid, String title, String message) {
         firebaseFirestore.collection ("Order").document (orderId)
                 .get ().addOnSuccessListener (documentSnapshot1 -> {
             DocumentReference dforder = firebaseFirestore.collection ("Order")
                     .document (orderId);
             if (documentSnapshot1.get ("dateTime") != null) {
                 Map<String, Object> OrderInfo = new HashMap<> ();
-                OrderInfo.put ("courierHasArrived", value);
+                OrderInfo.put ("courierHasArrived", true);
                 dforder.update (OrderInfo);
                 dforder.get ();
                 authStateMutableLiveData.postValue (new AuthState ("Notified successfully", true));
-            }
+                SendNotification (Uid, title, message);
+            } else
+                authStateMutableLiveData.postValue (new AuthState ("Not Notified", true));
         });
+    }
+
+    private void SendNotification (String Uid, String title, String message) {
+        NotificationSender notificationSender = new NotificationSender ("/topics/" + Uid, title, message, application);
+        notificationSender.SendNotifications ();
+        Log.d (TAG, "Notification Sent");
     }
 
     public void getNotified (String orderId) {
         firebaseFirestore.collection ("Order").document (orderId).addSnapshotListener ((documentSnapshot, error) -> {
-//            if (documentSnapshot.get ("courierHasArrived", Boolean.class)) {
-//                courierArrivalMutableLiveData.postValue (true);
-//            }
+            if (documentSnapshot.get ("courierHasArrived", Boolean.class)) {
+                courierArrivalMutableLiveData.postValue (true);
+            }
         });
     }
 
-    public void changeActiveStatus (boolean isActive, String authtye, String Uid) {
-        firebaseFirestore.collection (authtye).document (Uid).get ().addOnSuccessListener (documentSnapshot -> {
-            DocumentReference dfActiveStatus = firebaseFirestore.collection (authtye).document (Uid);
-            if (documentSnapshot.get ("active") != null) {
-                Map<String, Object> UserInfo = new HashMap<> ();
-                UserInfo.put ("active", isActive);
-                dfActiveStatus.update (UserInfo);
-                dfActiveStatus.get ();
-                authStateMutableLiveData.postValue (new AuthState ("Active Status changed successfully", true));
+    public void changeActiveStatus (boolean isActive, String authtype, String Uid) {
+        firebaseFirestore.collection (authtype).document (Uid).get ().addOnSuccessListener (documentSnapshot -> {
+            DocumentReference dfActiveStatus = firebaseFirestore.collection (authtype).document (Uid);
+            if (authtype.equals ("Courier") && documentSnapshot.get ("orderId").equals ("")) {
+                if (documentSnapshot.get ("active") != null) {
+                    Map<String, Object> UserInfo = new HashMap<> ();
+                    UserInfo.put ("active", isActive);
+                    dfActiveStatus.update (UserInfo);
+                    dfActiveStatus.get ();
+                    authStateMutableLiveData.postValue (new AuthState ("Active Status changed successfully", true));
+                }
             }
         });
 
     }
 
-    public void addItem (int number) {
-        switch (number) {
-            case 1:
-                laundryItems.add (new LaundryItem ("Shirt", 0.1));
+    public void addToCache (String type) {
+        laundryItemCaches = orderDao.getAll ();
+    }
+
+    public void clearCache () {
+        orderDao.deleteAll ();
+    }
+
+    public void addItem (String type) {
+        ApplicationDatabase.databaseWriteExecutor.execute (() ->
+                orderDao.insert (new LaundryItemCache (type)));
+        switch (type) {
+            case "Shirt":
+            case "Pant":
+            case "Towel":
+                laundryItems.add (new LaundryItem (type, 0.1));
                 laundryitemlistMutableLiveData.postValue (laundryItems);
                 basketsize.postValue (laundryItems.size ());
                 break;
-            case 2:
-                laundryItems.add (new LaundryItem ("Pant", 0.1));
+            case "Suit/Blazer/Coat":
+            case "Jackets/Woolen":
+                laundryItems.add (new LaundryItem (type, 1));
                 laundryitemlistMutableLiveData.postValue (laundryItems);
                 basketsize.postValue (laundryItems.size ());
                 break;
-            case 3:
-                laundryItems.add (new LaundryItem ("Suit/Blazer/Coat", 1));
+            case "Carpet/Rug":
+                laundryItems.add (new LaundryItem (type, 5));
                 laundryitemlistMutableLiveData.postValue (laundryItems);
                 basketsize.postValue (laundryItems.size ());
                 break;
-            case 4:
-                laundryItems.add (new LaundryItem ("Jackets/Woolen", 1));
-                laundryitemlistMutableLiveData.postValue (laundryItems);
-                basketsize.postValue (laundryItems.size ());
-                break;
-            case 5:
-                laundryItems.add (new LaundryItem ("Carpet/Rug", 5));
-                laundryitemlistMutableLiveData.postValue (laundryItems);
-                basketsize.postValue (laundryItems.size ());
-                break;
-            case 6:
-                laundryItems.add (new LaundryItem ("Bedsheet/Duvet", 0.5));
-                laundryitemlistMutableLiveData.postValue (laundryItems);
-                basketsize.postValue (laundryItems.size ());
-                break;
-            case 7:
-                laundryItems.add (new LaundryItem ("Towel", 0.5));
+            case "Bedsheet/Duvet":
+                laundryItems.add (new LaundryItem (type, 0.5));
                 laundryitemlistMutableLiveData.postValue (laundryItems);
                 basketsize.postValue (laundryItems.size ());
                 break;
@@ -601,39 +681,29 @@ public class ApplicationRepository {
     }
 
     public void removeItem (String type) {
+        ApplicationDatabase.databaseWriteExecutor.execute (() ->
+                orderDao.delete (new LaundryItemCache (type)));
         switch (type) {
             case "Shirt":
-                laundryItems.remove (new LaundryItem ("Shirt", 0.1));
-                laundryitemlistMutableLiveData.postValue (laundryItems);
-                basketsize.postValue (laundryItems.size ());
-                break;
             case "Pant":
-                laundryItems.remove (new LaundryItem ("Pant", 0.1));
+            case "Towel":
+                laundryItems.remove (new LaundryItem (type, 0.1));
                 laundryitemlistMutableLiveData.postValue (laundryItems);
                 basketsize.postValue (laundryItems.size ());
                 break;
             case "Suit/Blazer/Coat":
-                laundryItems.remove (new LaundryItem ("Suit/Blazer/Coat", 1));
-                laundryitemlistMutableLiveData.postValue (laundryItems);
-                basketsize.postValue (laundryItems.size ());
-                break;
             case "Jackets/Woolen":
-                laundryItems.remove (new LaundryItem ("Jackets/Woolen", 1));
+                laundryItems.remove (new LaundryItem (type, 1));
                 laundryitemlistMutableLiveData.postValue (laundryItems);
                 basketsize.postValue (laundryItems.size ());
                 break;
             case "Carpet/Rug":
-                laundryItems.remove (new LaundryItem ("Carpet/Rug", 5));
+                laundryItems.remove (new LaundryItem (type, 5));
                 laundryitemlistMutableLiveData.postValue (laundryItems);
                 basketsize.postValue (laundryItems.size ());
                 break;
             case "Bedsheet/Duvet":
-                laundryItems.remove (new LaundryItem ("Bedsheet/Duvet", 0.5));
-                laundryitemlistMutableLiveData.postValue (laundryItems);
-                basketsize.postValue (laundryItems.size ());
-                break;
-            case "Towel":
-                laundryItems.remove (new LaundryItem ("Towel", 0.05));
+                laundryItems.remove (new LaundryItem (type, 0.5));
                 laundryitemlistMutableLiveData.postValue (laundryItems);
                 basketsize.postValue (laundryItems.size ());
                 break;
@@ -645,7 +715,6 @@ public class ApplicationRepository {
                 .get ().addOnSuccessListener (documentSnapshot -> {
             if (documentSnapshot.toObject (ApplicationUser.class) != null) {
                 applicationUserMutableLiveData.postValue (documentSnapshot.toObject (ApplicationUser.class));
-                //authStateMutableLiveData.postValue (new AuthState ("User Data loaded", false));
             } else {
                 Log.d (TAG, "Failed to get data from firestore");
                 authStateMutableLiveData.postValue (new AuthState ("User Data Failed to load", false));

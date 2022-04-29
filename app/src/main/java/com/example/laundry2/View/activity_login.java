@@ -36,12 +36,10 @@ import com.google.android.gms.tasks.Task;
 public class activity_login extends AppCompatActivity {
 
     private static final String TAG = "Activity Login";
-    private ActivityLoginBinding binding;
     private static final String sharedPreferences_authType = "notSelected";
+    private ActivityLoginBinding binding;
     private AuthenticationViewModel authenticationViewModel;
     private String spinnerItem = "";
-    private PopupWindow window;
-
     private final ActivityResultLauncher<Intent> googleSignInResultHandler = registerForActivityResult (new ActivityResultContracts.StartActivityForResult ()
             , new ActivityResultCallback<ActivityResult> () {
                 @Override
@@ -60,6 +58,7 @@ public class activity_login extends AppCompatActivity {
                     }
                 }
             });
+    private PopupWindow window;
 
     @Override
     protected void onCreate (Bundle savedInstanceState) {
@@ -87,13 +86,17 @@ public class activity_login extends AppCompatActivity {
 
         authenticationViewModel.getCurrentSignInUser ().observe (this, user -> {
             if (!spinnerItem.equals ("")) {
-                startActivity (new Intent (activity_login.this, activity_home.class)
-                        .putExtra ("authtype", spinnerItem));
+                authenticationViewModel.getLogoutMutableLiveData ().observe (this, aBoolean -> {
+                    if (! aBoolean) {
+                        startActivity (new Intent (activity_login.this, activity_home.class)
+                                .putExtra ("authtype", spinnerItem));
+                    }
+                });
             }
         });
 
         //Login Button
-        binding.btnLogin.setOnClickListener (view ->{
+        binding.btnLogin.setOnClickListener (view -> {
             if (!spinnerItem.equals ("")) {
                 authenticationViewModel.loginEmail (binding.edtxtEmailLogin.getText ().toString (),
                         binding.edtxtPasswordLogin.getText ().toString (), spinnerItem);
@@ -154,6 +157,16 @@ public class activity_login extends AppCompatActivity {
     protected void onStart () {
         super.onStart ();
         loadState ();
+//        authenticationViewModel = new ViewModelProvider (this).get (AuthenticationViewModel.class);
+//        if (getIntent ().hasExtra ("fromNotification")) {
+//            authenticationViewModel.getCurrentSignInUser ().observe (this, user -> {
+//                startActivity (new Intent (activity_login.this, activity_home.class)
+//                        .putExtra ("authtype", getIntent ().getStringExtra ("authtype"))
+//                        .putExtra ("fromNotification", true)
+//                        .putExtra ("orderId", getIntent ().getStringExtra ("orderId"))
+//                        .putExtra ("type", getIntent ().getStringExtra ("type")));
+//            });
+//        }
     }
 }
 

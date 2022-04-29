@@ -86,9 +86,13 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.MyViewHold
             courierId = itemView.findViewById (R.id.txt_card_order_courierID);
             changestatus = itemView.findViewById (R.id.button_changestatus);
             spinner = itemView.findViewById (R.id.spinner_status);
-            spinner.setAdapter (ArrayAdapter.createFromResource (itemView.getContext (), R.array.Order_Status,
-                    androidx.appcompat.R.layout.support_simple_spinner_dropdown_item));
-
+            if(authType.equals (context.getString (R.string.laundryhouse))) {
+                spinner.setAdapter (ArrayAdapter.createFromResource (itemView.getContext (), R.array.Order_Status_LaundryHouse,
+                        androidx.appcompat.R.layout.support_simple_spinner_dropdown_item));
+            }
+            else
+                spinner.setAdapter (ArrayAdapter.createFromResource (itemView.getContext (), R.array.Order_Status_Courier,
+                        androidx.appcompat.R.layout.support_simple_spinner_dropdown_item));
             changestatus.setOnClickListener (view -> {
                 listener.onClick (orders.get (getAdapterPosition ()));
             });

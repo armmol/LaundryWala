@@ -58,16 +58,20 @@ public interface AuthenticationContract {
     void enterIntoDB (String authtype, String name, String address, String area,
                       double latitude, double longitude);
 
-    void updateOrderStatus (String status, String orderId);
+    void updateOrderStatus (String authtype, String status, String orderId);
 
     void changeActiveStatus(boolean isActive, String authtye, String Uid);
 
     void assignOrder(String courierId, String orderId);
 
-    void usassignOrder(String courierId, String orderId);
+    void unassignOrder (String orderId);
 
-    void notifyOfArrival(String OrderId, boolean value);
+    void notifyOfArrival(String OrderId, String Uid, String title, String Message);
 
     void getNotified(String orderId);
+
+    void changeOrderPickDropStatus (String orderId, String authType, String type, boolean value);
+
+    void SubscribeCourierToChannel(String orderId);
 }
 

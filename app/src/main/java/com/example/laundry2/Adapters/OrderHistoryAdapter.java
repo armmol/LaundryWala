@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -18,10 +19,13 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
     private final Context context;
     private List<Order> orders;
     private onItemClickListener listener;
+    private onStatusCheckListener statusCheckListener;
+    private int track;
 
-    public OrderHistoryAdapter (Context context, List<Order> laundryItems) {
+    public OrderHistoryAdapter (Context context, List<Order> laundryItems, int track) {
         this.context = context;
         this.orders = laundryItems;
+        this.track = track;
     }
 
     @NonNull
@@ -57,13 +61,22 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
         this.listener = listener;
     }
 
+    public void setOnStatusCheckListener (onStatusCheckListener statusCheckListener) {
+        this.statusCheckListener = statusCheckListener;
+    }
+
     public interface onItemClickListener {
+        void onClick (Order order);
+    }
+
+    public interface onStatusCheckListener {
         void onClick (Order order);
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
         TextView orderId, orderStatus, orderTime, orderCost, deliveryCost;
+        Button checkStatus, checkItems, startTracking;
 
         public MyViewHolder (@NonNull View itemView) {
             super (itemView);
@@ -73,8 +86,18 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
             orderTime = itemView.findViewById (R.id.textView_card_orderhistory_ordertime);
             orderCost = itemView.findViewById (R.id.textView_card_orderhistory_ordercost);
             deliveryCost = itemView.findViewById (R.id.textView_card_orderhistory_deliveryCost);
+            checkStatus = itemView.findViewById (R.id.button_orderhistory_checkstatus);
+            checkItems = itemView.findViewById (R.id.button_orderhistory_checkitems);
+            startTracking = itemView.findViewById (R.id.button_orderhistory_starttracking);
 
-            itemView.setOnClickListener (view -> listener.onClick (orders.get (getAdapterPosition ())));
+            if(track == 1) {
+                checkItems.setVisibility (View.INVISIBLE);
+                checkStatus.setVisibility (View.INVISIBLE);
+                startTracking.setVisibility (View.VISIBLE);
+            }
+            startTracking.setOnClickListener (view -> listener.onClick (orders.get (getAdapterPosition ())));
+            checkItems.setOnClickListener (view -> listener.onClick (orders.get (getAdapterPosition ())));
+            checkStatus.setOnClickListener (view -> statusCheckListener.onClick (orders.get (getAdapterPosition ())));
         }
     }
 }

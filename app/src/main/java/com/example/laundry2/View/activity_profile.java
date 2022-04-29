@@ -22,6 +22,7 @@ import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -47,7 +48,9 @@ public class activity_profile extends AppCompatActivity {
                                 binding.edtxtAddressProfile.setText (getString (R.string.failed_try_again));
                         }
                     });
+    private String authtype;
     private double latitude = 0, longitude = 0;
+    private ArrayList<String> items = null;
 
     @Override
     protected void onCreate (@Nullable Bundle savedInstanceState) {
@@ -55,13 +58,14 @@ public class activity_profile extends AppCompatActivity {
 
         viewModel = new ViewModelProvider (this).get (AuthenticationViewModel.class);
         binding = DataBindingUtil.setContentView (this, R.layout.activity_profile);
+        authtype = getIntent ().getStringExtra ("authtype");
+        if (getIntent ().hasExtra ("items")) items = getIntent ().getStringArrayListExtra ("items");
         viewModel.getState ().observe (this, authState -> {
             Toast.makeText (activity_profile.this, authState.getType (), Toast.LENGTH_SHORT).show ();
             if (authState.isValid ())
                 startActivity (new Intent (activity_profile.this, activity_home.class)
-                        .putExtra ("authtype", getIntent ().getExtras ().get ("authtype").toString ()));
+                        .putExtra ("authtype", authtype).putStringArrayListExtra ("items", items));
         });
-
         viewModel.getCurrentSignInUser ().observe (this, user ->
                 binding.edtxtEmailProfile.setText (user.getEmail ()));
 
@@ -70,7 +74,7 @@ public class activity_profile extends AppCompatActivity {
                 latitude = latLng.latitude;
                 longitude = latLng.longitude;
             }
-            viewModel.enterIntoDB (getIntent ().getExtras ().getString ("authtype"),
+            viewModel.enterIntoDB (authtype,
                     binding.edtxtNameProfile.getText ().toString (),
                     binding.edtxtAddressProfile.getText ().toString (),
                     binding.txtAreaProfile.getText ().toString (),
@@ -102,18 +106,18 @@ public class activity_profile extends AppCompatActivity {
     @Override
     protected void onStart () {
         super.onStart ();
-        binding.txtAuthtypeProfile.setText (getIntent ().getExtras ().get ("authtype").toString ());
-        viewModel.loadApplicationUserData (getIntent ().getExtras ().get ("authtype").toString ());
+        binding.txtAuthtypeProfile.setText (authtype);
+        viewModel.loadApplicationUserData (authtype);
         viewModel.getApplicationUserData ().observe (activity_profile.this, applicationUser -> {
             binding.txtAreaProfile.setText (applicationUser.getArea ());
             binding.edtxtAddressProfile.setText (applicationUser.getAddress ());
             binding.edtxtNameProfile.setText (applicationUser.getName ());
             binding.edtxtEmailProfile.setText (applicationUser.getEmail ());
-            OnBackPressedCallback callback = new OnBackPressedCallback (true ) {
+            OnBackPressedCallback callback = new OnBackPressedCallback (true) {
                 @Override
                 public void handleOnBackPressed () {
                     startActivity (new Intent (activity_profile.this, activity_home.class)
-                            .putExtra ("authtype", getIntent ().getExtras ().get ("authtype").toString ()));
+                            .putExtra ("authtype", authtype).putStringArrayListExtra ("items", items));
                 }
             };
             activity_profile.this.getOnBackPressedDispatcher ().addCallback (callback);

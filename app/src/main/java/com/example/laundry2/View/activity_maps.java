@@ -15,6 +15,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.laundry2.AuthenticationViewModel;
 import com.example.laundry2.LocationViewModel;
 import com.example.laundry2.R;
 import com.example.laundry2.Repositories.LocationService;
@@ -29,10 +30,11 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class activity_maps extends FragmentActivity implements OnMapReadyCallback {
 
+    int flag = 0;
     private GoogleMap mMap;
     private LocationViewModel locationViewModel;
+    private AuthenticationViewModel authenticationViewModel;
     private String authType;
-    int flag = 0;
 
     @SuppressLint("MissingPermission")
     @Override
@@ -41,6 +43,7 @@ public class activity_maps extends FragmentActivity implements OnMapReadyCallbac
         setContentView (R.layout.activity_maps);
 
         locationViewModel = new ViewModelProvider (this).get (LocationViewModel.class);
+        authenticationViewModel = new ViewModelProvider (this).get (AuthenticationViewModel.class);
         authType = getIntent ().getStringExtra ("authtype");
         if (authType.equals (getString (R.string.courier))) {
             locationViewModel.getCurrentLocationMutableLiveData ().observe (this, location ->
@@ -57,6 +60,7 @@ public class activity_maps extends FragmentActivity implements OnMapReadyCallbac
                 flag = 1;
                 startActivity (new Intent (activity_maps.this, activity_home.class)
                         .putExtra ("authtype", authType));
+                stopLocationUpdates ();
             }
         };
         this.getOnBackPressedDispatcher ().addCallback (callback);
@@ -69,7 +73,7 @@ public class activity_maps extends FragmentActivity implements OnMapReadyCallbac
         } else {
             if (authType.equals (getString (R.string.courier)))
                 startLocationUpdates ();
-            else if (authType.equals (getString (R.string.customer))||authType.equals (getString (R.string.laundryhouse)))
+            else if (authType.equals (getString (R.string.customer)) || authType.equals (getString (R.string.laundryhouse)))
                 getCourierUpdates ();
         }
     }
@@ -81,9 +85,9 @@ public class activity_maps extends FragmentActivity implements OnMapReadyCallbac
         if (requestCode == 131) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 getPermissions ();
-            } else
-                startActivity (new Intent ());
-            Toast.makeText (this, "Permission denied", Toast.LENGTH_SHORT).show ();
+            } else {
+                Toast.makeText (this, "Permission denied", Toast.LENGTH_SHORT).show ();
+            }
         }
     }
 
@@ -107,7 +111,7 @@ public class activity_maps extends FragmentActivity implements OnMapReadyCallbac
     public void onMapReady (@NonNull GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setMyLocationEnabled (true);
-        if(getIntent ().hasExtra ("LaundryHouseLatLng")) {
+        if (getIntent ().hasExtra ("LaundryHouseLatLng")) {
             MarkerOptions laundry_house_location = new MarkerOptions ().title ("Laundry House Location");
             laundry_house_location.position (getIntent ().getParcelableExtra ("LaundryHouseLatLng"));
             laundry_house_location.icon (BitmapDescriptorFactory.defaultMarker (BitmapDescriptorFactory.HUE_YELLOW));
@@ -116,8 +120,7 @@ public class activity_maps extends FragmentActivity implements OnMapReadyCallbac
             customer_location.icon (BitmapDescriptorFactory.defaultMarker (BitmapDescriptorFactory.HUE_GREEN));
             customer_location.position (getIntent ().getParcelableExtra ("CustomerLatLng"));
             mMap.addMarker (customer_location);
-        }
-        else {
+        } else {
             getCourierUpdates ();
             courierTrackingMap ();
         }
