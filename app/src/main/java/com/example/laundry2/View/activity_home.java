@@ -124,7 +124,7 @@ public class activity_home extends AppCompatActivity {
                             binding.recyclerViewUserhome.setAdapter (laundryHousesAdapter);
                             laundryHousesAdapter.setOnItemClickListener (laundryHouse -> {
                                 if (laundryHouse.isActive ()) {
-                                    i.putExtra ("laundryhouseuid", laundryHouse.getUid ()).putExtra ("deliveryprice", laundryHouse.getDeliveryprice ())
+                                    i.putExtra ("laundryhouseuid", laundryHouse.getUid ()).putExtra ("deliveryprice", laundryHouse.getDeliveryPrice ())
                                             .putExtra ("authtype", authtype).putExtra ("items", items);
                                     startActivity (i);
                                 } else
@@ -172,7 +172,7 @@ public class activity_home extends AppCompatActivity {
                         recyclerView.setLayoutManager (new LinearLayoutManager (getApplicationContext ()));
                         viewModel.getCouriers ().observe (this, couriers -> {
                             for (Courier courier : couriers) {
-                                if (courier.isActive ())
+                                if (!courier.isActive ())
                                     couriers.remove (courier);
                             }
                             couriersAdapter = new CouriersAdapter (this, couriers);

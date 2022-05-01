@@ -60,7 +60,9 @@ public interface AuthenticationContract {
 
     void updateOrderStatus (String authtype, String status, String orderId);
 
-    void changeActiveStatus(boolean isActive, String authtye, String Uid);
+    void changeActiveStatus(boolean isActive, String authtype, String Uid);
+
+    void stopNewOrders(boolean isActive, String authtype, String Uid);
 
     void assignOrder(String courierId, String orderId);
 

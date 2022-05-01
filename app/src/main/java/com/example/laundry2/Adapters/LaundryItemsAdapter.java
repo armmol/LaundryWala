@@ -18,22 +18,22 @@ import java.util.List;
 public class LaundryItemsAdapter extends RecyclerView.Adapter<LaundryItemsAdapter.MyViewHolder> {
 
     private final Context context;
-    private List<LaundryItem> laundryitems;
+    private List<LaundryItem> laundryItems;
     private onItemClickListener listener;
-    private int orderhistory;
+    private int isOrderHistory;
 
-    public LaundryItemsAdapter (Context context, List<LaundryItem> laundryitems, int orderhistory) {
-        this.laundryitems = laundryitems;
+    public LaundryItemsAdapter (Context context, List<LaundryItem> laundryItems, int isOrderHistoy) {
+        this.laundryItems = laundryItems;
         this.context = context;
-        this.orderhistory =orderhistory;
+        this.isOrderHistory =isOrderHistoy;
     }
 
-    public List<LaundryItem> getLaundryitems () {
-        return laundryitems;
+    public List<LaundryItem> getLaundryItems () {
+        return laundryItems;
     }
 
-    public void setLaundryitems (List<LaundryItem> laundryitems) {
-        this.laundryitems = laundryitems;
+    public void setLaundryItems (List<LaundryItem> laundryItems) {
+        this.laundryItems = laundryItems;
         notifyAll ();
     }
 
@@ -46,13 +46,13 @@ public class LaundryItemsAdapter extends RecyclerView.Adapter<LaundryItemsAdapte
 
     @Override
     public void onBindViewHolder (@NonNull MyViewHolder holder, int position) {
-        holder.laundryitemname.setText (this.laundryitems.get (position).getType ());
-        holder.laundryitemcost.setText (String.format ("%s €", this.laundryitems.get (position).getCost ()));
+        holder.laundryitemname.setText (this.laundryItems.get (position).getType ());
+        holder.laundryitemcost.setText (String.format ("%s €", this.laundryItems.get (position).getCost ()));
     }
 
     @Override
     public int getItemCount () {
-        return laundryitems.size ();
+        return laundryItems.size ();
     }
 
     public void setOnItemClickListener (onItemClickListener listener) {
@@ -75,13 +75,13 @@ public class LaundryItemsAdapter extends RecyclerView.Adapter<LaundryItemsAdapte
             laundryitemcost = itemView.findViewById (R.id.txt_card_laundry_itemcost);
             delete = itemView.findViewById (R.id.imgbtn_card_laundrybasket_delete);
 
-            if(orderhistory == 1){
+            if(isOrderHistory == 1){
                 delete.setVisibility (View.INVISIBLE);
             }
             delete.setOnClickListener (view -> {
                 if (getAdapterPosition () > -1) {
-                    listener.onClick (laundryitems.get (getAdapterPosition ()));
-                    laundryitems.remove (getAdapterPosition ());
+                    listener.onClick (laundryItems.get (getAdapterPosition ()));
+                    laundryItems.remove (getAdapterPosition ());
                     notifyItemRemoved (getAdapterPosition ());
                 }
             });

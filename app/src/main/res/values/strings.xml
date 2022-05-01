@@ -66,8 +66,13 @@
     <string name="CloudMessagingServerKey">AAAAaq8hpT0:APA91bGKqTKAGgbRAVO1_R34M3UkreGzwgEwNQxZ-xUg0DPURspqSWvr-ExRvyLTbtnUWGW7lm2tsFiEUn88L9GWC2PopHG86kiCKqg_lvR0EZQ3YDotiaFmsyIAbtg1WI4IE7yc6GB7</string>
     <string name="confirm">Confirm</string>
     <string name="change">Change</string>
+    <string name="datetime">DateTime</string>
+    <string name="assign">Assign</string>
+    <string name="change_status">Change Status</string>
+    <string name="order_cost_">Order Cost -</string>
+    <string name="select_status_to_change">Select status to change to</string>
     <string-array name="Authentication_type">
-        <item></item>
+        <item>SELECT USER TYPE</item>
         <item>Customer</item>
         <item>Laundry House</item>
         <item>Courier</item>

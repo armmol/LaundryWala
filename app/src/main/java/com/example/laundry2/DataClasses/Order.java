@@ -40,7 +40,7 @@ public class Order {
         for (LaundryItem item : this.items) {
             c += item.cost;
         }
-        return new BigDecimal (c).setScale (2, BigDecimal.ROUND_DOWN).doubleValue () + this.deliveryCost;
+        return new BigDecimal (c+ this.deliveryCost).setScale (2, BigDecimal.ROUND_DOWN).doubleValue () ;
     }
 
     public String getStatus () {
@@ -82,7 +82,6 @@ public class Order {
     public void setDateTime (String dateTime) {
         this.dateTime = dateTime;
     }
-
 
     public double getDeliveryCost () {
         return deliveryCost;

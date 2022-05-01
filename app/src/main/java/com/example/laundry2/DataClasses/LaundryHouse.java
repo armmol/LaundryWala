@@ -6,29 +6,25 @@ public class LaundryHouse implements Comparable<LaundryHouse> {
     String name;
     LatLng address;
     String area;
-    String upiId;
-    String payseraId;
     String uid;
-    double deliveryprice;
+    double deliveryPrice;
     boolean active;
 
 
-    public LaundryHouse (String name, LatLng address, String area, String upiId, String payseraId, String uid, boolean active) {
+    public LaundryHouse (String name, LatLng address, String area, String uid, boolean active) {
         this.name = name;
         this.address = address;
         this.area = area;
-        this.upiId = upiId;
-        this.payseraId = payseraId;
         this.uid = uid;
         this.active = active;
     }
 
-    public void setDeliveryprice (double deliveryprice) {
-        this.deliveryprice = deliveryprice;
+    public void setDeliveryPrice (double deliveryPrice) {
+        this.deliveryPrice = deliveryPrice;
     }
 
-    public double getDeliveryprice () {
-        return deliveryprice;
+    public double getDeliveryPrice () {
+        return deliveryPrice;
     }
 
     public String getUid () {
@@ -37,22 +33,6 @@ public class LaundryHouse implements Comparable<LaundryHouse> {
 
     public void setUid (String uid) {
         this.uid = uid;
-    }
-
-    public String getUpiId () {
-        return upiId;
-    }
-
-    public void setUpiId (String upiId) {
-        this.upiId = upiId;
-    }
-
-    public String getPayseraId () {
-        return payseraId;
-    }
-
-    public void setPayseraId (String payseraId) {
-        this.payseraId = payseraId;
     }
 
     public String getName () {
@@ -89,6 +69,6 @@ public class LaundryHouse implements Comparable<LaundryHouse> {
 
     @Override
     public int compareTo (LaundryHouse laundryHouse) {
-        return Double.compare (deliveryprice, laundryHouse.deliveryprice);
+        return Double.compare (deliveryPrice, laundryHouse.deliveryPrice);
     }
 }

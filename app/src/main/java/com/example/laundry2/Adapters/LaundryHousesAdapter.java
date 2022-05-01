@@ -46,7 +46,7 @@ public class LaundryHousesAdapter extends RecyclerView.Adapter<LaundryHousesAdap
     public void onBindViewHolder (@NonNull MyViewHolder holder, int position) {
         holder.name.setText (this.laundryHouseList.get (position).getName ());
         holder.area.setText (this.laundryHouseList.get (position).getArea ());
-        holder.deliverycost.setText (String.format ("%s €", this.laundryHouseList.get (position).getDeliveryprice ()));
+        holder.deliverycost.setText (String.format ("%s €", this.laundryHouseList.get (position).getDeliveryPrice ()));
         holder.active.setChecked (this.laundryHouseList.get(position).isActive ());
     }
 

@@ -39,7 +39,9 @@ public class activity_login extends AppCompatActivity {
     private static final String sharedPreferences_authType = "notSelected";
     private ActivityLoginBinding binding;
     private AuthenticationViewModel authenticationViewModel;
-    private String spinnerItem = "";
+    private String spinnerItem = "SELECT USER TYPE";
+    private boolean logout = false;
+    private PopupWindow window;
     private final ActivityResultLauncher<Intent> googleSignInResultHandler = registerForActivityResult (new ActivityResultContracts.StartActivityForResult ()
             , new ActivityResultCallback<ActivityResult> () {
                 @Override
@@ -58,7 +60,6 @@ public class activity_login extends AppCompatActivity {
                     }
                 }
             });
-    private PopupWindow window;
 
     @Override
     protected void onCreate (Bundle savedInstanceState) {
@@ -67,27 +68,26 @@ public class activity_login extends AppCompatActivity {
         authenticationViewModel = new ViewModelProvider (this).get (AuthenticationViewModel.class);
 
         //Spinner
-        binding.spinner.setAdapter (ArrayAdapter.createFromResource (this, R.array.Authentication_type, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item));
+        binding.spinner.setAdapter (ArrayAdapter.createFromResource (this, R.array.Authentication_type, R.layout.spinner_item));
+        binding.spinner.setPrompt (getString (R.string.select_user_type));
         binding.spinner.setOnItemSelectedListener (new AdapterView.OnItemSelectedListener () {
             @Override
             public void onItemSelected (AdapterView<?> adapterView, View view, int i, long l) {
                 spinnerItem = adapterView.getItemAtPosition (i).toString ();
                 saveState ();
             }
-
             @Override
             public void onNothingSelected (AdapterView<?> adapterView) {
-                spinnerItem = "";
+                spinnerItem = "SELECT USER TYPE";
             }
         });
-
         authenticationViewModel.getState ().observe (activity_login.this, authState ->
                 Toast.makeText (activity_login.this, authState.getType (), Toast.LENGTH_SHORT).show ());
-
+        authenticationViewModel.getLogoutMutableLiveData ().observe (this, aBoolean -> logout = aBoolean);
         authenticationViewModel.getCurrentSignInUser ().observe (this, user -> {
-            if (!spinnerItem.equals ("")) {
-                authenticationViewModel.getLogoutMutableLiveData ().observe (this, aBoolean -> {
-                    if (! aBoolean) {
+            if (!spinnerItem.equals ("SELECT USER TYPE") && !logout) {
+                authenticationViewModel.getState ().observe (this, authState -> {
+                    if (authState.isValid ()) {
                         startActivity (new Intent (activity_login.this, activity_home.class)
                                 .putExtra ("authtype", spinnerItem));
                     }
@@ -97,7 +97,7 @@ public class activity_login extends AppCompatActivity {
 
         //Login Button
         binding.btnLogin.setOnClickListener (view -> {
-            if (!spinnerItem.equals ("")) {
+            if (!spinnerItem.equals ("SELECT USER TYPE")) {
                 authenticationViewModel.loginEmail (binding.edtxtEmailLogin.getText ().toString (),
                         binding.edtxtPasswordLogin.getText ().toString (), spinnerItem);
             } else {
@@ -107,8 +107,9 @@ public class activity_login extends AppCompatActivity {
 
         //Google Sign In Button
         binding.btnGooglesignin.setOnClickListener (view -> {
-            if (!spinnerItem.equals ("")) {
-                authenticationViewModel.getGoogleSignInClient ().observe (activity_login.this, googleSignInClient -> googleSignInResultHandler.launch (googleSignInClient.getSignInIntent ()));
+            if (!spinnerItem.equals ("SELECT USER TYPE")) {
+                authenticationViewModel.getGoogleSignInClient ().observe (activity_login.this, googleSignInClient ->
+                        googleSignInResultHandler.launch (googleSignInClient.getSignInIntent ()));
             } else {
                 Toast.makeText (getApplicationContext (), "Select User Type", Toast.LENGTH_SHORT).show ();
             }
@@ -157,16 +158,16 @@ public class activity_login extends AppCompatActivity {
     protected void onStart () {
         super.onStart ();
         loadState ();
-//        authenticationViewModel = new ViewModelProvider (this).get (AuthenticationViewModel.class);
-//        if (getIntent ().hasExtra ("fromNotification")) {
-//            authenticationViewModel.getCurrentSignInUser ().observe (this, user -> {
-//                startActivity (new Intent (activity_login.this, activity_home.class)
-//                        .putExtra ("authtype", getIntent ().getStringExtra ("authtype"))
-//                        .putExtra ("fromNotification", true)
-//                        .putExtra ("orderId", getIntent ().getStringExtra ("orderId"))
-//                        .putExtra ("type", getIntent ().getStringExtra ("type")));
-//            });
-//        }
+        authenticationViewModel = new ViewModelProvider (this).get (AuthenticationViewModel.class);
+        if (getIntent ().hasExtra ("fromNotification")) {
+            authenticationViewModel.getCurrentSignInUser ().observe (this, user -> {
+                startActivity (new Intent (activity_login.this, activity_home.class)
+                        .putExtra ("authtype", getIntent ().getStringExtra ("authtype"))
+                        .putExtra ("fromNotification", true)
+                        .putExtra ("orderId", getIntent ().getStringExtra ("orderId"))
+                        .putExtra ("type", getIntent ().getStringExtra ("type")));
+            });
+        }
     }
 }
 

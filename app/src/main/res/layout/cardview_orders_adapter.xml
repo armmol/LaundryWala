@@ -11,13 +11,13 @@
     app:layout_constraintTop_toTopOf="parent">
 
     <androidx.cardview.widget.CardView
-        android:layout_width="376dp"
-        android:layout_height="342dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="24dp"
-        android:background="#E8B46F"
+        android:layout_width="383dp"
+        android:layout_height="262dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="4dp"
+        android:background="#005A3401"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -26,62 +26,55 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#D5C3C3">
+            android:background="#FFEF41">
 
             <TextView
                 android:id="@+id/txt_ordernumber"
                 android:layout_width="331dp"
                 android:layout_height="38dp"
-                android:text="TextView"
-                android:textColor="#3D5AFE"
+                android:layout_marginTop="4dp"
+                android:textColor="#651FFF"
                 android:textSize="14sp"
                 android:textStyle="bold|italic"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.333"
+                app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.061" />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/txt_card_ordercost_display"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
-                android:text="TextView"
-                android:textColor="#415C4F"
+                android:layout_marginTop="8dp"
+                android:textColor="#651FFF"
                 android:textSize="20sp"
-                app:layout_constraintBottom_toTopOf="@+id/txt_card_ordertime_display"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.839"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/txt_ordernumber"
-                app:layout_constraintVertical_bias="0.902" />
+                app:layout_constraintEnd_toEndOf="@+id/button_changestatus"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toStartOf="@+id/button_changestatus"
+                app:layout_constraintTop_toBottomOf="@+id/button_changestatus" />
 
             <TextView
                 android:id="@+id/txt_card_ordertime_display"
                 android:layout_width="178dp"
                 android:layout_height="42dp"
-                android:text="TextView"
-                android:textColor="#415C4F"
+                android:textColor="#651FFF"
                 android:textSize="14sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.918"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.853" />
+                app:layout_constraintEnd_toEndOf="@+id/button_changestatus"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toStartOf="@+id/button_changestatus"
+                app:layout_constraintTop_toBottomOf="@+id/txt_card_ordercost_display" />
 
             <TextView
                 android:id="@+id/txt_card_ordercost"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Order Cost -"
+                android:text="@string/order_cost_"
+                android:textColor="#651FFF"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="@+id/txt_card_ordercost_display"
-                app:layout_constraintEnd_toStartOf="@+id/txt_card_ordercost_display"
-                app:layout_constraintHorizontal_bias="0.49"
-                app:layout_constraintStart_toEndOf="@+id/imageView4"
+                app:layout_constraintEnd_toEndOf="@+id/txt_card_ordertime"
+                app:layout_constraintHorizontal_bias="0.105"
+                app:layout_constraintStart_toStartOf="@+id/txt_card_ordertime"
                 app:layout_constraintTop_toTopOf="@+id/txt_card_ordercost_display"
                 app:layout_constraintVertical_bias="0.0" />
 
@@ -89,7 +82,8 @@
                 android:id="@+id/txt_card_ordertime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="DateTime"
+                android:text="@string/datetime"
+                android:textColor="#651FFF"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="@+id/txt_card_ordertime_display"
                 app:layout_constraintEnd_toStartOf="@+id/txt_card_ordertime_display"
@@ -104,10 +98,10 @@
                 android:layout_height="24dp"
                 app:layout_constraintBottom_toBottomOf="@+id/txt_card_ordercost"
                 app:layout_constraintEnd_toStartOf="@+id/txt_card_ordercost_display"
-                app:layout_constraintHorizontal_bias="0.178"
+                app:layout_constraintHorizontal_bias="0.176"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/txt_card_ordercost"
-                app:layout_constraintVertical_bias="0.0"
+                app:layout_constraintVertical_bias="1.0"
                 app:srcCompat="@drawable/money" />
 
             <ImageView
@@ -124,36 +118,34 @@
 
             <Spinner
                 android:id="@+id/spinner_status"
-                android:layout_width="314dp"
-                android:layout_height="48dp"
-                app:layout_constraintBottom_toTopOf="@+id/txt_card_ordercost"
-                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_width="334dp"
+                android:layout_height="49dp"
+                android:background="#59651FFF"
+                android:prompt="@string/select_status_to_change"
+                app:layout_constraintEnd_toEndOf="@+id/txt_ordernumber"
                 app:layout_constraintHorizontal_bias="0.491"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/txt_ordernumber"
                 app:layout_constraintTop_toBottomOf="@+id/txt_ordernumber"
-                app:layout_constraintVertical_bias="0.0"
                 tools:ignore="SpeakableTextPresentCheck" />
 
             <Button
                 android:id="@+id/button_assign"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Assign"
-                app:layout_constraintBottom_toTopOf="@+id/txt_card_ordercost"
+                android:text="@string/assign"
                 app:layout_constraintEnd_toEndOf="@+id/spinner_status"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="@+id/spinner_status"
-                app:layout_constraintTop_toBottomOf="@+id/spinner_status"
-                app:layout_constraintVertical_bias="0.279" />
+                app:layout_constraintTop_toBottomOf="@+id/spinner_status" />
 
             <Button
                 android:id="@+id/button_changestatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Change Status"
-                app:layout_constraintBottom_toBottomOf="@+id/button_assign"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/button_assign"
+                android:text="@string/change_status"
+                app:layout_constraintEnd_toEndOf="@+id/spinner_status"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toStartOf="@+id/spinner_status"
                 app:layout_constraintTop_toTopOf="@+id/button_assign" />
 
             <TextView
@@ -161,27 +153,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="TextView"
-                android:textColor="#CC3100"
-                app:layout_constraintBottom_toBottomOf="parent"
+                android:textColor="#651FFF"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.122"
+                app:layout_constraintHorizontal_bias="0.101"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/txt_card_orders_orderstatus"
-                app:layout_constraintVertical_bias="0.0" />
+                app:layout_constraintTop_toBottomOf="@+id/txt_card_orders_orderstatus" />
 
             <TextView
                 android:id="@+id/txt_card_orders_orderstatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TextView"
-                android:textColor="#CC3100"
-                app:layout_constraintBottom_toBottomOf="parent"
+                android:textColor="#651FFF"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.122"
+                app:layout_constraintHorizontal_bias="0.101"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/txt_card_ordertime_display"
-                app:layout_constraintVertical_bias="0.0" />
+                app:layout_constraintTop_toBottomOf="@+id/txt_card_ordertime_display" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>

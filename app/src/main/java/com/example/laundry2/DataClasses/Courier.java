@@ -2,11 +2,13 @@ package com.example.laundry2.DataClasses;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.ArrayList;
+
 public class Courier {
     String name;
     String uid;
     LatLng location;
-    String OrderId;
+    ArrayList<String> OrderId;
     boolean active;
 
     public String getName () {
@@ -21,10 +23,6 @@ public class Courier {
         return uid;
     }
 
-    public void setUid (String uid) {
-        this.uid = uid;
-    }
-
     public LatLng getLocation () {
         return location;
     }
@@ -33,11 +31,11 @@ public class Courier {
         this.location = location;
     }
 
-    public String getOrderId () {
+    public ArrayList<String> getOrderId () {
         return OrderId;
     }
 
-    public void setOrderId (String orderId) {
+    public void setOrderId (ArrayList<String> orderId) {
         OrderId = orderId;
     }
 
@@ -45,11 +43,7 @@ public class Courier {
         return active;
     }
 
-    public void setActive (boolean active) {
-        this.active = active;
-    }
-
-    public Courier (String name, String uid, LatLng location, String orderId, boolean active) {
+    public Courier (String name, String uid, LatLng location, ArrayList<String> orderId, boolean active) {
         this.name = name;
         this.uid = uid;
         this.location = location;

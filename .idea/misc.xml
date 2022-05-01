@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/armaa/.gradle/caches/transforms-3/6f2e6a01f60cfa5378f6de788c463073/transformed/appcompat-1.4.1/res/layout/support_simple_spinner_dropdown_item.xml" value="0.259375" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/drawable-v24/checkout_with_googlepay_button_content.xml" value="0.2645" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/drawable-v24/googlepay_button_background.xml" value="0.104" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/drawable-v24/googlepay_button_content.xml" value="0.2645" />
@@ -32,11 +33,12 @@
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/cardview_laundryhouses_adapter.xml" value="0.259375" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/cardview_orderhistory.xml" value="0.26666666666666666" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/cardview_orderhistory_adapter.xml" value="0.264" />
-        <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/cardview_orders_adapter.xml" value="0.6" />
+        <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/cardview_orders_adapter.xml" value="0.4" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/cardview_orderstatus_adapter.xml" value="0.35625" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/cardview_user_home_recyclerview.xml" value="0.4" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/googlepay_button.xml" value="0.259375" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/snackbar.xml" value="0.259375" />
+        <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/spinner_item.xml" value="0.259375" />
       </map>
     </option>
   </component>

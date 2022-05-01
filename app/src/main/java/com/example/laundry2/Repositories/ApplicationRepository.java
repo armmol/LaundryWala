@@ -91,7 +91,7 @@ public class ApplicationRepository {
     private final MutableLiveData<Integer> basketsize;
     private final MutableLiveData<List<LaundryItem>> laundryitemlistMutableLiveData;
     private final MutableLiveData<List<Courier>> courierListMutableLiveData;
-    private final MutableLiveData<Boolean> orderPlacementSuccessMutableLiveData;
+    private final MutableLiveData<AuthState> orderPlacementSuccessMutableLiveData;
     private final MutableLiveData<Boolean> courierArrivalMutableLiveData;
     private final ArrayList<LaundryItem> laundryItems;
     private final OrderDao orderDao;
@@ -227,7 +227,7 @@ public class ApplicationRepository {
         return serviceState;
     }
 
-    public MutableLiveData<Boolean> getOrderPlacementSuccessMutableLiveData () {
+    public MutableLiveData<AuthState> getOrderPlacementSuccessMutableLiveData () {
         return orderPlacementSuccessMutableLiveData;
     }
 
@@ -306,20 +306,19 @@ public class ApplicationRepository {
         String[] authTypes_array = new String[]{"Customer", "Laundry House", "Courier"};
         for (int i = 0; i < authTypes_array.length; i++) {
             int finalI = i;
-
             firebaseFirestore.collection (authTypes_array[i]).document (Objects.requireNonNull (mAuth.getUid ())).get ().addOnSuccessListener (documentSnapshot -> {
                 //Document Exists in the correct authtype repository
-                if (documentSnapshot.get ("name") != null && authtype.equals (authTypes_array[finalI])) {
+                if (documentSnapshot.get ("email") != null && authtype.equals (authTypes_array[finalI])) {
                     userMutableLiveData.postValue (mAuth.getCurrentUser ());
                     authStateMutableLiveData.postValue (new AuthState
                             ("Successfully logged in as " + authtype, true));
-                } else if (documentSnapshot.get ("name") != null && !authtype.equals (authTypes_array[finalI])) {
+                } else if (documentSnapshot.get ("email") != null && !authtype.equals (authTypes_array[finalI])) {
                     authStateMutableLiveData.postValue (new AuthState
                             ("Could not log in, user exists as " + authTypes_array[finalI] + "\n Change user type", false));
-                } else if (documentSnapshot.get ("name") == null && authtype.equals (authTypes_array[finalI]) && finalI == 2 && requestcode == R.integer.Login)
+                } else if (documentSnapshot.get ("email") == null && authtype.equals (authTypes_array[finalI]) /*&& finalI == 2*/ && requestcode == R.integer.Login)
                     authStateMutableLiveData.postValue (new AuthState
                             ("You are not registered, sign up", false));
-                else if (documentSnapshot.get ("name") == null && authtype.equals (authTypes_array[finalI]) && finalI == 2 && requestcode == R.integer.Signup) {
+                else if (documentSnapshot.get ("email") == null && authtype.equals (authTypes_array[finalI]) /*&& finalI == 2*/ && requestcode == R.integer.Signup) {
                     userMutableLiveData.postValue (mAuth.getCurrentUser ());
                     authStateMutableLiveData.postValue (new AuthState
                             ("Successfully logged in as " + authtype, true));
@@ -345,11 +344,11 @@ public class ApplicationRepository {
                 });
     }
 
-    public void registerWithEmail (String email, String password, String confirmpassword, String authtype) {
-        if (email.trim ().isEmpty () || password.trim ().isEmpty () || authtype.trim ().isEmpty () || confirmpassword.trim ().isEmpty ()) {
+    public void registerWithEmail (String email, String password, String confirmPassword, String authType) {
+        if (email.trim ().isEmpty () || password.trim ().isEmpty () || authType.trim ().isEmpty () || confirmPassword.trim ().isEmpty ()) {
             Log.d (TAG, "Fields cannot be empty");
             authStateMutableLiveData.postValue (new AuthState ("Email or password cannot be empty", false));
-        } else if (!password.equals (confirmpassword)) {
+        } else if (!password.equals (confirmPassword)) {
             Log.d (TAG, "Passwords do not match");
             authStateMutableLiveData.postValue (new AuthState ("Passwords do not match", false));
         } else {
@@ -358,10 +357,10 @@ public class ApplicationRepository {
                     Log.d (TAG, "signInWithEmail:success");
                     userMutableLiveData.postValue (mAuth.getCurrentUser ());
                     logoutMutableLiveData.postValue (false);
-                    authStateMutableLiveData.postValue (new AuthState ("Successfully logged in as" + authtype, true));
+                    authStateMutableLiveData.postValue (new AuthState ("Successfully logged in as" + authType, true));
                 } else {
                     Log.d (TAG, "Registration failed");
-                    authStateMutableLiveData.postValue (new AuthState ("Registration failed", false));
+                    authStateMutableLiveData.postValue (new AuthState ("Registration failed.\nAccount might exist, Check Email", false));
                 }
             });
         }
@@ -380,7 +379,7 @@ public class ApplicationRepository {
                 } else {
                     // If sign in fails, display a message to the user.
                     Log.w (TAG, "EmailLogin:failure", task.getException ());
-                    authStateMutableLiveData.postValue (new AuthState ("EmailLogin:failure" + task.getException (), false));
+                    authStateMutableLiveData.postValue (new AuthState ("Login Failure, Email or Password is incorrect.", false));
                 }
             });
         }
@@ -412,23 +411,25 @@ public class ApplicationRepository {
     }
 
     public void assignOrder (String courierId, String orderId) {
-        firebaseFirestore.collection ("Courier").document (courierId).get ().addOnSuccessListener (documentSnapshot ->
-                firebaseFirestore.collection ("Order").document (orderId).get ().addOnSuccessListener (documentSnapshot1 -> {
-                    if (documentSnapshot.getString ("orderId").equals ("") && documentSnapshot1.getString ("courierId").equals ("")) {
-                        DocumentReference df = firebaseFirestore.collection ("Courier").document (courierId);
-                        DocumentReference df1 = firebaseFirestore.collection ("Order").document (orderId);
+        firebaseFirestore.collection ("Courier").document (courierId).get ().addOnSuccessListener (courierDocumentSnapshot ->
+                firebaseFirestore.collection ("Order").document (orderId).get ().addOnSuccessListener (orderDocumentSnapshot -> {
+                    if (courierDocumentSnapshot.getString ("orderId").equals ("") && orderDocumentSnapshot.getString ("courierId").equals ("")) {
+                        DocumentReference dfCourier = firebaseFirestore.collection ("Courier").document (courierId);
+                        DocumentReference dfOrder = firebaseFirestore.collection ("Order").document (orderId);
 
                         //Update Courier OrderId
+                        ApplicationUser applicationUser = courierDocumentSnapshot.toObject (ApplicationUser.class);
+                        applicationUser.getOrderId ().add (orderId);
                         Map<String, Object> CourierInfo = new HashMap<> ();
-                        CourierInfo.put ("orderId", orderId);
-                        df.update (CourierInfo);
-                        df.get ();
+                        CourierInfo.put ("orderId", applicationUser.getOrderId ());
+                        dfCourier.update (CourierInfo);
+                        dfCourier.get ();
+
                         //Update Order CourierId
                         Map<String, Object> OrderInfo = new HashMap<> ();
                         OrderInfo.put ("courierId", courierId);
-                        df1.update (OrderInfo);
-                        df1.get ();
-
+                        dfOrder.update (OrderInfo);
+                        dfOrder.get ();
                         authStateMutableLiveData.setValue (new AuthState ("Order assigned to Courier", true));
                     } else {
                         authStateMutableLiveData.setValue (new AuthState ("Order already assigned to Courier", true));
@@ -436,8 +437,7 @@ public class ApplicationRepository {
                 }));
     }
 
-    public void unassignOrder ( String orderId) {
-
+    public void unassignOrder (String orderId) {
         firebaseFirestore.collection ("Order").document (orderId).get ().addOnSuccessListener (orderDocumentSnapshot -> {
             if (orderDocumentSnapshot.getString ("dateTime") != null) {
                 firebaseFirestore.collection ("Courier").document (orderDocumentSnapshot.getString ("courierId")).get ().addOnSuccessListener (courierDocumentSnapshot -> {
@@ -446,17 +446,20 @@ public class ApplicationRepository {
                         DocumentReference df1 = firebaseFirestore.collection ("Order").document (orderId);
 
                         //Update Courier OrderId
+                        ApplicationUser applicationUser = courierDocumentSnapshot.toObject (ApplicationUser.class);
+                        applicationUser.getOrderId ().remove (orderId);
                         Map<String, Object> CourierInfo = new HashMap<> ();
-                        CourierInfo.put ("orderId", "");
+                        CourierInfo.put ("orderId", applicationUser.getOrderId ());
                         df.update (CourierInfo);
                         df.get ();
+
                         //Update Order CourierId
                         Map<String, Object> OrderInfo = new HashMap<> ();
                         OrderInfo.put ("courierId", "");
                         df1.update (OrderInfo);
                         df1.get ();
 
-                        authStateMutableLiveData.setValue (new AuthState ("Order unassigned to Courier", true));
+                        authStateMutableLiveData.setValue (new AuthState ("Order unassigned from Courier", true));
                     } else {
                         authStateMutableLiveData.setValue (new AuthState ("Order already unassigned to Courier", true));
                     }
@@ -488,7 +491,7 @@ public class ApplicationRepository {
                         authStateMutableLiveData.postValue (new AuthState ("Updated Successfully", true));
                     } else {
                         df.set (new ApplicationUser (address, area, authtype, user.getEmail (), latitude, longitude,
-                                name, 0, false, ""));
+                                name, 0, false, new ArrayList<> ()));
                         df.get ();
                         authStateMutableLiveData.postValue (new AuthState ("Added to database successfully", true));
                     }
@@ -502,34 +505,49 @@ public class ApplicationRepository {
     public void createOrder (String laundryHouseUID, double deliveryCost) {
         FirebaseUser user = mAuth.getCurrentUser ();
         if (user != null) {
-            DocumentReference df = firebaseFirestore.collection ("Customer").document (user.getUid ());
+            DocumentReference dfCustomer = firebaseFirestore.collection ("Customer").document (user.getUid ());
+            DocumentReference dfLaundryHouse = firebaseFirestore.collection ("Laundry House").document (laundryHouseUID);
             firebaseFirestore.collection ("Customer").document (Objects.requireNonNull (mAuth.getUid ())).get ()
                     .addOnSuccessListener (documentSnapshot -> {
                         //Create Order Object
-                        int ordernumber = documentSnapshot.get ("orders", int.class);
-                        String orderId = mAuth.getUid () + "_" + ordernumber + "_" + laundryHouseUID;
-                        Order order = new Order (orderId, "", laundryItems,
+                        int orderNumber = documentSnapshot.get ("orders", int.class);
+                        String orderId = mAuth.getUid () + "_" + orderNumber + "_" + laundryHouseUID;
+                        Order tempOrder = new Order (orderId, "", laundryItems,
                                 Calendar.getInstance ().getTime ().toString (), "Order Not Started", deliveryCost,
                                 false, false, false, false, false);
-                        orderMutableLiveData.postValue (order);
+                        orderMutableLiveData.postValue (tempOrder);
+
                         //Enter Order Object into Database
                         firebaseFirestore.collection ("Order").document (orderId)
                                 .get ().addOnSuccessListener (documentSnapshot1 -> {
-                            DocumentReference dforder = firebaseFirestore.collection ("Order")
+                            DocumentReference dfOrder = firebaseFirestore.collection ("Order")
                                     .document (orderId);
                             if (documentSnapshot1.get ("dateTime") == null) {
-                                dforder.set (order);
-                                dforder.get ();
-                                orderPlacementSuccessMutableLiveData.postValue (true);
+                                dfOrder.set (tempOrder);
+                                dfOrder.get ();
+                                orderPlacementSuccessMutableLiveData.postValue (new AuthState ("Order was placed",true));
+
+                                //Update number of orders for customer
+                                ApplicationUser customerUser = documentSnapshot.toObject (ApplicationUser.class);
+                                customerUser.getOrderId ().add (orderId);
+                                Map<String, Object> customerUserInfo = new HashMap<> ();
+                                customerUserInfo.put ("orders", orderNumber + 1);
+                                customerUserInfo.put ("orderId", customerUser.getOrderId ());
+                                dfCustomer.update (customerUserInfo);
+                                dfCustomer.get ();
+
+                                //Update number of orders for laundryHouse
+                                ApplicationUser laundryHouseUser = documentSnapshot.toObject (ApplicationUser.class);
+                                laundryHouseUser.getOrderId ().add (orderId);
+                                Map<String, Object> laundryHouseUserInfo = new HashMap<> ();
+                                laundryHouseUserInfo.put ("orders", orderNumber + 1);
+                                laundryHouseUserInfo.put ("orderId", laundryHouseUser.getOrderId ());
+                                dfLaundryHouse.update (laundryHouseUserInfo);
+                                dfLaundryHouse.get ();
                             } else
-                                orderPlacementSuccessMutableLiveData.postValue (false);
+                                orderPlacementSuccessMutableLiveData.postValue (new AuthState ("Order was not placed", false));
                         }).addOnFailureListener (e ->
-                                orderPlacementSuccessMutableLiveData.postValue (false));
-                        //Update number of orders for customer
-                        Map<String, Object> UserInfo = new HashMap<> ();
-                        UserInfo.put ("orders", ordernumber + 1);
-                        df.update (UserInfo);
-                        df.get ();
+                                orderPlacementSuccessMutableLiveData.postValue (new AuthState ("Order was not placed",false)));
                     });
         }
     }
@@ -551,7 +569,7 @@ public class ApplicationRepository {
 
     public void changeOrderPickDropStatus (String orderId, String authType, String type, boolean value) {
         firebaseFirestore.collection ("Order").document (orderId).get ().addOnSuccessListener (documentSnapshot -> {
-            DocumentReference dforder = firebaseFirestore.collection ("Order")
+            DocumentReference dfOrder = firebaseFirestore.collection ("Order")
                     .document (orderId);
             if (documentSnapshot.get ("dateTime") != null) {
                 Map<String, Object> OrderInfo = new HashMap<> ();
@@ -568,13 +586,13 @@ public class ApplicationRepository {
                             OrderInfo.put ("laundryHousePickUp", value);
                         else
                             OrderInfo.put ("laundryHouseDrop", value);
-                        authStateMutableLiveData.postValue (new AuthState ("Order Status changed successfully", true));
+                        authStateMutableLiveData.postValue (new AuthState ("Order Status changed successfully.", true));
                         break;
                     default:
-                        authStateMutableLiveData.postValue (new AuthState ("Order NOT UPDATED", true));
+                        authStateMutableLiveData.postValue (new AuthState ("Order not updated.", true));
                 }
-                dforder.update (OrderInfo);
-                dforder.get ();
+                dfOrder.update (OrderInfo);
+                dfOrder.get ();
             }
         });
     }
@@ -629,7 +647,9 @@ public class ApplicationRepository {
     public void changeActiveStatus (boolean isActive, String authtype, String Uid) {
         firebaseFirestore.collection (authtype).document (Uid).get ().addOnSuccessListener (documentSnapshot -> {
             DocumentReference dfActiveStatus = firebaseFirestore.collection (authtype).document (Uid);
-            if (authtype.equals ("Courier") && documentSnapshot.get ("orderId").equals ("")) {
+            if (authtype.equals ("Courier") && documentSnapshot.toObject (ApplicationUser.class).getOrderId ().size () > 1) {
+                authStateMutableLiveData.postValue (new AuthState ("Active Status cannot be changed during an Order", true));
+            } else {
                 if (documentSnapshot.get ("active") != null) {
                     Map<String, Object> UserInfo = new HashMap<> ();
                     UserInfo.put ("active", isActive);
@@ -639,7 +659,19 @@ public class ApplicationRepository {
                 }
             }
         });
+    }
 
+    public void turnOffNewOrders (boolean isActive, String authtype, String Uid) {
+        firebaseFirestore.collection (authtype).document (Uid).get ().addOnSuccessListener (documentSnapshot -> {
+            DocumentReference dfActiveStatus = firebaseFirestore.collection (authtype).document (Uid);
+                if (documentSnapshot.get ("active") != null) {
+                    Map<String, Object> UserInfo = new HashMap<> ();
+                    UserInfo.put ("active", isActive);
+                    dfActiveStatus.update (UserInfo);
+                    dfActiveStatus.get ();
+                    authStateMutableLiveData.postValue (new AuthState ("Active Status changed successfully", true));
+                }
+        });
     }
 
     public void addToCache (String type) {
@@ -739,11 +771,8 @@ public class ApplicationRepository {
                     LaundryHouse temp = new LaundryHouse (snapshot.getString ("name"),
                             address,
                             snapshot.getString ("area"),
-                            snapshot.getString ("upiID"),
-                            snapshot.getString ("payseraID"),
                             snapshot.getReference ().getId (),
                             snapshot.getBoolean ("active"));
-
                     firebaseFirestore.collection ("Customer")
                             .document (Objects.requireNonNull (FirebaseAuth.getInstance ().getUid ())).get ()
                             .addOnSuccessListener (documentSnapshot -> {
@@ -753,18 +782,16 @@ public class ApplicationRepository {
                                         (Objects.requireNonNull (documentSnapshot.get ("longitude", double.class))),
                                         address.latitude, address.longitude, results);
                                 if ((int) results[0] > 3000) {
-                                    temp.setDeliveryprice (BigDecimal.valueOf (2.5 + ((int) results[0] - 3000) * 0.002)
+                                    temp.setDeliveryPrice (BigDecimal.valueOf (2.5 + ((int) results[0] - 3000) * 0.002)
                                             .setScale (2, BigDecimal.ROUND_HALF_DOWN).doubleValue ());
                                 } else
-                                    temp.setDeliveryprice (2.5);
+                                    temp.setDeliveryPrice (2.5);
                                 mArrayList.add (temp);
                                 Collections.sort (mArrayList);
                                 laundryHouseMutableLiveData.setValue (mArrayList);
                             });
-
                 }
             }
-
         }).addOnFailureListener (e -> Log.d (TAG, "Failed to get data from firestore"));
     }
 
@@ -801,18 +828,18 @@ public class ApplicationRepository {
     public void loadAllCouriers () {
         ArrayList<Courier> courierArrayList = new ArrayList<> ();
         firebaseFirestore.collection ("Courier").get ().addOnSuccessListener (queryDocumentSnapshots -> {
-            for (DocumentSnapshot dsnap : queryDocumentSnapshots.getDocuments ()) {
-                if (dsnap.get ("latitude", double.class) != null
-                        && dsnap.get ("longitude", double.class) != null) {
+            for (DocumentSnapshot courierDocumentSnapshot : queryDocumentSnapshots.getDocuments ()) {
+                if (courierDocumentSnapshot.get ("latitude", double.class) != null
+                        && courierDocumentSnapshot.get ("longitude", double.class) != null) {
                     //noinspection ConstantConditions
-                    LatLng address = new LatLng (dsnap.get ("latitude", double.class),
-                            dsnap.get ("longitude", double.class));
+                    LatLng address = new LatLng (courierDocumentSnapshot.get ("latitude", double.class),
+                            courierDocumentSnapshot.get ("longitude", double.class));
                     courierArrayList.add (new Courier (
-                            dsnap.getString ("name"),
-                            dsnap.getId (),
+                            courierDocumentSnapshot.getString ("name"),
+                            courierDocumentSnapshot.getId (),
                             address,
-                            dsnap.getString ("orderId"),
-                            dsnap.getBoolean ("active")));
+                            courierDocumentSnapshot.toObject (ApplicationUser.class).getOrderId (),
+                            courierDocumentSnapshot.getBoolean ("active")));
                 }
             }
             courierListMutableLiveData.postValue (courierArrayList);

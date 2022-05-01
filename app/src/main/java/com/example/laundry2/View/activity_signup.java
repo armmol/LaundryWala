@@ -15,26 +15,22 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.laundry2.AuthenticationViewModel;
-import com.example.laundry2.DataClasses.AuthState;
 import com.example.laundry2.R;
 import com.example.laundry2.databinding.ActivitySignupBinding;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseUser;
 
 
 public class activity_signup extends AppCompatActivity {
 
     private AuthenticationViewModel viewModel;
     private ActivitySignupBinding binding;
-    private String spinneritem="";
+    private String spinneritem="SELECT USER TYPE";
     private static final String TAG = "Sign Up Activity";
 
     private final ActivityResultLauncher<Intent> googlesigninresulthandler = registerForActivityResult (new ActivityResultContracts.StartActivityForResult (), new ActivityResultCallback<ActivityResult> () {
@@ -71,58 +67,36 @@ public class activity_signup extends AppCompatActivity {
 
             @Override
             public void onNothingSelected (AdapterView<?> adapterView) {
-                spinneritem = "";
+                spinneritem = "SELECT USER TYPE";
             }
         });
 
-        viewModel.getState ().observe (activity_signup.this, new Observer<AuthState> () {
-            @Override
-            public void onChanged (AuthState authState) {
-                Toast.makeText (activity_signup.this, authState.getType (), Toast.LENGTH_SHORT).show ();
+        viewModel.getState ().observe (activity_signup.this, authState
+                -> Toast.makeText (activity_signup.this, authState.getType (), Toast.LENGTH_SHORT).show ());
+
+        viewModel.getCurrentSignInUser ().observe (this, user -> {
+            if (!spinneritem.equals ("SELECT USER TYPE")) {
+                Toast.makeText (activity_signup.this, "Signed in as -" + user.getEmail (), Toast.LENGTH_SHORT).show ();
+                startActivity (new Intent (activity_signup.this, activity_profile.class)
+                        .putExtra ("authtype", spinneritem));
             }
         });
 
-        viewModel.getCurrentSignInUser ().observe (this, new Observer<FirebaseUser> () {
-            @Override
-            public void onChanged (FirebaseUser user) {
-                if (!spinneritem.equals ("")) {
-                    Toast.makeText (activity_signup.this, "Signed in as -" + user.getEmail (), Toast.LENGTH_SHORT).show ();
-                    startActivity (new Intent (activity_signup.this, activity_profile.class)
-                            .putExtra ("authtype", spinneritem));
-                }
-            }
-        });
-
-        binding.btnSignup.setOnClickListener (new View.OnClickListener () {
-            @Override
-            public void onClick (View view) {
+        binding.btnSignup.setOnClickListener (view ->
                 viewModel.signupEmail (binding.edtxtEmailSignup.getText ().toString (),
-                        binding.edtxtPasswordSignup.getText ().toString (),
-                        binding.edtxtConfirmPasswordSignup.getText ().toString (),
-                        spinneritem);
-            }
-        });
+                binding.edtxtPasswordSignup.getText ().toString (),
+                binding.edtxtConfirmPasswordSignup.getText ().toString (),
+                spinneritem));
 
-        binding.txtGotologinfromsignup.setOnClickListener (new View.OnClickListener () {
-            @Override
-            public void onClick (View view) {
-                startActivity (new Intent (activity_signup.this, activity_login.class));
-            }
-        });
+        binding.txtGotologinfromsignup.setOnClickListener (view ->
+                startActivity (new Intent (activity_signup.this, activity_login.class)));
 
-        binding.btnGooglesignin.setOnClickListener (new View.OnClickListener () {
-            @Override
-            public void onClick (View view) {
-                if (!spinneritem.equals ("")) {
-                    viewModel.getGoogleSignInClient ().observe (activity_signup.this, new Observer<GoogleSignInClient> () {
-                        @Override
-                        public void onChanged (GoogleSignInClient googleSignInClient) {
-                            googlesigninresulthandler.launch (googleSignInClient.getSignInIntent ());
-                        }
-                    });
-                } else {
-                    Toast.makeText (getApplicationContext (), "Select User Type", Toast.LENGTH_SHORT).show ();
-                }
+        binding.btnGooglesignin.setOnClickListener (view -> {
+            if (!spinneritem.equals ("SELECT USER TYPE")) {
+                viewModel.getGoogleSignInClient ().observe (activity_signup.this,
+                        googleSignInClient -> googlesigninresulthandler.launch (googleSignInClient.getSignInIntent ()));
+            } else {
+                Toast.makeText (getApplicationContext (), "Select User Type", Toast.LENGTH_SHORT).show ();
             }
         });
     }

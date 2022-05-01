@@ -165,6 +165,11 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
     }
 
     @Override
+    public void stopNewOrders (boolean isActive, String authtype, String Uid) {
+        repository.turnOffNewOrders (isActive, authtype, Uid);
+    }
+
+    @Override
     public void assignOrder (String courierId, String orderId) {
         repository.assignOrder (courierId, orderId);
     }

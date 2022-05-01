@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.laundry2.Contract.LaundryBasketContract;
+import com.example.laundry2.DataClasses.AuthState;
 import com.example.laundry2.DataClasses.LaundryItem;
 import com.example.laundry2.DataClasses.Order;
 import com.example.laundry2.Database.LaundryItemCache;
@@ -18,21 +19,21 @@ import java.util.List;
 
 public class LaundryBasketViewModel extends AndroidViewModel implements LaundryBasketContract {
     private final MutableLiveData<Order> orderMutableLiveData;
-    private final MutableLiveData<Integer> basketsize;
-    private final MutableLiveData<List<LaundryItem>> laundryitemlist;
-    private final MutableLiveData<Boolean> orderPlacementSuccessMutableLiveData;
+    private final MutableLiveData<Integer> basketSize;
+    private final MutableLiveData<List<LaundryItem>> laundryItemList;
+    private final MutableLiveData<AuthState> orderPlacementSuccessMutableLiveData;
     private final ApplicationRepository laundryBasketRepository;
-    private final LiveData<List<LaundryItemCache>> laundryitemcachelist;
+    private final LiveData<List<LaundryItemCache>> laundryItemCacheList;
 
 
     public LaundryBasketViewModel (@NonNull Application application) {
         super (application);
         laundryBasketRepository = new ApplicationRepository (application);
         orderMutableLiveData = laundryBasketRepository.getOrderMutableLiveData ();
-        basketsize = laundryBasketRepository.getBasketSize ();
-        laundryitemlist = laundryBasketRepository.getLaundryItemList ();
+        basketSize = laundryBasketRepository.getBasketSize ();
+        laundryItemList = laundryBasketRepository.getLaundryItemList ();
         orderPlacementSuccessMutableLiveData = laundryBasketRepository.getOrderPlacementSuccessMutableLiveData ();
-        laundryitemcachelist = laundryBasketRepository.getLaundryItemCaches ();
+        laundryItemCacheList = laundryBasketRepository.getLaundryItemCaches ();
     }
 
     @Override
@@ -42,22 +43,22 @@ public class LaundryBasketViewModel extends AndroidViewModel implements LaundryB
 
     @Override
     public MutableLiveData<Integer> getBasketSize () {
-        return basketsize;
+        return basketSize;
     }
 
     @Override
-    public MutableLiveData<Boolean> orderPlacementStatus () {
+    public MutableLiveData<AuthState> orderPlacementStatus () {
         return orderPlacementSuccessMutableLiveData;
     }
 
     @Override
     public MutableLiveData<List<LaundryItem>> getLaundryItems () {
-        return laundryitemlist;
+        return laundryItemList;
     }
 
     @Override
     public LiveData<List<LaundryItemCache>> getCachedItems () {
-        return laundryitemcachelist;
+        return laundryItemCacheList;
     }
 
     @Override

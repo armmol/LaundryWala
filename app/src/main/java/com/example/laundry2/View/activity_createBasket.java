@@ -40,7 +40,6 @@ import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.wallet.PaymentData;
 import com.paypal.checkout.PayPalCheckout;
-import com.paypal.checkout.approve.OnApprove;
 import com.paypal.checkout.config.CheckoutConfig;
 import com.paypal.checkout.config.Environment;
 import com.paypal.checkout.config.PaymentButtonIntent;
@@ -144,6 +143,9 @@ public class activity_createBasket extends AppCompatActivity {
         deliveryCost = getIntent ().getExtras ().getDouble ("deliveryprice", 0.0);
         binding.deliverypriceCreatebasket.setText (String.format ("Delivery Cost - %s", deliveryCost));
 
+        viewModel.orderPlacementStatus ().observe (this, orderStatus ->{
+            Toast.makeText (this, orderStatus.getType (), Toast.LENGTH_SHORT).show ();
+        });
         viewModel.getLaundryItems ().observe (this, laundryItemList -> {
             binding.txtLaundrybasketcounter.setText (MessageFormat.format ("{0}", laundryItemList.size ()));
             //Cost for the payment
@@ -161,7 +163,7 @@ public class activity_createBasket extends AppCompatActivity {
                 if (laundryItemList.size () != 0) {
                     View popupWindowView = createPopUpWindow (R.layout.activity_confirmorder);
                     RecyclerView recyclerView = popupWindowView.findViewById (R.id.recyclerView_confirmorder);
-                    adapter = new LaundryItemsAdapter (this, laundryItemList,0);
+                    adapter = new LaundryItemsAdapter (this, laundryItemList, 0);
                     recyclerView.setLayoutManager (new LinearLayoutManager (getApplicationContext ()));
                     recyclerView.setAdapter (adapter);
                     adapter.setOnItemClickListener (laundryItem -> {
@@ -176,15 +178,6 @@ public class activity_createBasket extends AppCompatActivity {
                     confirmAddress (cost);
                 else
                     Toast.makeText (this, "Nothing in Basket", Toast.LENGTH_SHORT).show ();
-            });
-            int ordeplacedflag = 0;
-            viewModel.orderPlacementStatus ().observe (this, isPlaced -> {
-
-                if (isPlaced && ordeplacedflag==0) {
-                    Toast.makeText (this, "Order Placed Successfully", Toast.LENGTH_SHORT).show ();
-                }
-                else
-                    Toast.makeText (this, "Order could not be Placed", Toast.LENGTH_SHORT).show ();
             });
         });
         OnBackPressedCallback callback = new OnBackPressedCallback (true) {
@@ -222,7 +215,7 @@ public class activity_createBasket extends AppCompatActivity {
                     Order order = new Order (OrderIntent.CAPTURE, new AppContext.Builder ()
                             .userAction (UserAction.PAY_NOW).build (), purchaseUnits, ProcessingInstruction.NO_INSTRUCTION);
                     createOrderActions.create (order, (CreateOrderActions.OnOrderCreated) null);
-                }, (OnApprove) approval -> approval.getOrderActions ().capture (result -> {
+                }, approval -> approval.getOrderActions ().capture (result -> {
                     viewModel.createOrder (laundryHouseUid, deliveryCost);
                     activity_createBasket.this.startActivity (new Intent (activity_createBasket.this, activity_home.class)
                             .putExtra ("authtype", activity_createBasket.this.getString (R.string.customer)));

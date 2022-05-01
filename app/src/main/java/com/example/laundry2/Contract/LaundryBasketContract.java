@@ -3,6 +3,7 @@ package com.example.laundry2.Contract;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.laundry2.DataClasses.AuthState;
 import com.example.laundry2.DataClasses.LaundryItem;
 import com.example.laundry2.DataClasses.Order;
 import com.example.laundry2.Database.LaundryItemCache;
@@ -15,7 +16,7 @@ public interface LaundryBasketContract {
 
     MutableLiveData<Integer> getBasketSize ();
 
-    MutableLiveData<Boolean> orderPlacementStatus();
+    MutableLiveData<AuthState> orderPlacementStatus();
 
     MutableLiveData<List<LaundryItem>> getLaundryItems();
 

@@ -1,27 +1,29 @@
 package com.example.laundry2.DataClasses;
 
+import java.util.ArrayList;
+
 public class ApplicationUser {
     double latitude;
     double longitude;
     String email;
     String name;
-    String authype;
+    String authType;
     String address;
     String area;
     int orders;
     boolean active;
-    String orderID;
+    ArrayList<String> orderID;
 
 
-    public ApplicationUser (String address, String area, String authype, String email, double latitude,
-                            double longitude, String name, int orders, boolean active, String orderID) {
+    public ApplicationUser (String address, String area, String authType, String email, double latitude,
+                            double longitude, String name, int orders, boolean active, ArrayList<String> orderID) {
         this.email = email;
         this.latitude = latitude;
         this.longitude = longitude;
         this.name = name;
         this.address = address;
         this.area = area;
-        this.authype = authype;
+        this.authType = authType;
         this.orders = orders;
         this.active = active;
         this.orderID = orderID;
@@ -83,12 +85,12 @@ public class ApplicationUser {
         this.area = area;
     }
 
-    public String getAuthype () {
-        return authype;
+    public String getAuthType () {
+        return authType;
     }
 
-    public void setAuthype (String authype) {
-        this.authype = authype;
+    public void setAuthType (String authType) {
+        this.authType = authType;
     }
 
     public boolean isActive () {
@@ -99,11 +101,11 @@ public class ApplicationUser {
         this.active = active;
     }
 
-    public String getOrderId () {
+    public ArrayList<String> getOrderId () {
         return orderID;
     }
 
-    public void setOrderId (String orderID) {
+    public void setOrderId (ArrayList<String> orderID) {
         this.orderID = orderID;
     }
 
