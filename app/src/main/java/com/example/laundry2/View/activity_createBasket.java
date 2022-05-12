@@ -28,10 +28,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.laundry2.Adapters.LaundryItemsAdapter;
 import com.example.laundry2.AuthenticationViewModel;
-import com.example.laundry2.BuildConfig;
-import com.example.laundry2.DataClasses.LaundryItem;
-import com.example.laundry2.Database.LaundryItemCache;
 import com.example.laundry2.LaundryBasketViewModel;
+import com.example.laundry2.Database.LaundryItemCache;
 import com.example.laundry2.PaymentsViewModel;
 import com.example.laundry2.R;
 import com.example.laundry2.databinding.ActivityCreatebasketBinding;
@@ -39,6 +37,9 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.wallet.PaymentData;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.paypal.checkout.PayPalCheckout;
 import com.paypal.checkout.config.CheckoutConfig;
 import com.paypal.checkout.config.Environment;
@@ -60,7 +61,10 @@ import org.json.JSONObject;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class activity_createBasket extends AppCompatActivity {
@@ -68,33 +72,16 @@ public class activity_createBasket extends AppCompatActivity {
     private PopupWindow window;
     private RelativeLayout googlePayButton;
     private PaymentButton payPalButton;
-    private ArrayList<String> items;
     private ActivityCreatebasketBinding binding;
     private LaundryBasketViewModel viewModel;
     private PaymentsViewModel paymentsViewModel;
     private AuthenticationViewModel authenticationViewModel;
+    private ActivityResultLauncher<Intent> findAddress;
     private LaundryItemsAdapter adapter;
     private String laundryHouseUid;
-    private double deliveryCost;
-    private final ActivityResultLauncher<IntentSenderRequest> resolvePaymentForResult = registerForActivityResult (
-            new ActivityResultContracts.StartIntentSenderForResult (),
-            result -> {
-                switch (result.getResultCode ()) {
-                    case Activity.RESULT_OK:
-                        Intent resultData = result.getData ();
-                        if (resultData != null) {
-                            PaymentData paymentData = PaymentData.getFromIntent (result.getData ());
-                            if (paymentData != null) {
-                                handleGPayPaymentSuccess (paymentData);
-                            }
-                        }
-                        break;
-                    case Activity.RESULT_CANCELED:
-                        // The user cancelled the payment attempt
-                        Toast.makeText (this, "Payment Cancelled", Toast.LENGTH_SHORT).show ();
-                        break;
-                }
-            });
+    private double deliveryCost = 0, dryingCost = 0, staticDelivery = 0;
+    private boolean drying;
+    private ActivityResultLauncher<IntentSenderRequest> resolvePaymentForResult;
 
     @Override
     protected void onCreate (@Nullable Bundle savedInstanceState) {
@@ -104,56 +91,117 @@ public class activity_createBasket extends AppCompatActivity {
         viewModel = new ViewModelProvider (this).get (LaundryBasketViewModel.class);
         paymentsViewModel = new ViewModelProvider (this).get (PaymentsViewModel.class);
         authenticationViewModel = new ViewModelProvider (this).get (AuthenticationViewModel.class);
-        laundryHouseUid = getIntent ().getStringExtra ("laundryhouseuid");
-        items = getIntent ().getStringArrayListExtra ("items");
-        if (items != null) {
-            for (String item : items)
-                viewModel.addItem (item);
-        } else items = new ArrayList<> ();
-        binding.imgbtnShirtsAdd.setOnClickListener (view -> {
-            viewModel.addItem ("Shirt");
-            //viewModel.addToCache ("Shirt");
-            items.add ("Shirt");
-        });
-        binding.imgbtnPants.setOnClickListener (view -> {
-            viewModel.addItem ("Pant");
-            //viewModel.addToCache ("Pant");
-            items.add ("Pant");
-        });
-        binding.imgbtnSuits.setOnClickListener (view -> {
-            viewModel.addItem ("Suit/Blazer/Coat");
-            //viewModel.addToCache ("Suit/Blazer/Coat");
-            items.add ("Suit/Blazer/Coat");
-        });
-        binding.imgbtnJackets.setOnClickListener (view -> {
-            viewModel.addItem ("Jackets/Woolen");
-            //viewModel.addToCache ("Jackets/Woolen");
-            items.add ("Jackets/Woolen");
-        });
-        binding.imgbtnCarpets.setOnClickListener (view -> {
-            viewModel.addItem ("Carpet/Rug");
-            //viewModel.addToCache ("Carpet/Rug");
-            items.add ("Carpet/Rug");
-        });
-        binding.imgbtnBedsheets.setOnClickListener (view -> {
-            viewModel.addItem ("Bedsheet/Duvet");
-            //viewModel.addToCache ("Bedsheet/Duvet");
-            items.add ("Bedsheet/Duvet");
-        });
-        deliveryCost = getIntent ().getExtras ().getDouble ("deliveryprice", 0.0);
-        binding.deliverypriceCreatebasket.setText (String.format ("Delivery Cost - %s", deliveryCost));
+        findAddress = registerForActivityResult (
+                new ActivityResultContracts.StartActivityForResult (), result -> {
+                    authenticationViewModel.getCurrentSignInUser ().observe (activity_createBasket.this, firebaseUser -> {
+                        authenticationViewModel.loadApplicationUserData (getString (R.string.customer), firebaseUser.getUid ());
+                        authenticationViewModel.getApplicationUserData ().observe (activity_createBasket.this, user -> {
+                            if (result.getResultCode () == RESULT_OK) {
+                                if (result.getData () != null) {
+                                    Place place = Autocomplete.getPlaceFromIntent (result.getData ());
+                                    if (place.getAddress ().split (",")[1].contains ("Kaunas"))
+                                        authenticationViewModel.enterIntoDB (firebaseUser.getUid (), firebaseUser.getEmail (), getString (R.string.customer),
+                                                user.getName (), place.getAddress (), place.getAddress ().split (",")[1],
+                                                place.getLatLng ().latitude, place.getLatLng ().longitude);
+                                    else
+                                        Toast.makeText (activity_createBasket.this, "we do not serve outside Kaunas", Toast.LENGTH_SHORT).show ();
+                                } else
+                                    Toast.makeText (activity_createBasket.this, "Failed Try Again", Toast.LENGTH_SHORT).show ();
+                            }
+                        });
+                    });
+                });
+        resolvePaymentForResult = registerForActivityResult (
+                new ActivityResultContracts.StartIntentSenderForResult (), result -> {
+                    switch (result.getResultCode ()) {
+                        case Activity.RESULT_OK:
+                            Intent resultData = result.getData ();
+                            if (resultData != null) {
+                                PaymentData paymentData = PaymentData.getFromIntent (result.getData ());
+                                if (paymentData != null) {
+                                    handleGPayPaymentSuccess (paymentData);
+                                }
+                            }
+                            break;
+                        case Activity.RESULT_CANCELED:
+                            // The user cancelled the payment attempt
+                            Toast.makeText (this, "Payment Cancelled", Toast.LENGTH_SHORT).show ();
+                            break;
+                    }
+                });
 
-        viewModel.orderPlacementStatus ().observe (this, orderStatus ->{
-            Toast.makeText (this, orderStatus.getType (), Toast.LENGTH_SHORT).show ();
+        binding.imgbtnShirtsAdd.setOnClickListener (view -> viewModel.addItem ("Shirt"));
+        binding.imgbtnPants.setOnClickListener (view -> viewModel.addItem ("Pant"));
+        binding.imgbtnSuits.setOnClickListener (view -> viewModel.addItem ("Suit/Blazer/Coat"));
+        binding.imgbtnJackets.setOnClickListener (view -> viewModel.addItem ("Jackets/Woolen"));
+        binding.imgbtnCarpets.setOnClickListener (view -> viewModel.addItem ("Carpet/Rug"));
+        binding.imgbtnBedsheets.setOnClickListener (view -> viewModel.addItem ("Bedsheet/Duvet"));
+        binding.imgbtnKgs.setOnClickListener (view -> viewModel.addItem ("Kg"));
+
+        AtomicInteger flag = new AtomicInteger (1);
+        authenticationViewModel.getLaundryHouseCacheData ().observe (this, laundryHouseCache -> {
+            if (flag.intValue () == 1 && laundryHouseCache != null) {
+                laundryHouseUid = laundryHouseCache.getLaundryHouseID ();
+                staticDelivery = Double.parseDouble (laundryHouseCache.getDeliveryCost ());
+                flag.set (0);
+            }
         });
-        viewModel.getLaundryItems ().observe (this, laundryItemList -> {
+
+        binding.checkBoxINeedACourier.setChecked (false);
+        binding.deliverypriceCreatebasket.setText (String.format ("Delivery Cost - %s", deliveryCost));
+        binding.checkBoxINeedACourier.setOnCheckedChangeListener ((compoundButton, b) -> {
+            deliveryCost = binding.checkBoxINeedACourier.isChecked () ? staticDelivery : 0;
+            binding.deliverypriceCreatebasket.setText (String.format ("Delivery Cost - %s", deliveryCost));
+            double costAfterDeliveryChange = 0;
+            if (viewModel.getCachedItems ().getValue ().size () != 0) {
+                for (LaundryItemCache item : viewModel.getCachedItems ().getValue ()) {
+                    dryingCost = binding.checkBoxINeedDrying.isChecked () ? 0.16 * viewModel.getCachedItems ().getValue ().size () : 0;
+                    costAfterDeliveryChange += Double.parseDouble (item.getType ().split (",")[1]);
+                }
+                binding.txtLaundrybasketcost.setText (String.format ("%s €",
+                        new BigDecimal (costAfterDeliveryChange + deliveryCost + dryingCost).
+                                setScale (2, BigDecimal.ROUND_HALF_DOWN).doubleValue ()));
+            }
+        });
+
+        drying = binding.checkBoxINeedDrying.isChecked ();
+        binding.checkBoxINeedDrying.setChecked (false);
+        binding.dryingpriceCreatebasket.setText (String.format ("Drying Cost - %s", dryingCost));
+        binding.checkBoxINeedDrying.setOnCheckedChangeListener ((compoundButton, b) -> {
+            drying = binding.checkBoxINeedDrying.isChecked ();
+            deliveryCost = binding.checkBoxINeedACourier.isChecked () ? staticDelivery : 0;
+            double costAfterDryingChange = 0;
+            if (viewModel.getCachedItems ().getValue ().size () != 0) {
+                for (LaundryItemCache item : viewModel.getCachedItems ().getValue ()) {
+                    dryingCost = binding.checkBoxINeedDrying.isChecked () ? 0.16 * viewModel.getCachedItems ().getValue ().size () : 0;
+                    binding.dryingpriceCreatebasket.setText (String.format ("Drying Cost - %s", dryingCost));
+                    costAfterDryingChange += Double.parseDouble (item.getType ().split (",")[1]);
+                }
+                binding.txtLaundrybasketcost.setText (String.format ("%s €",
+                        new BigDecimal (costAfterDryingChange + deliveryCost + dryingCost).
+                                setScale (2, BigDecimal.ROUND_HALF_DOWN).doubleValue ()));
+            }
+        });
+        binding.btnConfrimandpayCreatebasket.setOnClickListener (view -> {
+            if (binding.txtLaundrybasketcounter.getText ().equals ("0")) {
+                Toast.makeText (this, "Nothing in basket", Toast.LENGTH_SHORT).show ();
+            }
+        });
+        viewModel.orderPlacementStatus ().observe (this, orderStatus ->
+                Toast.makeText (this, orderStatus.getType (), Toast.LENGTH_SHORT).show ());
+
+        viewModel.getCachedItems ().observe (this, laundryItemList -> {
             binding.txtLaundrybasketcounter.setText (MessageFormat.format ("{0}", laundryItemList.size ()));
             //Cost for the payment
             double a = 0;
-            for (LaundryItem item : laundryItemList) {
-                a += item.getCost ();
+            int kgs = 0;
+            a += binding.checkBoxINeedDrying.isChecked () ? 2.5 : 0;
+            for (LaundryItemCache item : laundryItemList) {
+                if (item.getType ().split (",")[0].equals ("Kg")) kgs++;
+                a += Double.parseDouble (item.getType ().split (",")[1]);
             }
-            a += deliveryCost;
+            binding.textViewKgcounter.setText (String.format ("%s Kg", kgs));
+            a += deliveryCost + dryingCost;
             String cost = "" + new BigDecimal (a).setScale (2, BigDecimal.ROUND_HALF_DOWN).doubleValue ();
             if (laundryItemList.size () != 0)
                 binding.txtLaundrybasketcost.setText (String.format ("%s €", cost));
@@ -161,30 +209,35 @@ public class activity_createBasket extends AppCompatActivity {
                 binding.txtLaundrybasketcost.setText ("0 €");
             binding.cardLaundrybasket.setOnClickListener (view -> {
                 if (laundryItemList.size () != 0) {
-                    View popupWindowView = createPopUpWindow (R.layout.activity_confirmorder);
+                    View popupWindowView = createPopUpWindow (R.layout.activity_viewitems);
                     RecyclerView recyclerView = popupWindowView.findViewById (R.id.recyclerView_confirmorder);
+                    TextView clearAll = popupWindowView.findViewById (R.id.textView_clearBasket);
+                    clearAll.setVisibility (View.VISIBLE);
+                    clearAll.setOnClickListener (view1 -> {
+                        viewModel.clearBasket ();
+                        Toast.makeText (this, "Basket Cleared", Toast.LENGTH_SHORT).show ();
+                        window.dismiss ();
+                    });
                     adapter = new LaundryItemsAdapter (this, laundryItemList, 0);
                     recyclerView.setLayoutManager (new LinearLayoutManager (getApplicationContext ()));
                     recyclerView.setAdapter (adapter);
-                    adapter.setOnItemClickListener (laundryItem -> {
-                        viewModel.removeItem (laundryItem.getType ());
-                        items.remove (laundryItem.getType ());
-                    });
+                    adapter.setOnItemClickListener (laundryItem -> viewModel.removeItem (laundryItem));
                 } else
                     Toast.makeText (this, "Nothing in Basket", Toast.LENGTH_SHORT).show ();
             });
+
             binding.btnConfrimandpayCreatebasket.setOnClickListener (view -> {
-                if (laundryItemList.size () != 0)
-                    confirmAddress (cost);
-                else
-                    Toast.makeText (this, "Nothing in Basket", Toast.LENGTH_SHORT).show ();
+                if (laundryItemList.size () == 0) {
+                    Toast.makeText (this, "Nothing in basket", Toast.LENGTH_SHORT).show ();
+                } else
+                    confirmAddress (binding.txtLaundrybasketcost.getText ().toString ().split (" ")[0]);
             });
         });
         OnBackPressedCallback callback = new OnBackPressedCallback (true) {
             @Override
             public void handleOnBackPressed () {
-                startActivity (new Intent (activity_createBasket.this, activity_home.class)
-                        .putExtra ("authtype", getString (R.string.customer)).putStringArrayListExtra ("items", items));
+                startActivity (new Intent (activity_createBasket.this, activity_home.class));
+                authenticationViewModel.removeLaundryHouseCacheData ();
             }
         };
         activity_createBasket.this.getOnBackPressedDispatcher ().addCallback (callback);
@@ -198,13 +251,12 @@ public class activity_createBasket extends AppCompatActivity {
         googlePayButton.setOnClickListener (view -> requestPayment (cost));
         paymentsViewModel.canPayWithGooglePay ();
         paymentsViewModel.get_canUseGooglePay ().observe (this, this::setGooglePayAvailable);
-
     }
 
     public void payPalRequestPayment (String cost) {
         CheckoutConfig config = new CheckoutConfig (getApplication (),
                 "AcQbITXPS5RpHeSWljf4ujWlgeUcWaR020JBGso7hHv7NLeZcDoMyeZS26ZIkr8dKNfv1JbXPVPLUZpj", Environment.SANDBOX,
-                BuildConfig.APPLICATION_ID + "://paypalpay", CurrencyCode.EUR, UserAction.PAY_NOW, PaymentButtonIntent.CAPTURE);
+                "com.example.laundry2" + "://paypalpay", CurrencyCode.EUR, UserAction.PAY_NOW, PaymentButtonIntent.CAPTURE);
         PayPalCheckout.setConfig (config);
         payPalButton.setup (
                 createOrderActions -> {
@@ -216,7 +268,9 @@ public class activity_createBasket extends AppCompatActivity {
                             .userAction (UserAction.PAY_NOW).build (), purchaseUnits, ProcessingInstruction.NO_INSTRUCTION);
                     createOrderActions.create (order, (CreateOrderActions.OnOrderCreated) null);
                 }, approval -> approval.getOrderActions ().capture (result -> {
-                    viewModel.createOrder (laundryHouseUid, deliveryCost);
+                    authenticationViewModel.getCurrentSignInUser ().observe (this, user -> viewModel.createOrder (user.getUid (), laundryHouseUid, deliveryCost, drying));
+                    viewModel.clearLaundryItemCache ();
+                    authenticationViewModel.removeLaundryHouseCacheData ();
                     activity_createBasket.this.startActivity (new Intent (activity_createBasket.this, activity_home.class)
                             .putExtra ("authtype", activity_createBasket.this.getString (R.string.customer)));
                     Log.i ("CaptureOrder", String.format ("CaptureOrderResult: %s", result));
@@ -226,7 +280,7 @@ public class activity_createBasket extends AppCompatActivity {
     }
 
     public void confirmAddress (String cost) {
-        authenticationViewModel.loadApplicationUserData (getString (R.string.customer));
+        authenticationViewModel.getCurrentSignInUser().observe (this, user ->authenticationViewModel.loadApplicationUserData (getString (R.string.customer),user.getUid ()));
         View popupWindowView = createPopUpWindow (R.layout.activity_confirmaddress);
         Button confirm, change;
         TextView txt;
@@ -235,9 +289,9 @@ public class activity_createBasket extends AppCompatActivity {
         change = popupWindowView.findViewById (R.id.button_confirmaddress_change);
         authenticationViewModel.getApplicationUserData ().observe (this, user -> txt.setText (user.getAddress ()));
         change.setOnClickListener (view -> {
-            Toast.makeText (this, "Change your address in profile and then come back and continue", Toast.LENGTH_SHORT).show ();
-            startActivity (new Intent (activity_createBasket.this, activity_profile.class)
-                    .putExtra ("authtype", getString (R.string.customer)).putStringArrayListExtra ("items", items));
+            List<Place.Field> fieldList = Arrays.asList (Place.Field.ADDRESS, Place.Field.LAT_LNG, Place.Field.NAME);
+            findAddress.launch (new Autocomplete.IntentBuilder (AutocompleteActivityMode.OVERLAY
+                    , fieldList).build (activity_createBasket.this));
         });
         confirm.setOnClickListener (view -> {
             window.dismiss ();
@@ -273,7 +327,6 @@ public class activity_createBasket extends AppCompatActivity {
                     }
                     googlePayButton.setClickable (true);
                 }));
-
     }
 
     private void setGooglePayAvailable (boolean available) {
@@ -296,7 +349,9 @@ public class activity_createBasket extends AppCompatActivity {
             Log.d ("Google Pay token", paymentMethodData
                     .getJSONObject ("tokenizationData")
                     .getString ("token"));
-            viewModel.createOrder (laundryHouseUid, deliveryCost);
+            authenticationViewModel.getCurrentSignInUser ().observe (this, user -> viewModel.createOrder (user.getUid (), laundryHouseUid, deliveryCost, drying));
+            viewModel.clearLaundryItemCache ();
+            authenticationViewModel.removeLaundryHouseCacheData ();
             startActivity (new Intent (activity_createBasket.this, activity_home.class)
                     .putExtra ("authtype", getString (R.string.customer)));
         } catch (JSONException e) {
@@ -317,17 +372,5 @@ public class activity_createBasket extends AppCompatActivity {
         window.setFocusable (true);
         window.showAtLocation (popupWindowView, Gravity.CENTER, 0, 0);
         return popupWindowView;
-    }
-
-    @Override
-    protected void onStart () {
-        super.onStart ();
-        //viewModel.addToCache ("");
-        viewModel.getCachedItems ().observe (this, laundryItemCaches -> {
-            if (laundryItemCaches != null)
-                for (LaundryItemCache laundryItemCache : laundryItemCaches) {
-                    viewModel.addItem (laundryItemCache.getType ());
-                }
-        });
     }
 }

@@ -7,13 +7,11 @@
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardview_courier"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="24dp"
-        app:cardBackgroundColor="#83FF0000"
+        android:layout_width="325dp"
+        android:layout_height="82dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        app:cardBackgroundColor="#97651FFF"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -21,34 +19,69 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:background="#F8F8F8">
+
+            <TextView
+                android:id="@+id/txt_card_courierdistanceToLaundryHouse"
+                android:layout_width="0dp"
+                android:layout_height="37dp"
+                android:layout_marginBottom="8dp"
+                android:textColor="@color/purple_500"
+                android:textSize="14sp"
+                android:textStyle="bold|italic"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/txt_card_couriername"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="@+id/txt_card_couriername"
+                app:layout_constraintTop_toBottomOf="@+id/txt_card_couriername"
+                app:layout_constraintVertical_bias="0.333" />
+
+            <TextView
+                android:id="@+id/txt_card_courierdistanceToCustomer"
+                android:layout_width="0dp"
+                android:layout_height="37dp"
+                android:textColor="@color/purple_500"
+                android:textSize="14sp"
+                android:textStyle="bold|italic"
+                app:layout_constraintBottom_toBottomOf="@+id/txt_card_courierdistanceToLaundryHouse"
+                app:layout_constraintEnd_toEndOf="@+id/txt_card_courierOrders"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="@+id/txt_card_courierOrders"
+                app:layout_constraintTop_toTopOf="@+id/txt_card_courierdistanceToLaundryHouse"
+                app:layout_constraintVertical_bias="1.0" />
 
             <TextView
                 android:id="@+id/txt_card_couriername"
-                android:layout_width="wrap_content"
-                android:layout_height="37dp"
-                android:layout_marginTop="16dp"
+                android:layout_width="156dp"
+                android:layout_height="34dp"
+                android:layout_marginTop="8dp"
                 android:layout_marginBottom="16dp"
-                android:textColor="#171010"
-                android:textSize="24sp"
+                android:textColor="@color/purple_500"
+                android:textSize="14sp"
                 android:textStyle="bold|italic"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.081"
+                app:layout_constraintHorizontal_bias="0.011"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="1.0" />
+                app:layout_constraintVertical_bias="0.0" />
 
-            <CheckBox
-                android:id="@+id/checkBox_Active_CouriersCard"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="32dp"
-                android:text="@string/active"
+            <TextView
+                android:id="@+id/txt_card_courierOrders"
+                android:layout_width="163dp"
+                android:layout_height="34dp"
+                android:textColor="@color/purple_500"
+                android:textSize="14sp"
+                android:textStyle="bold|italic"
                 app:layout_constraintBottom_toBottomOf="@+id/txt_card_couriername"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/txt_card_couriername"
-                app:layout_constraintTop_toTopOf="@+id/txt_card_couriername" />
+                app:layout_constraintHorizontal_bias="0.988"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/txt_card_couriername"
+                app:layout_constraintVertical_bias="1.0" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

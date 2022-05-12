@@ -42,6 +42,7 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
         holder.orderCost.setText (String.format ("%s €", orders.get (position).getTotalCost ()));
         holder.orderStatus.setText (orders.get (position).getStatus ());
         holder.deliveryCost.setText (String.format ("%s €", orders.get (position).getDeliveryCost ()));
+        holder.drying.setText (orders.get (position).isDrying () ? "Included" : "Not Included");
     }
 
     @Override
@@ -75,7 +76,7 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
-        TextView orderId, orderStatus, orderTime, orderCost, deliveryCost;
+        TextView orderId, orderStatus, orderTime, orderCost, deliveryCost, drying;
         Button checkStatus, checkItems, startTracking;
 
         public MyViewHolder (@NonNull View itemView) {
@@ -89,8 +90,8 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
             checkStatus = itemView.findViewById (R.id.button_orderhistory_checkstatus);
             checkItems = itemView.findViewById (R.id.button_orderhistory_checkitems);
             startTracking = itemView.findViewById (R.id.button_orderhistory_starttracking);
-
-            if(track == 1) {
+            drying = itemView.findViewById (R.id.textView_card_orderhistory_drying);
+            if (track == 1) {
                 checkItems.setVisibility (View.INVISIBLE);
                 checkStatus.setVisibility (View.INVISIBLE);
                 startTracking.setVisibility (View.VISIBLE);

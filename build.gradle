@@ -29,6 +29,7 @@ compileTestKotlin {
         jvmTarget = "1.8"
     }
 }
+
 task cleanproject(type: Delete) {
     delete rootProject.buildDir
 }

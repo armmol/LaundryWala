@@ -22,9 +22,13 @@ public interface LaundryBasketContract {
 
     LiveData<List<LaundryItemCache>> getCachedItems();
 
-    void createOrder (String laundryHouseUID, double deliveryCost);
+    void createOrder (String uid, String laundryHouseUID, double deliveryCost,boolean drying);
+
+    void clearLaundryItemCache ();
+
+    void clearBasket();
 
     void addItem (String type);
 
-    void removeItem(String type);
+    void removeItem(LaundryItemCache laundryItemCache);
 }

@@ -9,8 +9,8 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.laundry2.Contract.LocationContract;
 import com.example.laundry2.DataClasses.ApplicationUser;
+import com.example.laundry2.DataClasses.AuthState;
 import com.example.laundry2.DataClasses.Order;
-import com.example.laundry2.Repositories.ApplicationRepository;
 import com.google.firebase.auth.FirebaseUser;
 
 public class LocationViewModel extends AndroidViewModel implements LocationContract {
@@ -20,6 +20,8 @@ public class LocationViewModel extends AndroidViewModel implements LocationContr
     private final MutableLiveData<Boolean> serviceStateMutableLiveData;
     private final MutableLiveData<ApplicationUser> applicationUserMutableLiveData;
     private final MutableLiveData<Order> orderMutableLiveData;
+    private final MutableLiveData<String> customerEmail;
+    private final MutableLiveData<AuthState> authStateMutableLiveData;
 
     public LocationViewModel (@NonNull Application application) {
         super (application);
@@ -29,6 +31,8 @@ public class LocationViewModel extends AndroidViewModel implements LocationContr
         serviceStateMutableLiveData = locationRepository.getServiceState ();
         applicationUserMutableLiveData = locationRepository.getApplicationUserMutableLiveData ();
         orderMutableLiveData = locationRepository.getOrderMutableLiveData ();
+        customerEmail = locationRepository.getCustomerEmail ();
+        authStateMutableLiveData = locationRepository.getAuthStateMutableLiveData ();
     }
 
     @Override
@@ -44,6 +48,11 @@ public class LocationViewModel extends AndroidViewModel implements LocationContr
     @Override
     public void getCurrentLocation () {
         locationRepository.getLocation ();
+    }
+
+    @Override
+    public void getCustomerEmail (String orderId) {
+        locationRepository.getCustomerEmail (orderId);
     }
 
     @Override
@@ -72,22 +81,22 @@ public class LocationViewModel extends AndroidViewModel implements LocationContr
     }
 
     @Override
-    public MutableLiveData<ApplicationUser> getApplicationUserData () {
-        return applicationUserMutableLiveData;
-    }
-
-    @Override
     public MutableLiveData<Order> getOrder () {
         return orderMutableLiveData;
     }
 
     @Override
-    public void loadApplicationUserData (String authtype) {
-        locationRepository.getApplicationUserData (authtype);
+    public MutableLiveData<String> getCustomerEmailMutableLiveData () {
+        return customerEmail;
     }
 
     @Override
     public void getCustomerOrder (String orderId) {
         locationRepository.getOrder (orderId);
+    }
+
+    //Required for Testing
+    public MutableLiveData<AuthState> getAuthStateMutableLiveData () {
+        return authStateMutableLiveData;
     }
 }

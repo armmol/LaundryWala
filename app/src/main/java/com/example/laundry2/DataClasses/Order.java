@@ -3,14 +3,19 @@ package com.example.laundry2.DataClasses;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
-public class Order {
+public class Order{
 
     String orderId;
     ArrayList<LaundryItem> items;
     String dateTime;
     String courierId;
     String status;
+    double customerDeliveryLocationLatitude;
+    double customerDeliveryLocationLongitude;
+    double laundryHouseDeliveryLocationLatitude;
+    double laundryHouseDeliveryLocationLongitude;
     double deliveryCost;
+    boolean drying;
     boolean courierHasArrived;
     boolean customerPickUp;
     boolean customerDrop;
@@ -20,7 +25,9 @@ public class Order {
     public Order () {
     }
 
-    public Order (String orderId, String courierId, ArrayList<LaundryItem> items, String dateTime, String status, double deliveryCost,
+    public Order (String orderId, String courierId, ArrayList<LaundryItem> items, String dateTime,
+                  String status, double customerDeliveryLocationLatitude, double customerDeliveryLocationLongitude,
+                  double laundryHouseDeliveryLocationLatitude, double laundryHouseDeliveryLocationLongitude, double deliveryCost, boolean drying,
                   boolean courierHasArrived, boolean customerPickUp, boolean customerDrop, boolean laundryHousePickUp, boolean laundryHouseDrop) {
         this.orderId = orderId;
         this.items = items;
@@ -28,19 +35,44 @@ public class Order {
         this.status = status;
         this.courierId = courierId;
         this.deliveryCost = deliveryCost;
+        this.drying = drying;
         this.courierHasArrived = courierHasArrived;
         this.customerPickUp = customerPickUp;
         this.customerDrop = customerDrop;
         this.laundryHouseDrop = laundryHouseDrop;
         this.laundryHousePickUp = laundryHousePickUp;
+        this.customerDeliveryLocationLatitude = customerDeliveryLocationLatitude;
+        this.customerDeliveryLocationLongitude = customerDeliveryLocationLongitude;
+        this.laundryHouseDeliveryLocationLatitude = laundryHouseDeliveryLocationLatitude;
+        this.laundryHouseDeliveryLocationLongitude = laundryHouseDeliveryLocationLongitude;
     }
 
     public double getTotalCost () {
         double c = 0;
         for (LaundryItem item : this.items) {
-            c += item.cost;
+            c += item.cost + 0.16;
         }
         return new BigDecimal (c+ this.deliveryCost).setScale (2, BigDecimal.ROUND_DOWN).doubleValue () ;
+    }
+
+    public boolean isDrying () {
+        return drying;
+    }
+
+    public double getCustomerDeliveryLocationLatitude () {
+        return customerDeliveryLocationLatitude;
+    }
+
+    public double getCustomerDeliveryLocationLongitude () {
+        return customerDeliveryLocationLongitude;
+    }
+
+    public double getLaundryHouseDeliveryLocationLatitude () {
+        return laundryHouseDeliveryLocationLatitude;
+    }
+
+    public double getLaundryHouseDeliveryLocationLongitude () {
+        return laundryHouseDeliveryLocationLongitude;
     }
 
     public String getStatus () {
@@ -55,10 +87,6 @@ public class Order {
         return courierId;
     }
 
-    public void setCourierId (String courierId) {
-        this.courierId = courierId;
-    }
-
     public String getOrderId () {
         return orderId;
     }
@@ -71,64 +99,28 @@ public class Order {
         return items;
     }
 
-    public void setItems (ArrayList<LaundryItem> items) {
-        this.items = items;
-    }
-
     public String getDateTime () {
         return dateTime;
-    }
-
-    public void setDateTime (String dateTime) {
-        this.dateTime = dateTime;
     }
 
     public double getDeliveryCost () {
         return deliveryCost;
     }
 
-    public void setDeliveryCost (double deliveryCost) {
-        this.deliveryCost = deliveryCost;
-    }
-
-    public boolean getCourierHasArrived () {
-        return courierHasArrived;
-    }
-
-    public void setCourierHasArrived (boolean courierHasArrived) {
-        this.courierHasArrived = courierHasArrived;
-    }
-
     public boolean getCustomerPickUp () {
         return customerPickUp;
-    }
-
-    public void setCustomerPickUp (boolean customerPickUp) {
-        this.customerPickUp = customerPickUp;
     }
 
     public boolean getCustomerDrop () {
         return customerDrop;
     }
 
-    public void setCustomerDrop (boolean customerDrop) {
-        this.customerDrop = customerDrop;
-    }
-
     public boolean getLaundryHousePickUp () {
         return laundryHousePickUp;
     }
 
-    public void setLaundryHousePickUp (boolean laundryHousePickUp) {
-        this.laundryHousePickUp = laundryHousePickUp;
-    }
-
     public boolean getLaundryHouseDrop () {
         return laundryHouseDrop;
-    }
-
-    public void setLaundryHouseDrop (boolean laundryHouseDrop) {
-        this.laundryHouseDrop = laundryHouseDrop;
     }
 
 }

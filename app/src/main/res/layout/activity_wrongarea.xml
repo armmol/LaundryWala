@@ -7,12 +7,12 @@
 
     <TextView
         android:id="@+id/textView16"
-        android:layout_width="229dp"
-        android:layout_height="107dp"
+        android:layout_width="228dp"
+        android:layout_height="89dp"
         android:background="@color/white"
-        android:text="We Only serve in Kaunas for now. Will be reaching you soon . You can change your address in the profiles page by click the profile button below. :)"
+        android:text="We Only serve in Kaunas for now. Will be reaching you soon . You can change your address in the Profile page by clicking the profile button below. :)"
         android:textColor="#FF1744"
-        android:textSize="16sp"
+        android:textSize="14sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

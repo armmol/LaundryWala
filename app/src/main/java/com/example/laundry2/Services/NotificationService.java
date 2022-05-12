@@ -1,4 +1,4 @@
-package com.example.laundry2.Repositories;
+package com.example.laundry2.Services;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -16,7 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 
 import com.example.laundry2.R;
-import com.example.laundry2.View.activity_login;
+import com.example.laundry2.View.activity_start;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -43,12 +43,12 @@ public class NotificationService extends FirebaseMessagingService {
         builder.setSmallIcon (resourceImage);
         Intent intent;
         if (remoteMessage.getNotification ().getBody ().trim ().contains ("Customer")) {
-            intent = new Intent (this, activity_login.class)
+            intent = new Intent (this, activity_start.class)
                     .putExtra ("authtype", "Customer").putExtra ("fromNotification", true)
                     .putExtra ("orderId", remoteMessage.getNotification ().getBody ().split ("-")[2])
                     .putExtra ("type", remoteMessage.getNotification ().getBody ().split ("-")[1]);
         } else
-            intent = new Intent (this, activity_login.class)
+            intent = new Intent (this, activity_start.class)
                     .putExtra ("authtype", "Laundry House").putExtra ("fromNotification", true)
                     .putExtra ("orderId", remoteMessage.getNotification ().getBody ().split ("-")[2])
                     .putExtra ("type", remoteMessage.getNotification ().getBody ().split ("-")[1]);

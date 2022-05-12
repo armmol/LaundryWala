@@ -3,6 +3,7 @@ package com.example.laundry2;
 import android.app.Application;
 
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.laundry2.Contract.AuthenticationContract;
@@ -11,7 +12,10 @@ import com.example.laundry2.DataClasses.AuthState;
 import com.example.laundry2.DataClasses.Courier;
 import com.example.laundry2.DataClasses.LaundryHouse;
 import com.example.laundry2.DataClasses.Order;
-import com.example.laundry2.Repositories.ApplicationRepository;
+import com.example.laundry2.Database.AuthType;
+import com.example.laundry2.Database.CurrentOrderCourierId;
+import com.example.laundry2.Database.LaundryHouseCache;
+import com.example.laundry2.Database.OrderTracking;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseUser;
@@ -32,6 +36,10 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
     private final MutableLiveData<Boolean> logoutMutableLiveData;
     private final MutableLiveData<List<Courier>> courierListMutableLiveData;
     private final MutableLiveData<Boolean> courierArrivalMutableLiveData;
+    private final LiveData<AuthType> authTypeLiveData;
+    private final LiveData<LaundryHouseCache> laundryHouseCacheLiveData;
+    private final LiveData<OrderTracking> orderTrackingLiveData;
+    private final LiveData<CurrentOrderCourierId> currentOrderCourierIdLiveData;
 
     public AuthenticationViewModel (Application application) {
         super (application);
@@ -46,6 +54,30 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
         courierListMutableLiveData = repository.getCourierListMutableLiveData ();
         userLatLngMutableLiveData = repository.getUserLatLngListMutableLiveData ();
         courierArrivalMutableLiveData = repository.getCourierArrivalMutableLiveData ();
+        authTypeLiveData = repository.getAuthTypeLiveData ();
+        laundryHouseCacheLiveData = repository.getLaundryHouseCacheLiveData ();
+        orderTrackingLiveData = repository.getOrderTrackingLiveData ();
+        currentOrderCourierIdLiveData = repository.getCurrentOrderCourierIdLiveData ();
+    }
+
+    @Override
+    public LiveData<AuthType> getAuthType () {
+        return authTypeLiveData;
+    }
+
+    @Override
+    public LiveData<LaundryHouseCache> getLaundryHouseCacheData () {
+        return laundryHouseCacheLiveData;
+    }
+
+    @Override
+    public LiveData<OrderTracking> getOrderTracking () {
+        return orderTrackingLiveData;
+    }
+
+    @Override
+    public LiveData<CurrentOrderCourierId> getCurrentOrderCourierId () {
+        return currentOrderCourierIdLiveData;
     }
 
     @Override
@@ -119,28 +151,28 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
     }
 
     @Override
-    public void loadAllLaundryHouses () {
-        repository.loadAllLaundryHouses ();
+    public void loadAllLaundryHouses (String uid) {
+        repository.loadAllLaundryHouses (uid);
     }
 
     @Override
-    public void loadAllOrders (String authType) {
-        repository.loadAllOrders (authType);
+    public void loadAllOrders (String authType, String uid, boolean isOrderHistory) {
+        repository.loadAllOrders (authType, uid, isOrderHistory);
     }
 
     @Override
-    public void loadAllCouriers () {
-        repository.loadAllCouriers ();
+    public void loadAllCouriers (String orderId) {
+        repository.loadAllCouriers (orderId);
     }
 
     @Override
     public void getUserAndLaundryHouseMarkerLocation (String OrderUid) {
-        repository.getUserLatLng (OrderUid);
+        repository.getUserAndLaundryHouseLatLng (OrderUid);
     }
 
     @Override
-    public void loadApplicationUserData (String authtype) {
-        repository.getApplicationUserData (authtype);
+    public void loadApplicationUserData (String authtype, String uid) {
+        repository.getApplicationUserData (authtype, uid);
     }
 
     @Override
@@ -149,14 +181,14 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
     }
 
     @Override
-    public void enterIntoDB (String authtype, String name, String address, String area,
+    public void enterIntoDB (String uid, String email, String authtype, String name, String address, String area,
                              double latitude, double longitude) {
-        repository.enterDataIntoDB (authtype, name, address, area, latitude, longitude);
+        repository.enterDataIntoDB (uid, email, authtype, name, address, area, latitude, longitude);
     }
 
     @Override
-    public void updateOrderStatus (String authtype, String status, String orderId) {
-        repository.updateOrderStatus (authtype, status, orderId);
+    public void updateOrderStatus (String status, String orderId) {
+        repository.updateOrderStatus (status, orderId);
     }
 
     @Override
@@ -165,8 +197,38 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
     }
 
     @Override
-    public void stopNewOrders (boolean isActive, String authtype, String Uid) {
-        repository.turnOffNewOrders (isActive, authtype, Uid);
+    public void checkIsForProfileCompleted (String authtype, String uid) {
+        repository.isProfileCompleted (authtype, uid);
+    }
+
+    @Override
+    public void insertLaundryHouseCacheData (String laundryHouseId, String deliveryCost) {
+        repository.insertLaundryHouseCacheData (laundryHouseId, deliveryCost);
+    }
+
+    @Override
+    public void removeLaundryHouseCacheData () {
+        repository.removerLaundryHouseCacheData ();
+    }
+
+    @Override
+    public void insertIsOrderTrackingData (String isOrderTracking) {
+        repository.insertOrderTracking (isOrderTracking);
+    }
+
+    @Override
+    public void removeIsOrderTrackingData () {
+        repository.removeOrderTracking ();
+    }
+
+    @Override
+    public void insertCurrentOrderCourierId (String courierId) {
+        repository.insertCurrentOrderCourierId (courierId);
+    }
+
+    @Override
+    public void removeCurrentOrderCourierId () {
+        repository.removeCurrentOrderCourierId ();
     }
 
     @Override
@@ -176,11 +238,11 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
 
     @Override
     public void unassignOrder (String orderId) {
-        repository.unassignOrder ( orderId);
+        repository.unassignOrder (orderId);
     }
 
     @Override
-    public void notifyOfArrival (String OrderId,String Uid, String title, String message) {
+    public void notifyOfArrival (String OrderId, String Uid, String title, String message) {
         repository.notifyOfArrival (OrderId, Uid, title, message);
     }
 
@@ -191,12 +253,6 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
 
     @Override
     public void changeOrderPickDropStatus (String orderId, String authType, String type, boolean value) {
-        repository.changeOrderPickDropStatus (orderId,authType,type, value);
+        repository.changeOrderPickDropStatus (orderId, authType, type, value);
     }
-
-    @Override
-    public void SubscribeCourierToChannel (String orderId) {
-        repository.subscribeCourierToChannel (orderId);
-    }
-
 }

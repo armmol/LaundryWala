@@ -8,6 +8,7 @@
     <androidx.cardview.widget.CardView
         android:layout_width="310dp"
         android:layout_height="193dp"
+        app:cardBackgroundColor="#FFFFFF"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -15,13 +16,16 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:background="@drawable/laundryhouseadapterbackground">
 
             <CheckBox
                 android:id="@+id/cardview_orderstatus_checkBox4"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Order Dropped to Customer"
+                android:textColor="#651FFF"
+                android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="@+id/cardview_orderstatus_checkBox3"
                 app:layout_constraintStart_toStartOf="@+id/cardview_orderstatus_checkBox3"
                 app:layout_constraintTop_toBottomOf="@+id/cardview_orderstatus_checkBox3" />
@@ -30,7 +34,9 @@
                 android:id="@+id/cardview_orderstatus_checkBox3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Order Picked Up From Laundry House'"
+                android:text="Order Picked Up From Laundry House"
+                android:textColor="#651FFF"
+                android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="@+id/cardview_orderstatus_checkBox2"
                 app:layout_constraintStart_toStartOf="@+id/cardview_orderstatus_checkBox2"
                 app:layout_constraintTop_toBottomOf="@+id/cardview_orderstatus_checkBox2" />
@@ -40,6 +46,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Order Dropped to Laundry House"
+                android:textColor="#651FFF"
+                android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="@+id/cardview_orderstatus_checkBox"
                 app:layout_constraintStart_toStartOf="@+id/cardview_orderstatus_checkBox"
                 app:layout_constraintTop_toBottomOf="@+id/cardview_orderstatus_checkBox" />
@@ -49,6 +57,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Order Picked Up from Customer"
+                android:textColor="#651FFF"
+                android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />

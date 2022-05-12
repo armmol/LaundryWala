@@ -4,12 +4,32 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 
-public class Courier {
+public class Courier implements Comparable<Courier>{
     String name;
     String uid;
     LatLng location;
     ArrayList<String> OrderId;
+    double distanceFromCustomer;
+    double distanceFromLaundryHouse;
     boolean active;
+
+    public Courier (String name, String uid, LatLng location, ArrayList<String> orderId, double distanceFromCustomer, double distanceFromLaundryHouse, boolean active) {
+        this.name = name;
+        this.uid = uid;
+        this.location = location;
+        this.OrderId = orderId;
+        this.distanceFromCustomer = distanceFromCustomer;
+        this.distanceFromLaundryHouse = distanceFromLaundryHouse;
+        this.active = active;
+    }
+
+    public double getDistanceFromCustomer () {
+        return distanceFromCustomer;
+    }
+
+    public double getDistanceFromLaundryHouse () {
+        return distanceFromLaundryHouse;
+    }
 
     public String getName () {
         return name;
@@ -21,14 +41,6 @@ public class Courier {
 
     public String getUid () {
         return uid;
-    }
-
-    public LatLng getLocation () {
-        return location;
-    }
-
-    public void setLocation (LatLng location) {
-        this.location = location;
     }
 
     public ArrayList<String> getOrderId () {
@@ -43,11 +55,8 @@ public class Courier {
         return active;
     }
 
-    public Courier (String name, String uid, LatLng location, ArrayList<String> orderId, boolean active) {
-        this.name = name;
-        this.uid = uid;
-        this.location = location;
-        this.OrderId = orderId;
-        this.active = active;
+    @Override
+    public int compareTo (Courier courier) {
+        return Integer.compare (OrderId.size (), this.OrderId.size ());
     }
 }

@@ -6,6 +6,12 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.PopupWindow;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
@@ -16,25 +22,28 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.laundry2.AuthenticationViewModel;
+import com.example.laundry2.DataClasses.Order;
 import com.example.laundry2.LocationViewModel;
 import com.example.laundry2.R;
-import com.example.laundry2.Repositories.LocationService;
+import com.example.laundry2.Services.LocationService;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class activity_maps extends FragmentActivity implements OnMapReadyCallback {
 
-    int flag = 0;
+public class activity_maps extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
+
     private GoogleMap mMap;
     private LocationViewModel locationViewModel;
     private AuthenticationViewModel authenticationViewModel;
-    private String authType;
+    private Marker laundryHouse, customer;
 
     @SuppressLint("MissingPermission")
     @Override
@@ -44,26 +53,34 @@ public class activity_maps extends FragmentActivity implements OnMapReadyCallbac
 
         locationViewModel = new ViewModelProvider (this).get (LocationViewModel.class);
         authenticationViewModel = new ViewModelProvider (this).get (AuthenticationViewModel.class);
-        authType = getIntent ().getStringExtra ("authtype");
-        if (authType.equals (getString (R.string.courier))) {
-            locationViewModel.getCurrentLocationMutableLiveData ().observe (this, location ->
-                    locationViewModel.updateLiveLocation (locationViewModel.getCurrentSignedInUser ().getValue ().getUid (), location));
-        }
+        authenticationViewModel.getAuthType ().observe (this, authtype -> {
+            if (authtype != null) {
+                String authType = authtype.authtype;
+                if (authType.equals (getString (R.string.courier))) {
+                    locationViewModel.getCurrentLocationMutableLiveData ().observe (this, location ->
+                            locationViewModel.updateLiveLocation (locationViewModel.getCurrentSignedInUser ().getValue ().getUid (), location));
+                    Button refreshMap = findViewById (R.id.button_refreshMap);
+                    refreshMap.setVisibility (View.VISIBLE);
+                    refreshMap.setOnClickListener (view -> {
+                        mMap.clear ();
+                        courierMap ();
+                    });
+                }
 
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager ()
-                .findFragmentById (R.id.map);
-        mapFragment.getMapAsync (this);
-        OnBackPressedCallback callback = new OnBackPressedCallback (true) {
-            @Override
-            public void handleOnBackPressed () {
-                flag = 1;
-                startActivity (new Intent (activity_maps.this, activity_home.class)
-                        .putExtra ("authtype", authType));
-                stopLocationUpdates ();
+                // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+                SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager ()
+                        .findFragmentById (R.id.map);
+                mapFragment.getMapAsync (this);
+                OnBackPressedCallback callback = new OnBackPressedCallback (true) {
+                    @Override
+                    public void handleOnBackPressed () {
+                        stopLocationUpdates ();
+                        startActivity (new Intent (activity_maps.this, activity_home.class));
+                    }
+                };
+                this.getOnBackPressedDispatcher ().addCallback (callback);
             }
-        };
-        this.getOnBackPressedDispatcher ().addCallback (callback);
+        });
     }
 
     private void getPermissions () {
@@ -71,10 +88,15 @@ public class activity_maps extends FragmentActivity implements OnMapReadyCallbac
                 ActivityCompat.checkSelfPermission (this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions (this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 131);
         } else {
-            if (authType.equals (getString (R.string.courier)))
-                startLocationUpdates ();
-            else if (authType.equals (getString (R.string.customer)) || authType.equals (getString (R.string.laundryhouse)))
-                getCourierUpdates ();
+            authenticationViewModel.getAuthType ().observe (this, authtype -> {
+                if (authtype != null) {
+                    String authType = authtype.authtype;
+                    if (authType.equals (getString (R.string.courier)))
+                        startLocationUpdates ();
+                    else if (authType.equals (getString (R.string.customer)) || authType.equals (getString (R.string.laundryhouse)))
+                        getCourierUpdates ();
+                }
+            });
         }
     }
 
@@ -94,15 +116,13 @@ public class activity_maps extends FragmentActivity implements OnMapReadyCallbac
     @Override
     protected void onDestroy () {
         super.onDestroy ();
-        flag = 1;
+        authenticationViewModel.removeCurrentOrderCourierId ();
         stopLocationUpdates ();
     }
 
     @Override
     protected void onStart () {
         super.onStart ();
-        flag = 0;
-        authType = getIntent ().getStringExtra ("authtype");
         getPermissions ();
     }
 
@@ -111,22 +131,53 @@ public class activity_maps extends FragmentActivity implements OnMapReadyCallbac
     public void onMapReady (@NonNull GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setMyLocationEnabled (true);
-        if (getIntent ().hasExtra ("LaundryHouseLatLng")) {
-            MarkerOptions laundry_house_location = new MarkerOptions ().title ("Laundry House Location");
-            laundry_house_location.position (getIntent ().getParcelableExtra ("LaundryHouseLatLng"));
-            laundry_house_location.icon (BitmapDescriptorFactory.defaultMarker (BitmapDescriptorFactory.HUE_YELLOW));
-            mMap.addMarker (laundry_house_location);
-            MarkerOptions customer_location = new MarkerOptions ().title ("Customer Location");
-            customer_location.icon (BitmapDescriptorFactory.defaultMarker (BitmapDescriptorFactory.HUE_GREEN));
-            customer_location.position (getIntent ().getParcelableExtra ("CustomerLatLng"));
-            mMap.addMarker (customer_location);
-        } else {
-            getCourierUpdates ();
-            courierTrackingMap ();
-        }
+        authenticationViewModel.getAuthType ().observe (this, authtype -> {
+            String authType = authtype.authtype;
+            if (authType.equals (getString (R.string.courier))) {
+                courierMap ();
+            } else {
+                getCourierUpdates ();
+                customerTrackingMap ();
+            }
+        });
     }
 
-    private void courierTrackingMap () {
+    private void courierMap () {
+        authenticationViewModel.getCurrentSignInUser ().observe (this, user -> authenticationViewModel.loadAllOrders (getString (R.string.courier), user.getUid (), false));
+        authenticationViewModel.getOrders ().observe (this, orders -> {
+            mMap.clear ();
+            for (Order order : orders) {
+                AtomicInteger flag = new AtomicInteger ();
+                flag.set (0);
+                locationViewModel.getCustomerEmail (order.getOrderId ());
+                authenticationViewModel.getUserAndLaundryHouseMarkerLocation (order.getOrderId ());
+                locationViewModel.getCustomerEmailMutableLiveData ().observe (this, emailCustomer -> {
+                    if (flag.get () == 0) {
+                        flag.set (1);
+                        if ((order.getCustomerPickUp () && order.getLaundryHouseDrop () && !order.getLaundryHousePickUp () && !order.getCustomerDrop ())
+                                || order.getCustomerPickUp () && !order.getLaundryHouseDrop () && !order.getLaundryHousePickUp () && !order.getCustomerDrop ()) {
+                            laundryHouse = mMap.addMarker (new MarkerOptions ().title ("Laundry House-" + emailCustomer)
+                                    .position (new LatLng (order.getLaundryHouseDeliveryLocationLatitude (), order.getLaundryHouseDeliveryLocationLongitude ()))
+                                    .icon (BitmapDescriptorFactory.defaultMarker (BitmapDescriptorFactory.HUE_YELLOW)));
+                            laundryHouse.setTag (order);
+                            mMap.moveCamera (CameraUpdateFactory.newLatLng (laundryHouse.getPosition ()));
+                        } else if ((!order.getCustomerPickUp () && !order.getLaundryHouseDrop () && !order.getLaundryHousePickUp () && !order.getCustomerDrop ())
+                                || order.getCustomerPickUp () && order.getLaundryHouseDrop () && order.getLaundryHousePickUp () && !order.getCustomerDrop ()) {
+                            customer = mMap.addMarker (new MarkerOptions ().title ("Customer-" + emailCustomer)
+                                    .position (new LatLng (order.getCustomerDeliveryLocationLatitude (), order.getCustomerDeliveryLocationLongitude ()))
+                                    .icon (BitmapDescriptorFactory.defaultMarker (BitmapDescriptorFactory.HUE_GREEN)));
+                            customer.setTag (order);
+                            mMap.moveCamera (CameraUpdateFactory.newLatLng (customer.getPosition ()));
+                        }
+                        mMap.setMinZoomPreference (12.0f);
+                        mMap.setOnMarkerClickListener (this);
+                    }
+                });
+            }
+        });
+    }
+
+    private void customerTrackingMap () {
         MarkerOptions markerOptions = new MarkerOptions ().title ("Your Courier is here");
         locationViewModel.getCurrentLocationMutableLiveData ().observe (this, location -> {
             Log.d ("Update Location", location.getLatitude () + "," + location.getLongitude ());
@@ -135,12 +186,13 @@ public class activity_maps extends FragmentActivity implements OnMapReadyCallbac
             markerOptions.position (latLng);
             mMap.addMarker (markerOptions);
             mMap.moveCamera (CameraUpdateFactory.newLatLng (latLng));
-            mMap.setMinZoomPreference (14.0f);
+            mMap.setMinZoomPreference (12.0f);
         });
     }
 
     private void getCourierUpdates () {
-        locationViewModel.getCourierLocation (getIntent ().getStringExtra ("courierId"));
+        authenticationViewModel.getCurrentOrderCourierId ().observe (this, currentOrderCourierId ->
+                locationViewModel.getCourierLocation (currentOrderCourierId.courierId));
     }
 
     private void startLocationUpdates () {
@@ -159,5 +211,48 @@ public class activity_maps extends FragmentActivity implements OnMapReadyCallbac
 
     private void startForegroundService () {
         ContextCompat.startForegroundService (this, new Intent (this, LocationService.class));
+    }
+
+    private View createPopUpWindow (int layout) {
+        View popupWindowView = LayoutInflater.from (activity_maps.this).inflate (layout, null);
+        PopupWindow window = new PopupWindow (popupWindowView);
+        window.setHeight (ViewGroup.LayoutParams.WRAP_CONTENT);
+        window.setWidth (ViewGroup.LayoutParams.WRAP_CONTENT);
+        window.setFocusable (true);
+        window.showAtLocation (popupWindowView, Gravity.CENTER, 0, 0);
+        return popupWindowView;
+    }
+
+    @Override
+    public boolean onMarkerClick (@NonNull Marker marker) {
+        Order order = (Order) marker.getTag ();
+        View orderStatusView = createPopUpWindow (R.layout.window_arrival_courier);
+        Button customerPickUp, customerDropOff, laundryHousePickUp, laundryHouseDropOff;
+        customerPickUp = orderStatusView.findViewById (R.id.button_arrival_courier_customer_pick_up);
+        customerDropOff = orderStatusView.findViewById (R.id.button_arrival_courier_customer_drop_off);
+        laundryHousePickUp = orderStatusView.findViewById (R.id.button_arrival_courier_laundry_house_pick_up);
+        laundryHouseDropOff = orderStatusView.findViewById (R.id.button_arrival_courier_laundry_house_drop_off);
+        //Courier has to drop the order to laundry house
+        if (order.getCustomerPickUp () && !order.getLaundryHouseDrop () && !order.getLaundryHousePickUp () && !order.getCustomerDrop ())
+            laundryHouseDropOff.setVisibility (View.VISIBLE);
+            //Courier has to pick up the order from laundry house
+        else if (order.getCustomerPickUp () && order.getLaundryHouseDrop () && !order.getLaundryHousePickUp () && !order.getCustomerDrop ())
+            laundryHousePickUp.setVisibility (View.VISIBLE);
+            //Courier has to drop the order to customer
+        else if (order.getCustomerPickUp () && order.getLaundryHouseDrop () && order.getLaundryHousePickUp () && !order.getCustomerDrop ())
+            customerDropOff.setVisibility (View.VISIBLE);
+            //Courier has to pick up order from customer
+        else customerPickUp.setVisibility (View.VISIBLE);
+
+        String[] check = order.getOrderId ().split ("_");
+        customerPickUp.setOnClickListener (view -> authenticationViewModel.notifyOfArrival (order.getOrderId (), check[0],
+                "Courier Arrival", String.format ("Arrived at Customer location\n-For Pick Up-%s", order.getOrderId ())));
+        laundryHousePickUp.setOnClickListener (view -> authenticationViewModel.notifyOfArrival (order.getOrderId (), check[2],
+                "Courier Arrival", String.format ("Arrived at Laundry House location\n-For Pick Up-%s", order.getOrderId ())));
+        customerDropOff.setOnClickListener (view -> authenticationViewModel.notifyOfArrival (order.getOrderId (), check[0],
+                "Courier Arrival", String.format ("Arrived at Customer location\n-For Drop off-%s", order.getOrderId ())));
+        laundryHouseDropOff.setOnClickListener (view -> authenticationViewModel.notifyOfArrival (order.getOrderId (), check[0],
+                "Courier Arrival", String.format ("Arrived at Laundry House location\n-For Drop off-%s", order.getOrderId ())));
+        return false;
     }
 }

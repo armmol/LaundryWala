@@ -37,28 +37,8 @@ public class ApplicationUser {
         this.orders = orders;
     }
 
-    public double getLatitude () {
-        return latitude;
-    }
-
-    public void setLatitude (double latitude) {
-        this.latitude = latitude;
-    }
-
-    public double getLongitude () {
-        return longitude;
-    }
-
-    public void setLongitude (double logitude) {
-        this.longitude = logitude;
-    }
-
     public String getEmail () {
         return email;
-    }
-
-    public void setEmail (String email) {
-        this.email = email;
     }
 
     public String getName () {
@@ -81,10 +61,6 @@ public class ApplicationUser {
         return area;
     }
 
-    public void setArea (String area) {
-        this.area = area;
-    }
-
     public String getAuthType () {
         return authType;
     }
@@ -95,10 +71,6 @@ public class ApplicationUser {
 
     public boolean isActive () {
         return active;
-    }
-
-    public void setActive (boolean active) {
-        this.active = active;
     }
 
     public ArrayList<String> getOrderId () {

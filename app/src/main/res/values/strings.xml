@@ -22,15 +22,15 @@
     <string name="upi_id">UPI ID</string>
     <string name="have_an_account_log_in">Have an account? Log In.</string>
     <string name="shirts">Shirts</string>
-    <string name="shirts_any">Shirts (Any)</string>
-    <string name="bedsheets_duvets">Bedsheets/Duvets</string>
-    <string name="carpets_rugs">Carpets/Rugs</string>
-    <string name="suits_blazers_coats">Suits/Blazers/Coats</string>
-    <string name="pants_any">Pants (Any)</string>
-    <string name="jackets_woolens">Jackets/Woolens</string>
+    <string name="shirts_any">Shirts(Any-0.1€)</string>
+    <string name="bedsheets_duvets">Bedsheets/Duvets(0.5€)</string>
+    <string name="carpets_rugs">Carpets/Rugs(5€)</string>
+    <string name="suits_blazers_coats">Suits/Blazers/Coats(1€)</string>
+    <string name="pants_any">Pants(Any-0.1€)</string>
+    <string name="jackets_woolens">Jackets/Woolens(1€)</string>
     <string name="items">Items</string>
     <string name="_0">0</string>
-    <string name="select_items_from_above_to_add_to_basket">Select Items from above to add to basket</string>
+    <string name="order_summary">Order Summary and Cost are shown below -</string>
     <string name="laundry_basket">Laundry Basket</string>
     <string name="failed_try_again">Failed, try again.</string>
     <string name="switch_to_go_offline">Switch to go Offline</string>
@@ -57,7 +57,7 @@
     <string name="order_time">Order Time</string>
     <string name="order_cost">Order Cost</string>
     <string name="order_id">Order ID</string>
-    <string name="delivery_cost">Delivery Cost -</string>
+    <string name="delivery_cost">Delivery Cost</string>
     <string name="arealaundryhouseadapter">Area -</string>
     <string name="active">Active</string>
     <string name="save">Save</string>
@@ -71,6 +71,12 @@
     <string name="change_status">Change Status</string>
     <string name="order_cost_">Order Cost -</string>
     <string name="select_status_to_change">Select status to change to</string>
+    <string name="add_clothes_in_kgs_0_5_kg">Add Clothes In Kgs(0.5€/KG)</string>
+    <string name="i_need_a_courier">I need a Courier</string>
+    <string name="i_need_drying">I need Drying (1€/6 items)</string>
+    <string name="welcome_to_laundrywala">Welcome to LaundryWala</string>
+    <string name="clear_all">Clear All</string>
+    <string name="isordertracking">isOrderTracking</string>
     <string-array name="Authentication_type">
         <item>SELECT USER TYPE</item>
         <item>Customer</item>
@@ -78,20 +84,17 @@
         <item>Courier</item>
     </string-array>
     <string-array name="Order_Status_Courier">
+        <item>Order Status</item>
         <item>Pick Up Phase</item>
-        <item>In Process</item>
         <item>Customer did not Show, assign new Courier</item>
         <item>Delivery Phase</item>
-        <item>Completed</item>
     </string-array>
     <string-array name="Order_Status_LaundryHouse">
-        <item></item>
+        <item>Order Status</item>
         <item>Order Not Assigned to Courier</item>
         <item>Order Was Picked Up From Laundry House</item>
         <item>Order Was Not Picked Up From Laundry House</item>
         <item>Order Was Delivered to Laundry House</item>
         <item>Order Was Not Delivered to Laundry House</item>
-<!--        <item>Order Was Picked Up From Customer</item>-->
-<!--        <item>Order Was Not Picked Up From Customer</item>-->
     </string-array>
 </resources>

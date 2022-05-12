@@ -6,9 +6,10 @@
     android:layout_height="match_parent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="349dp"
-        android:layout_height="237dp"
-        android:background="@color/white"
+        android:id="@+id/layout_confrim_address"
+        android:layout_width="289dp"
+        android:layout_height="238dp"
+        android:background="@drawable/laundryhouseadapterbackground"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -16,13 +17,13 @@
 
         <TextView
             android:id="@+id/textView_confirmaddress"
-            android:layout_width="323dp"
-            android:layout_height="83dp"
-            android:textColor="@color/black"
+            android:layout_width="233dp"
+            android:layout_height="73dp"
+            android:textColor="@color/purple_500"
             android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.615"
+            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -43,7 +44,7 @@
             android:layout_height="wrap_content"
             android:text="@string/confirm"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/textView_confirmaddress"
             app:layout_constraintHorizontal_bias="0.931"
             app:layout_constraintStart_toStartOf="@+id/textView_confirmaddress"
             app:layout_constraintTop_toBottomOf="@+id/textView_confirmaddress" />

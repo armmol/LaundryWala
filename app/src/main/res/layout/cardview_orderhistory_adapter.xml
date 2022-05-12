@@ -6,13 +6,13 @@
     android:layout_height="wrap_content">
 
     <androidx.cardview.widget.CardView
-        android:layout_width="372dp"
-        android:layout_height="237dp"
+        android:layout_width="371dp"
+        android:layout_height="264dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="8dp"
-        app:cardBackgroundColor="#FFFFFF"
+        app:cardBackgroundColor="#00FFFFFF"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -21,7 +21,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#FFFFFF">
+            android:background="#238F1FFF">
 
             <TextView
                 android:id="@+id/textView21"
@@ -41,8 +41,8 @@
 
             <TextView
                 android:id="@+id/textView_card_orderhistory_ordercost"
-                android:layout_width="237dp"
-                android:layout_height="27dp"
+                android:layout_width="0dp"
+                android:layout_height="33dp"
                 android:text=""
                 android:textColor="#350707"
                 android:textSize="16sp"
@@ -50,7 +50,8 @@
                 app:layout_constraintEnd_toEndOf="@+id/textView_card_orderhistory_orderid"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="@+id/textView_card_orderhistory_orderid"
-                app:layout_constraintTop_toTopOf="@+id/textView18" />
+                app:layout_constraintTop_toTopOf="@+id/textView18"
+                app:layout_constraintVertical_bias="0.62" />
 
             <TextView
                 android:id="@+id/textView23"
@@ -70,7 +71,7 @@
                 android:id="@+id/textView24"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="16dp"
                 android:text="@string/order_time"
                 android:textColor="#000000"
                 android:textSize="16sp"
@@ -84,7 +85,7 @@
                 android:id="@+id/textView12"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="8dp"
                 android:text="@string/delivery_cost"
                 android:textColor="#000000"
                 android:textSize="16sp"
@@ -93,6 +94,20 @@
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="@+id/textView18"
                 app:layout_constraintTop_toBottomOf="@+id/textView24" />
+
+            <TextView
+                android:id="@+id/textView19"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Drying"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:textStyle="bold|italic"
+                app:layout_constraintEnd_toEndOf="@+id/textView18"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="@+id/textView18"
+                app:layout_constraintTop_toBottomOf="@+id/textView12" />
 
             <TextView
                 android:id="@+id/textView18"
@@ -108,13 +123,12 @@
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="@+id/textView21"
                 app:layout_constraintTop_toBottomOf="@+id/textView21"
-                app:layout_constraintVertical_bias="0.0" />
+                app:layout_constraintVertical_bias="0.03" />
 
             <TextView
                 android:id="@+id/textView_card_orderhistory_orderid"
                 android:layout_width="247dp"
                 android:layout_height="36dp"
-                android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
                 android:text=""
                 android:textColor="#350707"
@@ -122,26 +136,28 @@
                 app:layout_constraintBottom_toBottomOf="@+id/textView21"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="1.0"
-                app:layout_constraintStart_toEndOf="@+id/textView23"
+                app:layout_constraintStart_toEndOf="@+id/textView12"
                 app:layout_constraintTop_toTopOf="@+id/textView21"
                 app:layout_constraintVertical_bias="0.0" />
 
             <TextView
                 android:id="@+id/textView_card_orderhistory_ordertime"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
                 android:text=""
                 android:textColor="#350707"
                 android:textSize="14sp"
                 app:layout_constraintBottom_toBottomOf="@+id/textView24"
                 app:layout_constraintEnd_toEndOf="@+id/textView_card_orderhistory_orderstatus"
+                app:layout_constraintHorizontal_bias="0.497"
                 app:layout_constraintStart_toStartOf="@+id/textView_card_orderhistory_orderstatus"
-                app:layout_constraintTop_toTopOf="@+id/textView24" />
+                app:layout_constraintTop_toTopOf="@+id/textView24"
+                app:layout_constraintVertical_bias="1.0" />
 
             <TextView
                 android:id="@+id/textView_card_orderhistory_deliveryCost"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
                 android:layout_marginTop="2dp"
                 android:text=""
                 android:textColor="#350707"
@@ -154,9 +170,23 @@
                 app:layout_constraintVertical_bias="1.0" />
 
             <TextView
+                android:id="@+id/textView_card_orderhistory_drying"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginTop="2dp"
+                android:textColor="#350707"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toBottomOf="@+id/textView19"
+                app:layout_constraintEnd_toEndOf="@+id/textView_card_orderhistory_deliveryCost"
+                app:layout_constraintHorizontal_bias="0.497"
+                app:layout_constraintStart_toStartOf="@+id/textView_card_orderhistory_deliveryCost"
+                app:layout_constraintTop_toTopOf="@+id/textView19"
+                app:layout_constraintVertical_bias="1.0" />
+
+            <TextView
                 android:id="@+id/textView_card_orderhistory_orderstatus"
-                android:layout_width="237dp"
-                android:layout_height="28dp"
+                android:layout_width="0dp"
+                android:layout_height="39dp"
                 android:text=""
                 android:textColor="#350707"
                 android:textSize="16sp"
@@ -164,7 +194,8 @@
                 app:layout_constraintEnd_toEndOf="@+id/textView_card_orderhistory_ordercost"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="@+id/textView_card_orderhistory_ordercost"
-                app:layout_constraintTop_toTopOf="@+id/textView23" />
+                app:layout_constraintTop_toTopOf="@+id/textView23"
+                app:layout_constraintVertical_bias="0.117" />
 
             <Button
                 android:id="@+id/button_orderhistory_checkstatus"

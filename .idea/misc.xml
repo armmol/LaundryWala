@@ -14,31 +14,38 @@
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/activity_confirm_arrival_of_courier.xml" value="0.259375" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/activity_confirmaddress.xml" value="0.259375" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/activity_confirmorder.xml" value="0.259375" />
-        <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/activity_createbasket.xml" value="0.2" />
+        <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/activity_confrimorders.xml" value="0.259375" />
+        <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/activity_createbasket.xml" value="0.4" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/activity_findaddress.xml" value="0.259375" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/activity_forgotpassword.xml" value="0.259375" />
-        <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/activity_home_user.xml" value="0.264" />
-        <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/activity_login.xml" value="0.259375" />
+        <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/activity_home_user.xml" value="0.437609841827768" />
+        <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/activity_itemsview.xml" value="0.13854166666666667" />
+        <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/activity_laundryItemsRecyclerView.xml" value="0.259375" />
+        <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/activity_laundryItemsrecyclerview.xml" value="0.259375" />
+        <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/activity_login.xml" value="0.4" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/activity_maps.xml" value="0.259375" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/activity_orderhistory.xml" value="0.26666666666666666" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/activity_paymentoptions.xml" value="0.259375" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/activity_profile.xml" value="0.2557291666666667" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/activity_signup.xml" value="0.259375" />
+        <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/activity_start.xml" value="0.259375" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/activity_wrongarea.xml" value="0.536" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/activtiy_payments.xml" value="0.259375" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/buy_with_googlepay_button.xml" value="0.259375" />
-        <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/cardview_couriers_adapter.xml" value="0.264" />
+        <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/cardview_couriers_adapter.xml" value="0.4" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/cardview_laundrybasketitem.xml" value="0.259375" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/cardview_laundrybasketitem_adapter.xml" value="0.259375" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/cardview_laundryhouses_adapter.xml" value="0.259375" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/cardview_orderhistory.xml" value="0.26666666666666666" />
-        <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/cardview_orderhistory_adapter.xml" value="0.264" />
+        <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/cardview_orderhistory_adapter.xml" value="0.4" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/cardview_orders_adapter.xml" value="0.4" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/cardview_orderstatus_adapter.xml" value="0.35625" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/cardview_user_home_recyclerview.xml" value="0.4" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/googlepay_button.xml" value="0.259375" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/snackbar.xml" value="0.259375" />
         <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/spinner_item.xml" value="0.259375" />
+        <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/window_arrival_courier.xml" value="0.259375" />
+        <entry key="..\:/Users/armaa/AndroidStudioProjects/Laundry2/app/src/main/res/layout/window_orderstatus_adapter.xml" value="0.259375" />
       </map>
     </option>
   </component>

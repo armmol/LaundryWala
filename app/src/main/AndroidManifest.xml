@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <uses-permission android:name="android.permission.VIBRATE" />
 
@@ -18,46 +18,58 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Laundry2">
+
         <service
-            android:name=".Repositories.NotificationService">
+            android:name=".Services.NotificationService"
+            android:exported="false">
             <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
 
+        <service
+            android:name=".Services.LocationService"
+            android:enabled="true"
+            android:exported="false" />
+
         <meta-data
             android:name="com.google.android.gms.wallet.api.enabled"
-            android:value="true"/>
+            android:value="true" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDW84TkYVNVnBQQ5SPbYm5kkmk_RNQb1y8" />
 
         <activity
-            android:name=".View.activity_login"
-            android:screenOrientation="nosensor"
-            android:exported="true">
+            android:name=".View.activity_start"
+            android:exported="true"
+            android:screenOrientation="nosensor">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".View.activity_maps"
-            android:screenOrientation="nosensor"/>
-        <activity android:name=".View.activity_signup"
-            android:screenOrientation="nosensor"/>
-        <activity android:name=".View.activity_home"
-            android:screenOrientation="nosensor"/>
-        <activity android:name=".View.activity_profile"
-            android:screenOrientation="nosensor"/>
-        <activity android:name=".View.activity_createBasket"
-            android:screenOrientation="nosensor"/>
-        <activity android:name=".View.activity_orderHistory"
-            android:screenOrientation="nosensor"/>
+        <activity
+            android:name=".View.activity_maps"
+            android:screenOrientation="nosensor" />
+        <activity
+            android:name=".View.activity_login"
+            android:screenOrientation="nosensor" />
+        <activity
+            android:name=".View.activity_signup"
+            android:screenOrientation="nosensor" />
+        <activity
+            android:name=".View.activity_home"
+            android:screenOrientation="nosensor" />
+        <activity
+            android:name=".View.activity_profile"
+            android:screenOrientation="nosensor" />
+        <activity
+            android:name=".View.activity_createBasket"
+            android:screenOrientation="nosensor" />
+        <activity
+            android:name=".View.activity_orderHistory"
+            android:screenOrientation="nosensor" />
 
-        <service
-            android:name=".Repositories.LocationService"
-            android:enabled="true"
-            android:exported="false" />
     </application>
 </manifest>

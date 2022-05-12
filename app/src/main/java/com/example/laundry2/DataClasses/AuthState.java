@@ -14,10 +14,6 @@ public class AuthState {
         return isValid;
     }
 
-    public void setIsValid (boolean isvalid) {
-        this.isValid = isvalid;
-    }
-
     public String getType () {
         return type;
     }

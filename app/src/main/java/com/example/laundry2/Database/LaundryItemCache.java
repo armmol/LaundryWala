@@ -5,24 +5,31 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "laundryItemCache")
+@Entity
 public class LaundryItemCache {
 
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
+    private int uid;
+
     @NonNull
     @ColumnInfo(name = "type")
-    private String type;
+    private final String mType;
 
-    public LaundryItemCache(@NonNull String type){
-        this.type = type;
+
+    public LaundryItemCache (@NonNull String mType) {
+        this.mType = mType;
     }
 
     @NonNull
     public String getType () {
-        return type;
+        return this.mType;
     }
 
-    public void setType (@NonNull String type) {
-        this.type = type;
+    public int getUid () {
+        return uid;
+    }
+
+    public void setUid (int uid) {
+        this.uid = uid;
     }
 }

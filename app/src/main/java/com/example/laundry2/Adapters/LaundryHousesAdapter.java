@@ -1,6 +1,7 @@
 package com.example.laundry2.Adapters;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,6 +49,7 @@ public class LaundryHousesAdapter extends RecyclerView.Adapter<LaundryHousesAdap
         holder.area.setText (this.laundryHouseList.get (position).getArea ());
         holder.deliverycost.setText (String.format ("%s €", this.laundryHouseList.get (position).getDeliveryPrice ()));
         holder.active.setChecked (this.laundryHouseList.get(position).isActive ());
+        holder.active.setTextColor (this.laundryHouseList.get(position).isActive ()? Color.GREEN:Color.RED);
     }
 
     @Override

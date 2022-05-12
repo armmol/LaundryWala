@@ -1,4 +1,4 @@
-package com.example.laundry2.Repositories;
+package com.example.laundry2.Services;
 
 import android.content.Context;
 

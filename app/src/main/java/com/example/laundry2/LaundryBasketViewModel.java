@@ -12,7 +12,6 @@ import com.example.laundry2.DataClasses.AuthState;
 import com.example.laundry2.DataClasses.LaundryItem;
 import com.example.laundry2.DataClasses.Order;
 import com.example.laundry2.Database.LaundryItemCache;
-import com.example.laundry2.Repositories.ApplicationRepository;
 
 import java.util.List;
 
@@ -22,18 +21,18 @@ public class LaundryBasketViewModel extends AndroidViewModel implements LaundryB
     private final MutableLiveData<Integer> basketSize;
     private final MutableLiveData<List<LaundryItem>> laundryItemList;
     private final MutableLiveData<AuthState> orderPlacementSuccessMutableLiveData;
-    private final ApplicationRepository laundryBasketRepository;
+    private final ApplicationRepository repository;
     private final LiveData<List<LaundryItemCache>> laundryItemCacheList;
 
 
     public LaundryBasketViewModel (@NonNull Application application) {
         super (application);
-        laundryBasketRepository = new ApplicationRepository (application);
-        orderMutableLiveData = laundryBasketRepository.getOrderMutableLiveData ();
-        basketSize = laundryBasketRepository.getBasketSize ();
-        laundryItemList = laundryBasketRepository.getLaundryItemList ();
-        orderPlacementSuccessMutableLiveData = laundryBasketRepository.getOrderPlacementSuccessMutableLiveData ();
-        laundryItemCacheList = laundryBasketRepository.getLaundryItemCaches ();
+        repository = new ApplicationRepository (application);
+        orderMutableLiveData = repository.getOrderMutableLiveData ();
+        basketSize = repository.getBasketSize ();
+        laundryItemList = repository.getLaundryItemList ();
+        orderPlacementSuccessMutableLiveData = repository.getOrderPlacementSuccessMutableLiveData ();
+        laundryItemCacheList = repository.getLaundryItemCacheLiveData ();
     }
 
     @Override
@@ -62,17 +61,27 @@ public class LaundryBasketViewModel extends AndroidViewModel implements LaundryB
     }
 
     @Override
-    public void createOrder(String laundryHouseUID, double deliveryCost){
-        laundryBasketRepository.createOrder (laundryHouseUID, deliveryCost);
+    public void createOrder(String uid, String laundryHouseUID, double deliveryCost, boolean drying){
+        repository.createOrder (uid, laundryHouseUID, deliveryCost, drying);
+    }
+
+    @Override
+    public void clearLaundryItemCache () {
+        repository.clearLaundryItemCache ();
+    }
+
+    @Override
+    public void clearBasket () {
+        repository.clearBasket ();
     }
 
     @Override
     public void addItem(String type){
-        laundryBasketRepository.addItem (type);
+        repository.addItem (type);
     }
 
     @Override
-    public void removeItem (String type) {
-        laundryBasketRepository.removeItem (type);
+    public void removeItem (LaundryItemCache laundryItemCache) {
+        repository.removeItem (laundryItemCache);
     }
 }

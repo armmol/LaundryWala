@@ -13,9 +13,9 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerview_assigncouriers"
-            android:layout_width="354dp"
-            android:layout_height="300dp"
-            android:background="@color/white"
+            android:layout_width="391dp"
+            android:layout_height="335dp"
+            android:background="@drawable/laundryhouseadapterbackground"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

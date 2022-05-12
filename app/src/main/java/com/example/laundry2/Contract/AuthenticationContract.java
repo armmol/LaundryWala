@@ -1,12 +1,17 @@
 package com.example.laundry2.Contract;
 
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.laundry2.Database.AuthType;
 import com.example.laundry2.DataClasses.ApplicationUser;
 import com.example.laundry2.DataClasses.AuthState;
 import com.example.laundry2.DataClasses.Courier;
 import com.example.laundry2.DataClasses.LaundryHouse;
 import com.example.laundry2.DataClasses.Order;
+import com.example.laundry2.Database.CurrentOrderCourierId;
+import com.example.laundry2.Database.LaundryHouseCache;
+import com.example.laundry2.Database.OrderTracking;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseUser;
@@ -14,6 +19,14 @@ import com.google.firebase.auth.FirebaseUser;
 import java.util.List;
 
 public interface AuthenticationContract {
+
+    LiveData<AuthType> getAuthType();
+
+    LiveData<LaundryHouseCache> getLaundryHouseCacheData();
+
+    LiveData<OrderTracking> getOrderTracking();
+
+    LiveData<CurrentOrderCourierId> getCurrentOrderCourierId();
 
     MutableLiveData<FirebaseUser> getCurrentSignInUser ();
 
@@ -45,24 +58,36 @@ public interface AuthenticationContract {
 
     void signOut ();
 
-    void loadAllLaundryHouses ();
+    void loadAllLaundryHouses (String uid);
 
-    void loadAllOrders (String authtype);
+    void loadAllOrders (String authtype, String uid, boolean isOrderHistory);
 
-    void loadAllCouriers ();
+    void loadAllCouriers (String orderId);
 
     void getUserAndLaundryHouseMarkerLocation (String OrderUid);
 
-    void loadApplicationUserData (String authtype);
+    void loadApplicationUserData (String authtype, String uid);
 
-    void enterIntoDB (String authtype, String name, String address, String area,
+    void enterIntoDB (String uid, String email, String authtype, String name, String address, String area,
                       double latitude, double longitude);
 
-    void updateOrderStatus (String authtype, String status, String orderId);
+    void updateOrderStatus ( String status, String orderId);
 
     void changeActiveStatus(boolean isActive, String authtype, String Uid);
 
-    void stopNewOrders(boolean isActive, String authtype, String Uid);
+    void checkIsForProfileCompleted(String authtype, String uid);
+
+    void insertLaundryHouseCacheData(String laundryHouseId, String deliveryCost);
+
+    void removeLaundryHouseCacheData();
+
+    void insertIsOrderTrackingData(String isOrderTracking);
+
+    void removeIsOrderTrackingData();
+
+    void insertCurrentOrderCourierId (String courierId);
+
+    void removeCurrentOrderCourierId ();
 
     void assignOrder(String courierId, String orderId);
 
@@ -73,7 +98,5 @@ public interface AuthenticationContract {
     void getNotified(String orderId);
 
     void changeOrderPickDropStatus (String orderId, String authType, String type, boolean value);
-
-    void SubscribeCourierToChannel(String orderId);
 }
 

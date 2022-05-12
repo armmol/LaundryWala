@@ -4,7 +4,6 @@ import android.location.Location;
 
 import androidx.lifecycle.MutableLiveData;
 
-import com.example.laundry2.DataClasses.ApplicationUser;
 import com.example.laundry2.DataClasses.Order;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -16,15 +15,15 @@ public interface LocationContract {
 
     MutableLiveData<Boolean> getServiceStateMutableLiveData ();
 
-    MutableLiveData<ApplicationUser> getApplicationUserData();
-
     MutableLiveData<Order> getOrder();
 
-    void loadApplicationUserData (String authtype);
+    MutableLiveData<String > getCustomerEmailMutableLiveData();
 
     void getCustomerOrder(String orderId);
 
     void getCurrentLocation ();
+
+    void getCustomerEmail(String orderId);
 
     void getCourierLocation(String courierUid);
 

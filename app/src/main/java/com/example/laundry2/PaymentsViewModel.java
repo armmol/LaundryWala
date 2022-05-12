@@ -7,7 +7,6 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.laundry2.Contract.PaymentsContract;
 import com.example.laundry2.DataClasses.AuthState;
-import com.example.laundry2.Repositories.ApplicationRepository;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.wallet.PaymentData;
 

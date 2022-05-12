@@ -31,10 +31,6 @@ public class LaundryHouse implements Comparable<LaundryHouse> {
         return uid;
     }
 
-    public void setUid (String uid) {
-        this.uid = uid;
-    }
-
     public String getName () {
         return name;
     }
@@ -55,16 +51,8 @@ public class LaundryHouse implements Comparable<LaundryHouse> {
         return area;
     }
 
-    public void setArea (String deliveryPrice) {
-        this.area = deliveryPrice;
-    }
-
     public boolean isActive () {
         return active;
-    }
-
-    public void setActive (boolean active) {
-        this.active = active;
     }
 
     @Override

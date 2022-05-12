@@ -2,7 +2,6 @@ package com.example.laundry2.View;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -16,8 +15,6 @@ import android.widget.EditText;
 import android.widget.PopupWindow;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
@@ -36,16 +33,18 @@ import com.google.android.gms.tasks.Task;
 public class activity_login extends AppCompatActivity {
 
     private static final String TAG = "Activity Login";
-    private static final String sharedPreferences_authType = "notSelected";
     private ActivityLoginBinding binding;
     private AuthenticationViewModel authenticationViewModel;
     private String spinnerItem = "SELECT USER TYPE";
-    private boolean logout = false;
+    private ActivityResultLauncher<Intent> googleSignInResultHandler;
     private PopupWindow window;
-    private final ActivityResultLauncher<Intent> googleSignInResultHandler = registerForActivityResult (new ActivityResultContracts.StartActivityForResult ()
-            , new ActivityResultCallback<ActivityResult> () {
-                @Override
-                public void onActivityResult (ActivityResult result) {
+
+    @Override
+    protected void onCreate (Bundle savedInstanceState) {
+        super.onCreate (savedInstanceState);
+        binding = DataBindingUtil.setContentView (this, R.layout.activity_login);
+        authenticationViewModel = new ViewModelProvider (this).get (AuthenticationViewModel.class);
+        googleSignInResultHandler = registerForActivityResult (new ActivityResultContracts.StartActivityForResult (), result -> {
                     if (result.getResultCode () == RESULT_OK) {
                         Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent (result.getData ());
                         try {
@@ -58,46 +57,44 @@ public class activity_login extends AppCompatActivity {
                             Log.w (TAG, "Google sign in failed", e);
                         }
                     }
-                }
-            });
-
-    @Override
-    protected void onCreate (Bundle savedInstanceState) {
-        super.onCreate (savedInstanceState);
-        binding = DataBindingUtil.setContentView (this, R.layout.activity_login);
-        authenticationViewModel = new ViewModelProvider (this).get (AuthenticationViewModel.class);
+                });
 
         //Spinner
-        binding.spinner.setAdapter (ArrayAdapter.createFromResource (this, R.array.Authentication_type, R.layout.spinner_item));
-        binding.spinner.setPrompt (getString (R.string.select_user_type));
-        binding.spinner.setOnItemSelectedListener (new AdapterView.OnItemSelectedListener () {
+        binding.spinnerLogin.setAdapter (ArrayAdapter.createFromResource (this, R.array.Authentication_type, R.layout.spinner_item));
+        binding.spinnerLogin.setOnItemSelectedListener (new AdapterView.OnItemSelectedListener () {
             @Override
             public void onItemSelected (AdapterView<?> adapterView, View view, int i, long l) {
                 spinnerItem = adapterView.getItemAtPosition (i).toString ();
-                saveState ();
+                //saveState ();
             }
+
             @Override
             public void onNothingSelected (AdapterView<?> adapterView) {
                 spinnerItem = "SELECT USER TYPE";
             }
         });
-        authenticationViewModel.getState ().observe (activity_login.this, authState ->
-                Toast.makeText (activity_login.this, authState.getType (), Toast.LENGTH_SHORT).show ());
-        authenticationViewModel.getLogoutMutableLiveData ().observe (this, aBoolean -> logout = aBoolean);
-        authenticationViewModel.getCurrentSignInUser ().observe (this, user -> {
-            if (!spinnerItem.equals ("SELECT USER TYPE") && !logout) {
-                authenticationViewModel.getState ().observe (this, authState -> {
-                    if (authState.isValid ()) {
-                        startActivity (new Intent (activity_login.this, activity_home.class)
-                                .putExtra ("authtype", spinnerItem));
-                    }
-                });
-            }
+
+        authenticationViewModel.getAuthType ().observe (this, authType -> {
+            if (authType != null)
+                spinnerItem = authType.authtype;
         });
+        authenticationViewModel.getState ().observe (this, authState ->
+                Toast.makeText (activity_login.this, authState.getType (), Toast.LENGTH_SHORT).show ());
+        authenticationViewModel.getLogoutMutableLiveData ().observe (this, isLoggedOut ->
+                authenticationViewModel.getCurrentSignInUser ().observe (this, user -> {
+                    authenticationViewModel.checkIsForProfileCompleted (spinnerItem, user.getUid ());
+                    authenticationViewModel.getState ().observe (activity_login.this, authState -> {
+                        if (!spinnerItem.equals ("SELECT USER TYPE") && !isLoggedOut && authState.isValid ()) {
+                            startActivity (new Intent (activity_login.this, activity_home.class));
+                        } else if (authState.getType ().equals ("User Data Failed to load"))
+                            startActivity (new Intent (activity_login.this, activity_profile.class));
+                    });
+                }));
 
         //Login Button
         binding.btnLogin.setOnClickListener (view -> {
             if (!spinnerItem.equals ("SELECT USER TYPE")) {
+//                binding.btnLogin.setClickable (false);
                 authenticationViewModel.loginEmail (binding.edtxtEmailLogin.getText ().toString (),
                         binding.edtxtPasswordLogin.getText ().toString (), spinnerItem);
             } else {
@@ -106,7 +103,7 @@ public class activity_login extends AppCompatActivity {
         });
 
         //Google Sign In Button
-        binding.btnGooglesignin.setOnClickListener (view -> {
+        binding.btnGooglesigninLogin.setOnClickListener (view -> {
             if (!spinnerItem.equals ("SELECT USER TYPE")) {
                 authenticationViewModel.getGoogleSignInClient ().observe (activity_login.this, googleSignInClient ->
                         googleSignInResultHandler.launch (googleSignInClient.getSignInIntent ()));
@@ -114,24 +111,21 @@ public class activity_login extends AppCompatActivity {
                 Toast.makeText (getApplicationContext (), "Select User Type", Toast.LENGTH_SHORT).show ();
             }
         });
-
         binding.txtGotosignupfromlogin.setOnClickListener (view ->
                 startActivity (new Intent (activity_login.this, activity_signup.class)));
-
-        binding.txtvForgotpassword.setOnClickListener (view ->
+        binding.txtForgotpasswordLogin.setOnClickListener (view ->
                 forgotPasswordHandler ());
-
     }
 
     private void forgotPasswordHandler () {
-        @SuppressLint("InflateParams") View windowView = LayoutInflater.from (activity_login.this).inflate (R.layout.activity_assigncouriers, null);
+        @SuppressLint("InflateParams") View windowView = LayoutInflater.from (activity_login.this).inflate (R.layout.activity_forgotpassword, null);
         window = new PopupWindow (windowView);
         window.setHeight (ViewGroup.LayoutParams.WRAP_CONTENT);
         window.setWidth (ViewGroup.LayoutParams.WRAP_CONTENT);
         window.setFocusable (true);
         window.showAtLocation (windowView, Gravity.CENTER, 0, 0);
         EditText txt = windowView.findViewById (R.id.edtxt_email_forgotpassword);
-        Button forgotButton = windowView.findViewById (R.id.button);
+        Button forgotButton = windowView.findViewById (R.id.button_forgotpassword);
         forgotButton.setOnClickListener (view -> {
             authenticationViewModel.forgotPassword (txt.getText ().toString ());
             authenticationViewModel.getState ().observe (activity_login.this, authState -> {
@@ -142,27 +136,13 @@ public class activity_login extends AppCompatActivity {
         });
     }
 
-    public void saveState () {
-        SharedPreferences sharedPreferences = getSharedPreferences (sharedPreferences_authType, MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit ();
-        editor.putString (sharedPreferences_authType, spinnerItem);
-        editor.apply ();
-    }
-
-    public void loadState () {
-        SharedPreferences sharedPreferences = getSharedPreferences (sharedPreferences_authType, MODE_PRIVATE);
-        spinnerItem = sharedPreferences.getString (sharedPreferences_authType, "");
-    }
-
     @Override
     protected void onStart () {
         super.onStart ();
-        loadState ();
         authenticationViewModel = new ViewModelProvider (this).get (AuthenticationViewModel.class);
         if (getIntent ().hasExtra ("fromNotification")) {
             authenticationViewModel.getCurrentSignInUser ().observe (this, user -> {
                 startActivity (new Intent (activity_login.this, activity_home.class)
-                        .putExtra ("authtype", getIntent ().getStringExtra ("authtype"))
                         .putExtra ("fromNotification", true)
                         .putExtra ("orderId", getIntent ().getStringExtra ("orderId"))
                         .putExtra ("type", getIntent ().getStringExtra ("type")));

@@ -8,37 +8,46 @@
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout_profile"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/white">
 
         <EditText
             android:id="@+id/edtxt_email_profile"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_marginStart="16dp"
             android:layout_marginTop="144dp"
             android:layout_marginEnd="16dp"
+            android:background="@drawable/laundryhouseadapterbackground"
             android:ems="10"
+            android:enabled="false"
             android:hint="@string/e_mail"
+            android:importantForAutofill="no"
             android:inputType="none|textEmailAddress"
             android:minHeight="48dp"
+            android:textColor="@color/purple_500"
+            android:textColorHint="@color/purple_500"
             app:layout_constraintEnd_toEndOf="@+id/txt_authtype_profile"
             app:layout_constraintHorizontal_bias="0.498"
             app:layout_constraintStart_toStartOf="@+id/txt_authtype_profile"
-            app:layout_constraintTop_toBottomOf="@+id/txt_authtype_profile"
-            android:importantForAutofill="no" />
+            app:layout_constraintTop_toBottomOf="@+id/txt_authtype_profile" />
 
         <EditText
             android:id="@+id/edtxt_name_profile"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
+            android:background="@drawable/laundryhouseadapterbackground"
             android:ems="10"
             android:hint="@string/name"
             android:inputType="textPersonName"
             android:minHeight="48dp"
+            android:textColor="@color/purple_500"
+            android:textColorHint="@color/purple_500"
             app:layout_constraintEnd_toEndOf="@+id/edtxt_email_profile"
             app:layout_constraintStart_toStartOf="@+id/edtxt_email_profile"
             app:layout_constraintTop_toBottomOf="@+id/edtxt_email_profile" />
@@ -46,14 +55,17 @@
         <EditText
             android:id="@+id/edtxt_address_profile"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
+            android:background="@drawable/laundryhouseadapterbackground"
             android:ems="10"
             android:hint="@string/address"
             android:inputType="none|textNoSuggestions|textPersonName"
             android:minHeight="48dp"
+            android:textColor="@color/purple_500"
+            android:textColorHint="@color/purple_500"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/edtxt_name_profile"
             app:layout_constraintTop_toBottomOf="@+id/edtxt_name_profile"
@@ -87,6 +99,7 @@
             android:id="@+id/txt_authtype_profile"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/purple_700"
             android:textSize="28sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -101,6 +114,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/area"
+            android:textColor="@color/purple_700"
             android:textSize="20sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -44,8 +43,10 @@ public class CouriersAdapter extends RecyclerView.Adapter<CouriersAdapter.MyView
 
     @Override
     public void onBindViewHolder (@NonNull MyViewHolder holder, int position) {
-        holder.couriername.setText (couriers.get (position).getName ());
-        holder.checkBox.setChecked (couriers.get (position).isActive ());
+        holder.courierName.setText (couriers.get (position).getName ());
+        holder.courierOrderNumber.setText (String.format ("Orders in queue: %s", couriers.get (position).getOrderId ().size ()));
+        holder.courierDistanceCustomer.setText (String.format ("Distance from Customer: %s", couriers.get (position).getDistanceFromCustomer ()));
+        holder.courierDistanceToLaundryHouse.setText (String.format ("Distance from Laundry House: %s", couriers.get (position).getDistanceFromLaundryHouse ()));
     }
 
     @Override
@@ -55,14 +56,14 @@ public class CouriersAdapter extends RecyclerView.Adapter<CouriersAdapter.MyView
 
     public class MyViewHolder extends RecyclerView.ViewHolder{
 
-        TextView couriername;
-        CheckBox checkBox;
+        TextView courierName, courierDistanceCustomer, courierDistanceToLaundryHouse, courierOrderNumber;
         public MyViewHolder (@NonNull View itemView) {
             super (itemView);
 
-            couriername = itemView.findViewById (R.id.txt_card_couriername);
-            checkBox = itemView.findViewById (R.id.checkBox_Active_CouriersCard);
-            checkBox.setEnabled (false);
+            courierName = itemView.findViewById (R.id.txt_card_couriername);
+            courierDistanceCustomer = itemView.findViewById (R.id.txt_card_courierdistanceToCustomer);
+            courierDistanceToLaundryHouse = itemView.findViewById (R.id.txt_card_courierdistanceToLaundryHouse);
+            courierOrderNumber = itemView.findViewById (R.id.txt_card_courierOrders);
             itemView.setOnClickListener (view -> {
                 listener.onClick (couriers.get (getAdapterPosition ()));
             });

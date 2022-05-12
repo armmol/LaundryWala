@@ -44,10 +44,6 @@ public class LaundryItem implements Parcelable {
         return cost;
     }
 
-    public void setCost (double cost) {
-        this.cost = cost;
-    }
-
     @Override
     public int describeContents () {
         return 0;
