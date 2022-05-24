@@ -1,17 +1,24 @@
 package com.example.laundry2.DataClasses;
 
+import androidx.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
 import com.google.android.gms.maps.model.LatLng;
 
+@Entity
 public class LaundryHouse implements Comparable<LaundryHouse> {
+    @PrimaryKey
+    @NonNull
+    String uid;
     String name;
     LatLng address;
     String area;
-    String uid;
     double deliveryPrice;
     boolean active;
 
 
-    public LaundryHouse (String name, LatLng address, String area, String uid, boolean active) {
+    public LaundryHouse (String name, LatLng address, String area, @NonNull String uid, boolean active) {
         this.name = name;
         this.address = address;
         this.area = area;

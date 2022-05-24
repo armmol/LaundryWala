@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
@@ -44,6 +45,7 @@ public class activity_maps extends FragmentActivity implements OnMapReadyCallbac
     private LocationViewModel locationViewModel;
     private AuthenticationViewModel authenticationViewModel;
     private Marker laundryHouse, customer;
+    private PopupWindow window;
 
     @SuppressLint("MissingPermission")
     @Override
@@ -143,14 +145,16 @@ public class activity_maps extends FragmentActivity implements OnMapReadyCallbac
     }
 
     private void courierMap () {
-        authenticationViewModel.getCurrentSignInUser ().observe (this, user -> authenticationViewModel.loadAllOrders (getString (R.string.courier), user.getUid (), false));
+        authenticationViewModel.getCurrentSignInUser ().observe (this, user ->
+                authenticationViewModel.loadAllOrders (getString (R.string.courier), user.getUid (), false));
         authenticationViewModel.getOrders ().observe (this, orders -> {
             mMap.clear ();
             for (Order order : orders) {
                 AtomicInteger flag = new AtomicInteger ();
                 flag.set (0);
                 locationViewModel.getCustomerEmail (order.getOrderId ());
-                authenticationViewModel.getUserAndLaundryHouseMarkerLocation (order.getOrderId ());
+                authenticationViewModel.getCurrentSignInUser ().observe (this, user -> locationViewModel.orderChange (user.getUid (), order.getOrderId ()));
+                locationViewModel.getUserAndLaundryHouseMarkerLocation (order.getOrderId ());
                 locationViewModel.getCustomerEmailMutableLiveData ().observe (this, emailCustomer -> {
                     if (flag.get () == 0) {
                         flag.set (1);
@@ -178,16 +182,26 @@ public class activity_maps extends FragmentActivity implements OnMapReadyCallbac
     }
 
     private void customerTrackingMap () {
-        MarkerOptions markerOptions = new MarkerOptions ().title ("Your Courier is here");
-        locationViewModel.getCurrentLocationMutableLiveData ().observe (this, location -> {
-            Log.d ("Update Location", location.getLatitude () + "," + location.getLongitude ());
-            mMap.clear ();
-            LatLng latLng = new LatLng (location.getLatitude (), location.getLongitude ());
-            markerOptions.position (latLng);
-            mMap.addMarker (markerOptions);
-            mMap.moveCamera (CameraUpdateFactory.newLatLng (latLng));
-            mMap.setMinZoomPreference (12.0f);
+        authenticationViewModel.getCurrentOrderCourierId ().observe (this, currentOrderCourierId ->
+                locationViewModel.getUserAndLaundryHouseMarkerLocation (currentOrderCourierId.orderId));
+        MarkerOptions customer = new MarkerOptions ().title ("Delivery Location").icon (BitmapDescriptorFactory.defaultMarker (BitmapDescriptorFactory.HUE_GREEN));
+        MarkerOptions laundryHouse = new MarkerOptions ().title ("Laundry House").icon (BitmapDescriptorFactory.defaultMarker (BitmapDescriptorFactory.HUE_YELLOW));
+        locationViewModel.getLatLngMutableLiveData ().observe (this, latLngs -> {
+            customer.position (latLngs.get (0));
+            laundryHouse.position (latLngs.get(1));
+            MarkerOptions markerOptions = new MarkerOptions ().title ("Your Courier is here");
+            locationViewModel.getCurrentLocationMutableLiveData ().observe (this, location -> {
+                Log.d ("Update Location", location.getLatitude () + "," + location.getLongitude ());
+                mMap.clear ();
+                LatLng latLng = new LatLng (location.getLatitude (), location.getLongitude ());
+                markerOptions.position (latLng);
+                mMap.addMarker (markerOptions);
+                mMap.addMarker (customer);
+                mMap.addMarker (laundryHouse);
+                mMap.setMinZoomPreference (12.0f);
+            });
         });
+
     }
 
     private void getCourierUpdates () {
@@ -215,11 +229,11 @@ public class activity_maps extends FragmentActivity implements OnMapReadyCallbac
 
     private View createPopUpWindow (int layout) {
         View popupWindowView = LayoutInflater.from (activity_maps.this).inflate (layout, null);
-        PopupWindow window = new PopupWindow (popupWindowView);
+        window = new PopupWindow (popupWindowView);
         window.setHeight (ViewGroup.LayoutParams.WRAP_CONTENT);
         window.setWidth (ViewGroup.LayoutParams.WRAP_CONTENT);
         window.setFocusable (true);
-        window.showAtLocation (popupWindowView, Gravity.CENTER, 0, 0);
+        window.showAtLocation (popupWindowView, Gravity.BOTTOM, -1, 0);
         return popupWindowView;
     }
 
@@ -227,6 +241,8 @@ public class activity_maps extends FragmentActivity implements OnMapReadyCallbac
     public boolean onMarkerClick (@NonNull Marker marker) {
         Order order = (Order) marker.getTag ();
         View orderStatusView = createPopUpWindow (R.layout.window_arrival_courier);
+        ConstraintLayout layout = orderStatusView.findViewById (R.id.courierArrivalConstraintLayout);
+        layout.setOnClickListener (view -> window.dismiss ());
         Button customerPickUp, customerDropOff, laundryHousePickUp, laundryHouseDropOff;
         customerPickUp = orderStatusView.findViewById (R.id.button_arrival_courier_customer_pick_up);
         customerDropOff = orderStatusView.findViewById (R.id.button_arrival_courier_customer_drop_off);
@@ -243,16 +259,17 @@ public class activity_maps extends FragmentActivity implements OnMapReadyCallbac
             customerDropOff.setVisibility (View.VISIBLE);
             //Courier has to pick up order from customer
         else customerPickUp.setVisibility (View.VISIBLE);
-
-        String[] check = order.getOrderId ().split ("_");
-        customerPickUp.setOnClickListener (view -> authenticationViewModel.notifyOfArrival (order.getOrderId (), check[0],
-                "Courier Arrival", String.format ("Arrived at Customer location\n-For Pick Up-%s", order.getOrderId ())));
-        laundryHousePickUp.setOnClickListener (view -> authenticationViewModel.notifyOfArrival (order.getOrderId (), check[2],
-                "Courier Arrival", String.format ("Arrived at Laundry House location\n-For Pick Up-%s", order.getOrderId ())));
-        customerDropOff.setOnClickListener (view -> authenticationViewModel.notifyOfArrival (order.getOrderId (), check[0],
-                "Courier Arrival", String.format ("Arrived at Customer location\n-For Drop off-%s", order.getOrderId ())));
-        laundryHouseDropOff.setOnClickListener (view -> authenticationViewModel.notifyOfArrival (order.getOrderId (), check[0],
-                "Courier Arrival", String.format ("Arrived at Laundry House location\n-For Drop off-%s", order.getOrderId ())));
+        authenticationViewModel.getCurrentSignInUser ().observe (this, user -> {
+            String[] check = order.getOrderId ().split ("_");
+            customerPickUp.setOnClickListener (view -> authenticationViewModel.notifyOfArrival (order.getOrderId (), check[0],
+                    "Courier Arrival", String.format ("Arrived at Customer location\n-For Pick Up-%s-%s", order.getOrderId (), user.getUid ())));
+            laundryHousePickUp.setOnClickListener (view -> authenticationViewModel.notifyOfArrival (order.getOrderId (), check[2],
+                    "Courier Arrival", String.format ("Arrived at Laundry House location\n-For Pick Up-%s-%s", order.getOrderId (), user.getUid ())));
+            customerDropOff.setOnClickListener (view -> authenticationViewModel.notifyOfArrival (order.getOrderId (), check[0],
+                    "Courier Arrival", String.format ("Arrived at Customer location\n-For Drop off-%s-%s", order.getOrderId (), user.getUid ())));
+            laundryHouseDropOff.setOnClickListener (view -> authenticationViewModel.notifyOfArrival (order.getOrderId (), check[2],
+                    "Courier Arrival", String.format ("Arrived at Laundry House location\n-For Drop off-%s-%s", order.getOrderId (), user.getUid ())));
+        });
         return false;
     }
 }

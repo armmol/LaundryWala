@@ -55,7 +55,12 @@ public class activity_start extends AppCompatActivity {
                     startActivity (new Intent (activity_start.this, activity_home.class)
                             .putExtra ("fromNotification", true)
                             .putExtra ("orderId", getIntent ().getStringExtra ("orderId"))
+                            .putExtra ("courierId", getIntent ().getStringExtra ("courierId"))
                             .putExtra ("type", getIntent ().getStringExtra ("type")));
+                else if (getIntent ().hasExtra ("update"))
+                    startActivity (new Intent (activity_start.this, activity_orderHistory.class)
+                            .putExtra ("update", getIntent ().getStringExtra ("update"))
+                            .putExtra ("orderId", getIntent ().getStringExtra ("orderId")));
                 else {
                     startActivity (new Intent (activity_start.this, activity_home.class));
                 }

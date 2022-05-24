@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class TestUtil {
-    public static ArrayList<String> dummyOrderIds = new ArrayList<> (Collections.singletonList ("qq3JQ6hzJFWTRPR1q6o2YaYqFMe2_2_ROAax2Y8kNX12d7ftY5QSCe71he2"));
+    public static ArrayList<String> dummyOrderIds = new ArrayList<> (Collections.singletonList ("qq3JQ6hzJFWTRPR1q6o2YaYqFMe2_0_ROAax2Y8kNX12d7ftY5QSCe71he2"));
     public static ArrayList<LaundryItem> dummyLaundryItems = new ArrayList<> (Collections.singletonList (new LaundryItem ("Suit/Blazer/Coat", 1)));
     public static String dummyCourierId = "mXWTJs7VWUWI82RP9cLsoad8R8n1";
     public static String dummyCustomerId = "qq3JQ6hzJFWTRPR1q6o2YaYqFMe2";
@@ -25,13 +25,12 @@ public class TestUtil {
             "Laundry House", "fakelaundryhouse@gmail.com",
             54.9162135, 23.9546676, "fakelaundryhouser",
             0, true, dummyOrderIds);
-
-    public static Order dummyOrder = new Order ("qq3JQ6hzJFWTRPR1q6o2YaYqFMe2_2_ROAax2Y8kNX12d7ftY5QSCe71he2", "mXWTJs7VWUWI82RP9cLsoad8R8n1", dummyLaundryItems,
-            "Sun May 08 16:28:50 GMT+03:00 2022", "Order Not Started",
+    public static Order dummyOrder = new Order ("qq3JQ6hzJFWTRPR1q6o2YaYqFMe2_1_ROAax2Y8kNX12d7ftY5QSCe71he2", "mXWTJs7VWUWI82RP9cLsoad8R8n1", dummyLaundryItems,
+            "Sun May 22 08:12:43 GMT+03:00 2022", "Order Not Started",
             54.8953516, 23.9282175, 54.9162135, 23.9546676,
             2.5, true, false, false, false, false, false);
-    public static Order dummyUnassignedOrder = new Order ("qq3JQ6hzJFWTRPR1q6o2YaYqFMe2_6_ROAax2Y8kNX12d7ftY5QSCe71he2", "", dummyLaundryItems,
-            "Tue May 10 23:46:48 GMT+03:00 2022", "Order Not Started",
+    public static Order dummyUnassignedOrder = new Order ("qq3JQ6hzJFWTRPR1q6o2YaYqFMe2_0_ROAax2Y8kNX12d7ftY5QSCe71he2", "", dummyLaundryItems,
+            "Thu May 19 08:54:07 GMT+03:00 2022", "Order Not Started",
             54.8953516, 23.9282175, 54.9162135, 23.9546676,
             2.5, true, false, false, false, false, false);
 }

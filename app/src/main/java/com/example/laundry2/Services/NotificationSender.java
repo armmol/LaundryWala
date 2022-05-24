@@ -1,6 +1,7 @@
 package com.example.laundry2.Services;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -21,7 +22,6 @@ public class NotificationSender {
     String title;
     String body;
     Context mContext;
-    private RequestQueue requestQueue;
 
     public NotificationSender (String userFcmToken, String title, String body, Context mContext) {
         this.userFcmToken = userFcmToken;
@@ -31,7 +31,7 @@ public class NotificationSender {
     }
 
     public void SendNotifications () {
-        requestQueue = Volley.newRequestQueue (mContext);
+        RequestQueue requestQueue = Volley.newRequestQueue (mContext);
         JSONObject mainObj = new JSONObject ();
         try {
             mainObj.put ("to", userFcmToken);
@@ -40,13 +40,9 @@ public class NotificationSender {
             notiObject.put ("body", body);
             notiObject.put ("icon", R.drawable.customer);
             mainObj.put ("notification", notiObject);
-
             JsonObjectRequest request = new JsonObjectRequest (Request.Method.POST, postUrl, mainObj,
-                    response -> {
-                        // code run is got response
-                    }, error -> {
-                        // code run is got error
-            }) {
+                    response -> Log.d ("Notifications", response.toString ()),
+                    error -> Log.d ("Notifications", error.toString ())) {
                 @Override
                 public Map<String, String> getHeaders () {
                     Map<String, String> header = new HashMap<> ();

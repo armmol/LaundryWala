@@ -124,10 +124,10 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.MyViewHold
             });
 
             if (authType.equals (context.getString (R.string.courier))) {
-                assign.setVisibility (View.INVISIBLE);
-            }
-//                assign.setText (context.getString(R.string.start_tracking));
+//                assign.setVisibility (View.INVISIBLE);
 //            }
+                assign.setText (context.getString(R.string.view_items));
+            }
             assign.setOnClickListener (view -> {
                 listenerAssign.onClick (orders.get (getAdapterPosition ()));
             });

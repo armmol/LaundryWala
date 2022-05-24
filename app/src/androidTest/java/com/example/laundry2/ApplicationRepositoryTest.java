@@ -4,11 +4,12 @@ import static com.example.laundry2.TestUtil.dummyCourier;
 import static com.example.laundry2.TestUtil.dummyCourierId;
 import static com.example.laundry2.TestUtil.dummyCustomer;
 import static com.example.laundry2.TestUtil.dummyCustomerId;
+import static com.example.laundry2.TestUtil.dummyLaundryHouseId;
 import static com.example.laundry2.TestUtil.dummyOrder;
 import static com.example.laundry2.TestUtil.dummyUnassignedOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.location.Location;
@@ -24,9 +25,11 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import com.example.laundry2.DataClasses.Courier;
 import com.example.laundry2.DataClasses.LaundryHouse;
 import com.example.laundry2.DataClasses.Order;
-import com.example.laundry2.Database.LaundryItemCache;
 import com.example.laundry2.Database.ApplicationDao;
 import com.example.laundry2.Database.ApplicationDatabase;
+import com.example.laundry2.Database.CurrentOrderCourierId;
+import com.example.laundry2.Database.LaundryItemCache;
+import com.example.laundry2.Database.OrderTracking;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
@@ -42,7 +45,6 @@ import java.util.List;
 @LargeTest
 @RunWith(AndroidJUnit4.class)
 public class ApplicationRepositoryTest {
-
 
     @Rule
     public InstantTaskExecutorRule testRule = new InstantTaskExecutorRule ();
@@ -77,7 +79,8 @@ public class ApplicationRepositoryTest {
     @Test
     public void loginWithEmailSuccess () throws InterruptedException {
         authenticationViewModel.loginEmail (dummyCustomer.getEmail (), "123456", dummyCustomer.getAuthType ());
-        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getCurrentSignInUser ()).getEmail (), dummyCustomer.getEmail ());
+        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData
+                (authenticationViewModel.getCurrentSignInUser ()).getEmail (), dummyCustomer.getEmail ());
         assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getState ()).getType (),
                 "Successfully logged in as " + dummyCustomer.getAuthType ());
         authenticationViewModel.signOut ();
@@ -88,14 +91,6 @@ public class ApplicationRepositoryTest {
         authenticationViewModel.loginEmail (dummyCustomer.getEmail (), "1234567", dummyCustomer.getAuthType ());
         assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getState ()).getType (),
                 "Login Failure, Email or Password is incorrect.\n" + "Are you registered?");
-    }
-
-    @Test
-    public void registerWithEmailSuccess () throws InterruptedException {
-        authenticationViewModel.signupEmail ("test@gmail.com", "123456", "123456", "Courier");
-        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getState ()).getType (),
-                "Registration failed. Account might exist, Check Email");
-        authenticationViewModel.signOut ();
     }
 
     @Test
@@ -127,7 +122,8 @@ public class ApplicationRepositoryTest {
     @Test
     public void getCourierLocationChangeFail () throws InterruptedException {
         locationViewModel.getCourierLocation (dummyCourierId);
-        assertNotEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (locationViewModel.getCurrentLocationMutableLiveData ()), temp);
+        //Test does not observe a location change
+        assertNull (LiveDataUtil.getOrAwaitValueForMutableLiveData (locationViewModel.getCurrentLocationMutableLiveData ()));
     }
 
     @Test
@@ -161,7 +157,8 @@ public class ApplicationRepositoryTest {
         locationViewModel.getCurrentLocation ();
         fusedLocationProviderClient.getLastLocation ().addOnSuccessListener (location -> {
             try {
-                assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (locationViewModel.getCurrentLocationMutableLiveData ()), location);
+                assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData
+                        (locationViewModel.getCurrentLocationMutableLiveData ()), location);
             } catch (InterruptedException e) {
                 e.printStackTrace ();
             }
@@ -171,36 +168,65 @@ public class ApplicationRepositoryTest {
     @Test
     public void assignOrder () throws InterruptedException {
         authenticationViewModel.assignOrder (dummyCourierId, dummyOrder.getOrderId ());
-        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getState ()).getType (), "Order already assigned to Courier");
+        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getState ()).getType (),
+                "Order already assigned to Courier");
     }
 
     @Test
     public void unassignOrder () throws InterruptedException {
         authenticationViewModel.unassignOrder (dummyUnassignedOrder.getOrderId ());
-        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getState ()).getType (), "Order already unassigned from Courier");
+        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getState ()).getType (),
+                "Order already unassigned from Courier");
     }
 
     @Test
-    public void testGetCustomerEmail () throws InterruptedException {
+    public void getCustomerEmail () throws InterruptedException {
         locationViewModel.getCustomerEmail ("umGxpLl3vzWQWSDCMuuvxkt9Mzs1_0_m3mPFtTFO7ZGnWE75BdLv1Cf5y52");
-        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (locationViewModel.getCustomerEmailMutableLiveData ()), "armaan552@gmail.com");
+        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (locationViewModel.getCustomerEmailMutableLiveData ()),
+                "armaan552@gmail.com");
+    }
+
+    @Test
+    public void enterIntoDatabase () throws InterruptedException {
+        authenticationViewModel.enterIntoDB (dummyCustomerId,dummyCustomer.getEmail (),dummyCustomer.getAuthType (),
+                dummyCustomer.getName (),dummyCustomer.getAddress (), dummyCustomer.getArea (), 0.0,0.0);
+        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getState ()).getType ()
+                , "Updated Successfully");
+    }
+
+    @Test
+    public void createOrder () throws InterruptedException {
+        applicationDao.insertLaundryItem (new LaundryItemCache ("Shirt"));
+        assertEquals (LiveDataUtil.getOrAwaitValueForLiveData (applicationDao.getAllItems ()).get (0).getType (),"Shirt");
+        laundryBasketViewModel.createOrder (dummyCustomerId,dummyLaundryHouseId,2.5,true);
+        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (laundryBasketViewModel.orderPlacementStatus ()).getType ()
+                , "Order was placed");
     }
 
     @Test
     public void updateOrderStatus () throws InterruptedException {
         authenticationViewModel.updateOrderStatus ("Order Not Started", dummyOrder.getOrderId ());
-        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getState ()).getType (), "Order Status changed successfully");
+        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getState ()).getType (),
+                "Order Status changed successfully");
+    }
+
+    @Test
+    public void getNewDeliveryCost () {
+        authenticationViewModel.getNewDeliveryCost ();
+
     }
 
     @Test
     public void changeOrderPickDropStatus () throws InterruptedException {
         //Case Customer
-        authenticationViewModel.changeOrderPickDropStatus (dummyOrder.getOrderId (), "Customer", "", false);
+        authenticationViewModel.changeOrderPickDropStatus (dummyOrder.getOrderId (), dummyOrder.getCourierId (),
+                "Customer", "", false);
         assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getState ()).getType ()
                 , "Please wait for Courier! Courier is close to you, we will update you");
 
         //Laundry House
-        authenticationViewModel.changeOrderPickDropStatus (dummyOrder.getOrderId (), "Laundry House", "", false);
+        authenticationViewModel.changeOrderPickDropStatus (dummyOrder.getOrderId (), dummyOrder.getCourierId (),
+                "Laundry House", "", false);
         assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getState ()).getType ()
                 , "Please wait for Courier! Courier is close to you, we will update you");
     }
@@ -208,7 +234,8 @@ public class ApplicationRepositoryTest {
     @Test
     public void notifyOfArrival () throws InterruptedException {
         authenticationViewModel.notifyOfArrival (dummyOrder.getOrderId (),TestUtil.dummyCustomerId,"","");
-        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getState ()).getType (),"Notified successfully");
+        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getState ()).getType (),
+                "Notified successfully");
     }
 
     @Test
@@ -220,56 +247,99 @@ public class ApplicationRepositoryTest {
     @Test
     public void changeActiveStatus () throws InterruptedException {
         authenticationViewModel.changeActiveStatus (true, dummyCourier.getAuthType (), dummyCourierId);
-        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getState ()).getType (),"You will not receive any more orders");
+        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getState ()).getType (),
+                "Active Status changed successfully");
     }
 
     @Test
-    public void clearCache () throws InterruptedException {
+    public void insertOrderTracking () throws InterruptedException {
+        applicationDao.insertIsOrderTracking (new OrderTracking ("test"));
+        assertEquals (LiveDataUtil.getOrAwaitValueForLiveData
+                (applicationDao.getIsOrderTracking ()).isOrderTracking,"test");
+        applicationDao.deleteIsOrderTracking ();
+    }
+
+    @Test
+    public void removeOrderTracking () throws InterruptedException {
+        applicationDao.deleteIsOrderTracking ();
+        assertNull (LiveDataUtil.getOrAwaitValueForLiveData (applicationDao.getIsOrderTracking ()));
+    }
+
+    @Test
+    public void insertCurrentOrderCourierId () throws InterruptedException {
+        applicationDao.insertCurrentOrderCourierId (new CurrentOrderCourierId ("test",""));
+        assertEquals (LiveDataUtil.getOrAwaitValueForLiveData
+                (applicationDao.getCurrentOrderCourierId ()).courierId,"test");
+        applicationDao.deleteCurrentOrderCourierId ();
+    }
+
+    @Test
+    public void removeCurrentOrderCourierId () throws InterruptedException {
+        applicationDao.deleteCurrentOrderCourierId ();
+        assertNull (LiveDataUtil.getOrAwaitValueForLiveData
+                (applicationDao.getCurrentOrderCourierId ()));
+    }
+
+    @Test
+    public void clearLaundryItemCache () throws InterruptedException {
         applicationDao.deleteAll ();
-        assertEquals (LiveDataUtil.getOrAwaitValueForLiveData (applicationDao.getAllItems ()).size (),0);
+        assertEquals (LiveDataUtil.getOrAwaitValueForLiveData
+                (applicationDao.getAllItems ()).size (),0);
     }
 
     @Test
     public void addItemToCache() throws InterruptedException {
         applicationDao.insertLaundryItem (new LaundryItemCache ("Shirt"));
-        assertEquals (LiveDataUtil.getOrAwaitValueForLiveData (applicationDao.getAllItems ()).get (0).getType (),"Shirt");
+        assertEquals (LiveDataUtil.getOrAwaitValueForLiveData
+                (applicationDao.getAllItems ()).get (0).getType (),"Shirt");
         applicationDao.deleteAll ();
     }
 
     @Test
     public void removeItemFromCache() throws InterruptedException {
         applicationDao.deleteLaundryItem (new LaundryItemCache ("Shirt"));
-        assertEquals (LiveDataUtil.getOrAwaitValueForLiveData (applicationDao.getAllItems ()).size (),0);
+        assertEquals (LiveDataUtil.getOrAwaitValueForLiveData
+                (applicationDao.getAllItems ()).size (),0);
         applicationDao.deleteAll ();
     }
 
     @Test
     public void addItem () throws InterruptedException {
         laundryBasketViewModel.addItem ("Suit/Blazer/Coat");
-        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (laundryBasketViewModel.getLaundryItems ()).get (0).getType (), TestUtil.dummyLaundryItems.get (0).getType ());
-        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (laundryBasketViewModel.getLaundryItems ()).get (0).getCost (),TestUtil. dummyLaundryItems.get (0).getCost (), 0);
+        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (laundryBasketViewModel.getLaundryItems ()).get (0).getType (),
+                TestUtil.dummyLaundryItems.get (0).getType ());
+        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (laundryBasketViewModel.getLaundryItems ()).get (0).getCost (),
+                TestUtil. dummyLaundryItems.get (0).getCost (), 0);
     }
 
     @Test
     public void removeItem () throws InterruptedException {
         laundryBasketViewModel.addItem ("Suit/Blazer/Coat");
-        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (laundryBasketViewModel.getLaundryItems ()).get (0).getType (),TestUtil. dummyLaundryItems.get (0).getType ());
-        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (laundryBasketViewModel.getLaundryItems ()).get (0).getCost (), TestUtil.dummyLaundryItems.get (0).getCost (), 0);
+        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (laundryBasketViewModel.getLaundryItems ()).get (0).getType (),
+                TestUtil. dummyLaundryItems.get (0).getType ());
+        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (laundryBasketViewModel.getLaundryItems ()).get (0).getCost (),
+                TestUtil.dummyLaundryItems.get (0).getCost (), 0);
         laundryBasketViewModel.removeItem (new LaundryItemCache ("Suit/Blazer/Coat"));
-        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (laundryBasketViewModel.getLaundryItems ()).size (), 0, 0);
+        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (laundryBasketViewModel.getLaundryItems ()).size (),
+                0, 0);
     }
 
     @Test
     public void getApplicationUserData () throws InterruptedException {
         authenticationViewModel.loginEmail (dummyCustomer.getEmail (), "123456", dummyCustomer.getAuthType ());
         authenticationViewModel.loadApplicationUserData (dummyCustomer.getAuthType (), dummyCustomerId);
-        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getApplicationUserData ()).getAddress (), dummyCustomer.getAddress ());
-        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getApplicationUserData ()).getAuthType (), dummyCustomer.getAuthType ());
-        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getApplicationUserData ()).getOrderId ().get (0), dummyCustomer.getOrderId ().get (0));
-        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getApplicationUserData ()).getEmail (), dummyCustomer.getEmail ());
-        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getApplicationUserData ()).getArea (), dummyCustomer.getArea ());
-        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getApplicationUserData ()).getName (), dummyCustomer.getName ());
-        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getApplicationUserData ()).getOrders (), dummyCustomer.getOrders ());
+        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getApplicationUserData ()).getAddress (),
+                dummyCustomer.getAddress ());
+        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getApplicationUserData ()).getAuthType (),
+                dummyCustomer.getAuthType ());
+        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getApplicationUserData ()).getOrderId ().get (0),
+                dummyCustomer.getOrderId ().get (0));
+        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getApplicationUserData ()).getEmail (),
+                dummyCustomer.getEmail ());
+        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getApplicationUserData ()).getArea (),
+                dummyCustomer.getArea ());
+        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getApplicationUserData ()).getName (),
+                dummyCustomer.getName ());
         authenticationViewModel.signOut ();
     }
 
@@ -288,7 +358,7 @@ public class ApplicationRepositoryTest {
         authenticationViewModel.loginEmail (dummyCustomer.getEmail (), "123456", dummyCustomer.getAuthType ());
         assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getCurrentSignInUser ()).getEmail (), dummyCustomer.getEmail ());
         authenticationViewModel.loadAllOrders (dummyCustomer.getAuthType (),dummyCustomerId, true);
-        Order result = LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getOrders ()).get (0);
+        Order result = LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getOrders ()).get (1);
         assertEquals (result.getOrderId (), dummyOrder.getOrderId ());
         assertEquals (result.getCustomerDrop (), dummyOrder.getCustomerDrop ());
         assertEquals (result.getLaundryHouseDrop (), dummyOrder.getLaundryHouseDrop ());
@@ -319,10 +389,10 @@ public class ApplicationRepositoryTest {
     @Test
     public void getUserAndLaundryHouseLatLng () throws InterruptedException {
         authenticationViewModel.assignOrder (dummyCourierId, dummyOrder.getOrderId ());
-        authenticationViewModel.getUserAndLaundryHouseMarkerLocation (dummyOrder.getOrderId ());
-        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getLatLngMutableLiveData ()).get (0),
+        locationViewModel.getUserAndLaundryHouseMarkerLocation (dummyOrder.getOrderId ());
+        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (locationViewModel.getLatLngMutableLiveData ()).get (0),
                 new LatLng (dummyOrder.getCustomerDeliveryLocationLatitude (), dummyOrder.getCustomerDeliveryLocationLongitude ()));
-        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getLatLngMutableLiveData ()).get (1),
+        assertEquals (LiveDataUtil.getOrAwaitValueForMutableLiveData (locationViewModel.getLatLngMutableLiveData ()).get (1),
                 new LatLng (dummyOrder.getLaundryHouseDeliveryLocationLatitude (), dummyOrder.getLaundryHouseDeliveryLocationLongitude ()));
     }
 
@@ -337,4 +407,5 @@ public class ApplicationRepositoryTest {
         paymentsViewModel.loadPaymentDataForGPay (100);
         assertFalse (LiveDataUtil.getOrAwaitValueForMutableLiveData (paymentsViewModel.getPaymentDataTaskMutableLiveData ()).isSuccessful ());
     }
+
 }

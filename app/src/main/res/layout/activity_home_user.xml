@@ -19,8 +19,8 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/confirmOrderWindow"
-                android:layout_width="248dp"
-                android:layout_height="135dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:background="@drawable/laundryhouseadapterbackground"
                 android:visibility="invisible"
                 app:layout_constraintBottom_toBottomOf="@+id/imageButton_orderhistory"
@@ -46,14 +46,15 @@
                     android:id="@+id/checkbox_yes"
                     android:layout_width="101dp"
                     android:layout_height="49dp"
+                    android:layout_marginTop="8dp"
                     android:contentDescription="TODO"
                     android:text="yes"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.099"
+                    app:layout_constraintHorizontal_bias="0.0"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textView_notification"
-                    app:layout_constraintVertical_bias="0.304" />
+                    app:layout_constraintVertical_bias="0.47000003" />
 
                 <Button
                     android:id="@+id/checkbox_no"
@@ -63,22 +64,23 @@
                     app:layout_constraintBottom_toBottomOf="@+id/checkbox_yes"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.9"
-                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/checkbox_yes"
                     app:layout_constraintTop_toTopOf="@+id/checkbox_yes"
                     app:layout_constraintVertical_bias="0.304" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerView_userhome"
-                android:layout_width="391dp"
-                android:layout_height="602dp"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:background="#00FFFFFF"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/imageButton_orderhistory"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.86" />
+                app:layout_constraintTop_toBottomOf="@+id/switch_activestatus" />
 
             <ImageView
                 android:id="@+id/imageButton_profile"
@@ -101,21 +103,19 @@
                 android:textColor="#651FFF"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                app:layout_constraintBottom_toTopOf="@+id/recyclerView_userhome"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.0" />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/switch_activestatus"
                 android:layout_width="206dp"
                 android:layout_height="52dp"
                 android:minHeight="48dp"
+                android:textColor="@color/purple_500"
                 android:textOff="@string/offline"
                 android:textOn="@string/online"
-                app:layout_constraintBottom_toTopOf="@+id/recyclerView_userhome"
                 app:layout_constraintEnd_toEndOf="@+id/txt_userGreeting"
                 app:layout_constraintStart_toStartOf="@+id/txt_userGreeting"
                 app:layout_constraintTop_toBottomOf="@+id/txt_userGreeting" />

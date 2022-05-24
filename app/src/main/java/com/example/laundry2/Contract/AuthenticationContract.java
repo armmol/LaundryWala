@@ -3,17 +3,17 @@ package com.example.laundry2.Contract;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.example.laundry2.Database.AuthType;
 import com.example.laundry2.DataClasses.ApplicationUser;
 import com.example.laundry2.DataClasses.AuthState;
 import com.example.laundry2.DataClasses.Courier;
 import com.example.laundry2.DataClasses.LaundryHouse;
 import com.example.laundry2.DataClasses.Order;
+import com.example.laundry2.Database.AuthType;
 import com.example.laundry2.Database.CurrentOrderCourierId;
 import com.example.laundry2.Database.LaundryHouseCache;
 import com.example.laundry2.Database.OrderTracking;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.maps.model.LatLng;
+import com.google.android.libraries.places.api.model.Place;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.List;
@@ -44,9 +44,11 @@ public interface AuthenticationContract {
 
     MutableLiveData<Boolean> getLogoutMutableLiveData ();
 
-    MutableLiveData<List<LatLng>> getLatLngMutableLiveData();
-
     MutableLiveData<Boolean> getCourierArrivalMutableLiveData();
+
+    MutableLiveData<Double> getNewDeliveryCost();
+
+    void getNewDeliveryCost (Place place, String laundryHouseUid);
 
     void loginEmail (String email, String password, String authtype);
 
@@ -63,8 +65,6 @@ public interface AuthenticationContract {
     void loadAllOrders (String authtype, String uid, boolean isOrderHistory);
 
     void loadAllCouriers (String orderId);
-
-    void getUserAndLaundryHouseMarkerLocation (String OrderUid);
 
     void loadApplicationUserData (String authtype, String uid);
 
@@ -85,7 +85,7 @@ public interface AuthenticationContract {
 
     void removeIsOrderTrackingData();
 
-    void insertCurrentOrderCourierId (String courierId);
+    void insertCurrentOrderCourierId (String courierId, String orderId);
 
     void removeCurrentOrderCourierId ();
 
@@ -97,6 +97,8 @@ public interface AuthenticationContract {
 
     void getNotified(String orderId);
 
-    void changeOrderPickDropStatus (String orderId, String authType, String type, boolean value);
+    void changeOrderPickDropStatus (String orderId, String courierId, String authType, String type, boolean value);
+
+    void orderIDChange (String authType, String uid);
 }
 

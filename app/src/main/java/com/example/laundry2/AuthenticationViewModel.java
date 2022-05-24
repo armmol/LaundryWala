@@ -17,7 +17,7 @@ import com.example.laundry2.Database.CurrentOrderCourierId;
 import com.example.laundry2.Database.LaundryHouseCache;
 import com.example.laundry2.Database.OrderTracking;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.maps.model.LatLng;
+import com.google.android.libraries.places.api.model.Place;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.List;
@@ -27,7 +27,6 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
 
     private final ApplicationRepository repository;
     private final MutableLiveData<FirebaseUser> userMutableLiveData;
-    private final MutableLiveData<List<LatLng>> userLatLngMutableLiveData;
     private final MutableLiveData<List<LaundryHouse>> laundryHouseMutableLiveData;
     private final MutableLiveData<ApplicationUser> applicationUserMutableLiveData;
     private final MutableLiveData<GoogleSignInClient> googleSignInClientMutableLiveData;
@@ -36,6 +35,7 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
     private final MutableLiveData<Boolean> logoutMutableLiveData;
     private final MutableLiveData<List<Courier>> courierListMutableLiveData;
     private final MutableLiveData<Boolean> courierArrivalMutableLiveData;
+    private final MutableLiveData<Double> newDeliveryCostMutableLiveData;
     private final LiveData<AuthType> authTypeLiveData;
     private final LiveData<LaundryHouseCache> laundryHouseCacheLiveData;
     private final LiveData<OrderTracking> orderTrackingLiveData;
@@ -52,8 +52,8 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
         orderMutableLiveData = repository.getOrderListMutableLiveData ();
         logoutMutableLiveData = repository.getLogoutMutableLiveData ();
         courierListMutableLiveData = repository.getCourierListMutableLiveData ();
-        userLatLngMutableLiveData = repository.getUserLatLngListMutableLiveData ();
         courierArrivalMutableLiveData = repository.getCourierArrivalMutableLiveData ();
+        newDeliveryCostMutableLiveData = repository.getNewDeliveryCostMutableLiveData ();
         authTypeLiveData = repository.getAuthTypeLiveData ();
         laundryHouseCacheLiveData = repository.getLaundryHouseCacheLiveData ();
         orderTrackingLiveData = repository.getOrderTrackingLiveData ();
@@ -121,13 +121,18 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
     }
 
     @Override
-    public MutableLiveData<List<LatLng>> getLatLngMutableLiveData () {
-        return userLatLngMutableLiveData;
+    public MutableLiveData<Boolean> getCourierArrivalMutableLiveData () {
+        return courierArrivalMutableLiveData;
     }
 
     @Override
-    public MutableLiveData<Boolean> getCourierArrivalMutableLiveData () {
-        return courierArrivalMutableLiveData;
+    public MutableLiveData<Double> getNewDeliveryCost () {
+        return newDeliveryCostMutableLiveData;
+    }
+
+    @Override
+    public void getNewDeliveryCost (Place place, String laundryHouseUid) {
+        repository.getNewDeliveryCost (place, laundryHouseUid);
     }
 
     @Override
@@ -163,11 +168,6 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
     @Override
     public void loadAllCouriers (String orderId) {
         repository.loadAllCouriers (orderId);
-    }
-
-    @Override
-    public void getUserAndLaundryHouseMarkerLocation (String OrderUid) {
-        repository.getUserAndLaundryHouseLatLng (OrderUid);
     }
 
     @Override
@@ -222,8 +222,8 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
     }
 
     @Override
-    public void insertCurrentOrderCourierId (String courierId) {
-        repository.insertCurrentOrderCourierId (courierId);
+    public void insertCurrentOrderCourierId (String courierId, String orderId) {
+        repository.insertCurrentOrderCourierId (courierId, orderId);
     }
 
     @Override
@@ -252,7 +252,12 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
     }
 
     @Override
-    public void changeOrderPickDropStatus (String orderId, String authType, String type, boolean value) {
-        repository.changeOrderPickDropStatus (orderId, authType, type, value);
+    public void changeOrderPickDropStatus (String orderId, String courierId, String authType, String type, boolean value) {
+        repository.changeOrderPickDropStatus (orderId, courierId, authType, type, value);
+    }
+
+    @Override
+    public void orderIDChange (String authType, String uid) {
+        repository.orderIDChange (authType, uid);
     }
 }

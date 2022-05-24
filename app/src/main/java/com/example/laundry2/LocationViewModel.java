@@ -8,31 +8,33 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.laundry2.Contract.LocationContract;
-import com.example.laundry2.DataClasses.ApplicationUser;
 import com.example.laundry2.DataClasses.AuthState;
 import com.example.laundry2.DataClasses.Order;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.List;
+
 public class LocationViewModel extends AndroidViewModel implements LocationContract {
-    private final ApplicationRepository locationRepository;
+    private final ApplicationRepository repository;
     private final MutableLiveData<Location> currentLocationMutableLiveData;
     private final MutableLiveData<FirebaseUser> userMutableLiveData;
+    private final MutableLiveData<List<LatLng>> userLatLngMutableLiveData;
     private final MutableLiveData<Boolean> serviceStateMutableLiveData;
-    private final MutableLiveData<ApplicationUser> applicationUserMutableLiveData;
     private final MutableLiveData<Order> orderMutableLiveData;
     private final MutableLiveData<String> customerEmail;
     private final MutableLiveData<AuthState> authStateMutableLiveData;
 
     public LocationViewModel (@NonNull Application application) {
         super (application);
-        locationRepository = new ApplicationRepository (application);
-        currentLocationMutableLiveData = locationRepository.getCurrentLocationMutableLiveData ();
-        userMutableLiveData = locationRepository.getUserMutableLiveData ();
-        serviceStateMutableLiveData = locationRepository.getServiceState ();
-        applicationUserMutableLiveData = locationRepository.getApplicationUserMutableLiveData ();
-        orderMutableLiveData = locationRepository.getOrderMutableLiveData ();
-        customerEmail = locationRepository.getCustomerEmail ();
-        authStateMutableLiveData = locationRepository.getAuthStateMutableLiveData ();
+        repository = new ApplicationRepository (application);
+        currentLocationMutableLiveData = repository.getCurrentLocationMutableLiveData ();
+        userMutableLiveData = repository.getUserMutableLiveData ();
+        serviceStateMutableLiveData = repository.getServiceState ();
+        orderMutableLiveData = repository.getOrderMutableLiveData ();
+        userLatLngMutableLiveData = repository.getUserLatLngListMutableLiveData ();
+        customerEmail = repository.getCustomerEmail ();
+        authStateMutableLiveData = repository.getAuthStateMutableLiveData ();
     }
 
     @Override
@@ -47,32 +49,42 @@ public class LocationViewModel extends AndroidViewModel implements LocationContr
 
     @Override
     public void getCurrentLocation () {
-        locationRepository.getLocation ();
+        repository.getLocation ();
     }
 
     @Override
     public void getCustomerEmail (String orderId) {
-        locationRepository.getCustomerEmail (orderId);
+        repository.getCustomerEmail (orderId);
     }
 
     @Override
     public void getCourierLocation (String courierUid) {
-        locationRepository.getCourierLocation (courierUid);
+        repository.getCourierLocation (courierUid);
     }
 
     @Override
     public void startLiveLocation () {
-        locationRepository.startLocationService ();
+        repository.startLocationService ();
     }
 
     @Override
     public void stopLiveLocation () {
-        locationRepository.stopLocationService ();
+        repository.stopLocationService ();
     }
 
     @Override
     public void updateLiveLocation (String courierUid, Location location) {
-        locationRepository.updateCourierLocation (courierUid, location);
+        repository.updateCourierLocation (courierUid, location);
+    }
+
+    @Override
+    public void getUserAndLaundryHouseMarkerLocation (String OrderUid) {
+        repository.getUserAndLaundryHouseLatLng (OrderUid);
+    }
+
+    @Override
+    public MutableLiveData<List<LatLng>> getLatLngMutableLiveData () {
+        return userLatLngMutableLiveData;
     }
 
     @Override
@@ -92,7 +104,12 @@ public class LocationViewModel extends AndroidViewModel implements LocationContr
 
     @Override
     public void getCustomerOrder (String orderId) {
-        locationRepository.getOrder (orderId);
+        repository.getOrder (orderId);
+    }
+
+    @Override
+    public void orderChange (String courierId, String orderId) {
+        repository.orderChange (courierId, orderId);
     }
 
     //Required for Testing

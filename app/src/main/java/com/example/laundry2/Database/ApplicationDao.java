@@ -24,6 +24,9 @@ public interface ApplicationDao {
     @Query("SELECT * FROM LaundryItemCache")
     LiveData<List<LaundryItemCache>> getAllItems ();
 
+    @Query("SELECT * FROM LaundryItemCache")
+    List<LaundryItemCache> getAllItemsAsList ();
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     void insertAuthtype(AuthType authType);
 

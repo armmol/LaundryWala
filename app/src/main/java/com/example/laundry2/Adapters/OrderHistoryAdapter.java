@@ -17,10 +17,10 @@ import java.util.List;
 
 public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapter.MyViewHolder> {
     private final Context context;
+    private final int track;
     private List<Order> orders;
     private onItemClickListener listener;
     private onStatusCheckListener statusCheckListener;
-    private int track;
 
     public OrderHistoryAdapter (Context context, List<Order> laundryItems, int track) {
         this.context = context;
@@ -81,7 +81,6 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
 
         public MyViewHolder (@NonNull View itemView) {
             super (itemView);
-
             orderId = itemView.findViewById (R.id.textView_card_orderhistory_orderid);
             orderStatus = itemView.findViewById (R.id.textView_card_orderhistory_orderstatus);
             orderTime = itemView.findViewById (R.id.textView_card_orderhistory_ordertime);

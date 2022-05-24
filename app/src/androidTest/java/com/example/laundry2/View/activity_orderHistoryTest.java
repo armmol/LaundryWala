@@ -6,6 +6,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static com.example.laundry2.TestUtil.dummyCourierId;
 import static com.example.laundry2.TestUtil.dummyCustomer;
+import static com.example.laundry2.TestUtil.dummyOrder;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -45,7 +46,7 @@ public class activity_orderHistoryTest {
         db = Room.inMemoryDatabaseBuilder (ApplicationProvider.getApplicationContext (), ApplicationDatabase.class).build ();
         applicationDao = db.appDao ();
         authenticationViewModel = new AuthenticationViewModel (ApplicationProvider.getApplicationContext ());
-        authenticationViewModel.insertCurrentOrderCourierId (dummyCourierId);
+        authenticationViewModel.insertCurrentOrderCourierId (dummyCourierId, dummyOrder.getOrderId ());
         applicationDao.insertAuthtype (new AuthType (dummyCustomer.getAuthType ()));
     }
 

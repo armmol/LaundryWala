@@ -22,12 +22,12 @@
     <string name="upi_id">UPI ID</string>
     <string name="have_an_account_log_in">Have an account? Log In.</string>
     <string name="shirts">Shirts</string>
-    <string name="shirts_any">Shirts(Any-0.1€)</string>
-    <string name="bedsheets_duvets">Bedsheets/Duvets(0.5€)</string>
-    <string name="carpets_rugs">Carpets/Rugs(5€)</string>
-    <string name="suits_blazers_coats">Suits/Blazers/Coats(1€)</string>
-    <string name="pants_any">Pants(Any-0.1€)</string>
-    <string name="jackets_woolens">Jackets/Woolens(1€)</string>
+    <string name="shirts_any">0.1€-Any Shirts</string>
+    <string name="bedsheets_duvets">0.5€-Bedsheets/Duvets</string>
+    <string name="carpets_rugs">5€-Carpets/Rugs</string>
+    <string name="suits_blazers_coats">1€-Suits/Blazers/Coats</string>
+    <string name="pants_any">0.1€-Any Pants</string>
+    <string name="jackets_woolens">1€-Jackets/Woolens</string>
     <string name="items">Items</string>
     <string name="_0">0</string>
     <string name="order_summary">Order Summary and Cost are shown below -</string>
@@ -73,10 +73,11 @@
     <string name="select_status_to_change">Select status to change to</string>
     <string name="add_clothes_in_kgs_0_5_kg">Add Clothes In Kgs(0.5€/KG)</string>
     <string name="i_need_a_courier">I need a Courier</string>
-    <string name="i_need_drying">I need Drying (1€/6 items)</string>
+    <string name="i_need_drying">I need Drying</string>
     <string name="welcome_to_laundrywala">Welcome to LaundryWala</string>
     <string name="clear_all">Clear All</string>
     <string name="isordertracking">isOrderTracking</string>
+    <string name="view_items">View Items</string>
     <string-array name="Authentication_type">
         <item>SELECT USER TYPE</item>
         <item>Customer</item>
@@ -84,17 +85,22 @@
         <item>Courier</item>
     </string-array>
     <string-array name="Order_Status_Courier">
-        <item>Order Status</item>
+        <item>Select Order Status</item>
         <item>Pick Up Phase</item>
         <item>Customer did not Show, assign new Courier</item>
+        <item>Customer did not Show to collect order</item>
         <item>Delivery Phase</item>
     </string-array>
     <string-array name="Order_Status_LaundryHouse">
-        <item>Order Status</item>
+        <item>Select Order Status</item>
+        <item>Order Assigned to Courier</item>
         <item>Order Not Assigned to Courier</item>
-        <item>Order Was Picked Up From Laundry House</item>
-        <item>Order Was Not Picked Up From Laundry House</item>
+        <item>Order in Process</item>
+        <item>Awaiting pick up from Courier</item>
+        <item>Awaiting pick up from Customer</item>
         <item>Order Was Delivered to Laundry House</item>
         <item>Order Was Not Delivered to Laundry House</item>
+        <item>Order Was Picked Up From Laundry House</item>
+        <item>Order Was Not Picked Up From Laundry House</item>
     </string-array>
 </resources>

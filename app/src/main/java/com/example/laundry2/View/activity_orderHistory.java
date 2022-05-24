@@ -17,6 +17,7 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProvider;
@@ -34,6 +35,7 @@ import com.example.laundry2.R;
 import com.example.laundry2.databinding.ActivityOrderhistoryBinding;
 
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class activity_orderHistory extends AppCompatActivity {
@@ -42,6 +44,7 @@ public class activity_orderHistory extends AppCompatActivity {
     private AuthenticationViewModel viewModel;
     private LocationViewModel locationViewModel;
     private boolean isOrderTracking;
+    private PopupWindow window;
 
     @Override
     protected void onCreate (@Nullable Bundle savedInstanceState) {
@@ -63,43 +66,38 @@ public class activity_orderHistory extends AppCompatActivity {
             if (authtype != null) {
                 String authType = authtype.authtype;
                 binding.recyclerViewOrderhistory.setLayoutManager (new LinearLayoutManager (this));
-                viewModel.getCurrentSignInUser ().observe (this, user -> viewModel.loadAllOrders (authType, user.getUid (), true));
+                viewModel.getCurrentSignInUser ().observe (this, user ->
+                        viewModel.loadAllOrders (authType, user.getUid (), true));
                 viewModel.getOrders ().observe (this, orders -> {
                     if (isOrderTracking) {
                         ArrayList<Order> trackOrderList = new ArrayList<> (orders);
-                        for (Order order : orders) {
+                        for (Order order : orders)
                             if (order.getStatus ().equals ("Completed"))
                                 trackOrderList.remove (order);
-                        }
+                        if (trackOrderList.size () != 0)
+                            binding.noDisplayText.setVisibility (View.INVISIBLE);
                         OrderHistoryAdapter adapter = new OrderHistoryAdapter (this, trackOrderList, 1);
                         binding.recyclerViewOrderhistory.setAdapter (adapter);
-                        adapter.setOnItemClickListener (order -> {
-                            locationViewModel.getCustomerOrder (order.getOrderId ());
-                            locationViewModel.getOrder ().observe (this, order1 -> {
-                                if (!order1.getCourierId ().equals ("")) {
-                                    viewModel.insertCurrentOrderCourierId (order1.getCourierId ());
-                                    getPermissions ();
-                                } else
-                                    Toast.makeText (this, order.getStatus (), Toast.LENGTH_LONG).show ();
-                            });
-                        });
+                        adapter.setOnItemClickListener (this::trackerOnClick);
                     } else {
+                        if (orders.size () != 0)
+                            binding.noDisplayText.setVisibility (View.INVISIBLE);
                         OrderHistoryAdapter adapter = new OrderHistoryAdapter (this, orders, 0);
                         binding.recyclerViewOrderhistory.setAdapter (adapter);
                         adapter.setOnItemClickListener (this::onItemCheckClick);
-                        adapter.setOnStatusCheckListener (this::onStatusCheckClick);
+                        adapter.setOnStatusCheckListener (order -> onStatusCheckClick (order, authType));
                     }
                 });
-                OnBackPressedCallback callback = new OnBackPressedCallback (true) {
-                    @Override
-                    public void handleOnBackPressed () {
-                        startActivity (new Intent (activity_orderHistory.this, activity_home.class));
-                        viewModel.removeIsOrderTrackingData ();
-                    }
-                };
-                this.getOnBackPressedDispatcher ().addCallback (callback);
             }
         });
+        OnBackPressedCallback callback = new OnBackPressedCallback (true) {
+            @Override
+            public void handleOnBackPressed () {
+                startActivity (new Intent (activity_orderHistory.this, activity_home.class));
+                viewModel.removeIsOrderTrackingData ();
+            }
+        };
+        this.getOnBackPressedDispatcher ().addCallback (callback);
     }
 
     private void getPermissions () {
@@ -119,14 +117,13 @@ public class activity_orderHistory extends AppCompatActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 getPermissions ();
             } else
-                startActivity (new Intent ());
-            Toast.makeText (this, "Permission denied", Toast.LENGTH_SHORT).show ();
+                Toast.makeText (this, "Permission denied", Toast.LENGTH_SHORT).show ();
         }
     }
 
     private View createPopUpWindow (int layout) {
         View popupWindowView = LayoutInflater.from (activity_orderHistory.this).inflate (layout, null);
-        PopupWindow window = new PopupWindow (popupWindowView);
+        window = new PopupWindow (popupWindowView);
         window.setHeight (ViewGroup.LayoutParams.WRAP_CONTENT);
         window.setWidth (ViewGroup.LayoutParams.WRAP_CONTENT);
         window.setFocusable (true);
@@ -141,6 +138,8 @@ public class activity_orderHistory extends AppCompatActivity {
 
     private void onItemCheckClick (Order order) {
         View windowView = createPopUpWindow (R.layout.activity_viewitems);
+        ConstraintLayout layout = windowView.findViewById (R.id.viewItemsConstraintLayout);
+        layout.setOnClickListener (mView -> window.dismiss ());
         RecyclerView recyclerView = windowView.findViewById (R.id.recyclerView_confirmorder);
         ArrayList<LaundryItemCache> laundryItemCaches = new ArrayList<> ();
         for (LaundryItem laundryItem : order.getItems ())
@@ -148,28 +147,42 @@ public class activity_orderHistory extends AppCompatActivity {
         LaundryItemsAdapter laundryItemsAdapter = new LaundryItemsAdapter (this, laundryItemCaches, 1);
         recyclerView.setLayoutManager (new LinearLayoutManager (getApplicationContext ()));
         recyclerView.setAdapter (laundryItemsAdapter);
-        laundryItemsAdapter.setOnItemClickListener (laundryItem ->
-                Toast.makeText (this, "Cannot change order Once placed", Toast.LENGTH_SHORT).show ());
     }
 
-    private void onStatusCheckClick (Order order) {
-        View windowView = createPopUpWindow (R.layout.window_orderstatus_adapter);
-        CheckBox checkBox1, checkBox2, checkBox3, checkBox4;
-        checkBox1 = windowView.findViewById (R.id.cardview_orderstatus_checkBox);
-        checkBox2 = windowView.findViewById (R.id.cardview_orderstatus_checkBox2);
-        checkBox3 = windowView.findViewById (R.id.cardview_orderstatus_checkBox3);
-        checkBox4 = windowView.findViewById (R.id.cardview_orderstatus_checkBox4);
-        checkBox1.setChecked (order.getCustomerPickUp ());
-        checkBox2.setChecked (order.getLaundryHouseDrop ());
-        checkBox3.setChecked (order.getLaundryHousePickUp ());
-        checkBox4.setChecked (order.getCustomerDrop ());
-        checkBox1.setTextColor (order.getCustomerPickUp () ? Color.GREEN : Color.RED);
-        checkBox2.setTextColor (order.getLaundryHouseDrop () ? Color.GREEN : Color.RED);
-        checkBox3.setTextColor (order.getLaundryHousePickUp () ? Color.GREEN : Color.RED);
-        checkBox4.setTextColor (order.getCustomerDrop () ? Color.GREEN : Color.RED);
-        checkBox1.setEnabled (false);
-        checkBox2.setEnabled (false);
-        checkBox3.setEnabled (false);
-        checkBox4.setEnabled (false);
+    private void onStatusCheckClick (Order order, String authtype) {
+        if (authtype.equals (getString (R.string.courier))) {
+            Toast.makeText (this, "You have completed this order", Toast.LENGTH_SHORT).show ();
+        } else {
+            View windowView = createPopUpWindow (R.layout.window_orderstatus_adapter);
+            ConstraintLayout layout = windowView.findViewById (R.id.orderStatusConstraintLayout);
+            layout.setOnClickListener (mView -> window.dismiss ());
+            CheckBox checkBox1, checkBox2, checkBox3, checkBox4;
+            checkBox1 = windowView.findViewById (R.id.cardview_orderstatus_checkBox);
+            checkBox2 = windowView.findViewById (R.id.cardview_orderstatus_checkBox2);
+            checkBox3 = windowView.findViewById (R.id.cardview_orderstatus_checkBox3);
+            checkBox4 = windowView.findViewById (R.id.cardview_orderstatus_checkBox4);
+            checkBox1.setChecked (order.getCustomerPickUp ());
+            checkBox2.setChecked (order.getLaundryHouseDrop ());
+            checkBox3.setChecked (order.getLaundryHousePickUp ());
+            checkBox4.setChecked (order.getCustomerDrop ());
+            checkBox1.setTextColor (order.getCustomerPickUp () ? Color.GREEN : Color.RED);
+            checkBox2.setTextColor (order.getLaundryHouseDrop () ? Color.GREEN : Color.RED);
+            checkBox3.setTextColor (order.getLaundryHousePickUp () ? Color.GREEN : Color.RED);
+            checkBox4.setTextColor (order.getCustomerDrop () ? Color.GREEN : Color.RED);
+        }
+    }
+
+    private void trackerOnClick (Order order) {
+        locationViewModel.getCustomerOrder (order.getOrderId ());
+        AtomicBoolean toastDone = new AtomicBoolean (false);
+        locationViewModel.getOrder ().observe (this, order1 -> {
+            if (!order1.getCourierId ().equals ("")) {
+                viewModel.insertCurrentOrderCourierId (order1.getCourierId (), order1.getOrderId ());
+                getPermissions ();
+            } else if (!toastDone.get ()) {
+                Toast.makeText (this, order.getStatus () + "\nNo Courier assigned", Toast.LENGTH_SHORT).show ();
+                toastDone.set (true);
+            }
+        });
     }
 }

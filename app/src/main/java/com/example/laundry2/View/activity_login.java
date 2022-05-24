@@ -45,19 +45,19 @@ public class activity_login extends AppCompatActivity {
         binding = DataBindingUtil.setContentView (this, R.layout.activity_login);
         authenticationViewModel = new ViewModelProvider (this).get (AuthenticationViewModel.class);
         googleSignInResultHandler = registerForActivityResult (new ActivityResultContracts.StartActivityForResult (), result -> {
-                    if (result.getResultCode () == RESULT_OK) {
-                        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent (result.getData ());
-                        try {
-                            // Google Sign In was successful, authenticate with Firebase
-                            GoogleSignInAccount account = task.getResult (ApiException.class);
-                            Log.d (TAG, "firebaseAuthWithGoogle:" + account.getId ());
-                            authenticationViewModel.signinGoogle (spinnerItem, account.getIdToken (), R.integer.Login);
-                        } catch (ApiException e) {
-                            // Google Sign In failed, update UI appropriately
-                            Log.w (TAG, "Google sign in failed", e);
-                        }
-                    }
-                });
+            if (result.getResultCode () == RESULT_OK) {
+                Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent (result.getData ());
+                try {
+                    // Google Sign In was successful, authenticate with Firebase
+                    GoogleSignInAccount account = task.getResult (ApiException.class);
+                    Log.d (TAG, "firebaseAuthWithGoogle:" + account.getId ());
+                    authenticationViewModel.signinGoogle (spinnerItem, account.getIdToken (), R.integer.Login);
+                } catch (ApiException e) {
+                    // Google Sign In failed, update UI appropriately
+                    Log.w (TAG, "Google sign in failed", e);
+                }
+            }
+        });
 
         //Spinner
         binding.spinnerLogin.setAdapter (ArrayAdapter.createFromResource (this, R.array.Authentication_type, R.layout.spinner_item));
@@ -78,18 +78,23 @@ public class activity_login extends AppCompatActivity {
             if (authType != null)
                 spinnerItem = authType.authtype;
         });
-        authenticationViewModel.getState ().observe (this, authState ->
-                Toast.makeText (activity_login.this, authState.getType (), Toast.LENGTH_SHORT).show ());
-        authenticationViewModel.getLogoutMutableLiveData ().observe (this, isLoggedOut ->
-                authenticationViewModel.getCurrentSignInUser ().observe (this, user -> {
-                    authenticationViewModel.checkIsForProfileCompleted (spinnerItem, user.getUid ());
-                    authenticationViewModel.getState ().observe (activity_login.this, authState -> {
+        authenticationViewModel.getState ().observe (this, authState -> {
+            if (!authState.getType ().equals ("Signed Out Successfully"))
+                Toast.makeText (activity_login.this, authState.getType (), Toast.LENGTH_SHORT).show ();
+        });
+        authenticationViewModel.getCurrentSignInUser ().observe (this, user -> {
+            if (user != null) {
+                authenticationViewModel.checkIsForProfileCompleted (spinnerItem, user.getUid ());
+                authenticationViewModel.getState ().observe (activity_login.this, authState -> {
+                    authenticationViewModel.getLogoutMutableLiveData ().observe (this, isLoggedOut -> {
                         if (!spinnerItem.equals ("SELECT USER TYPE") && !isLoggedOut && authState.isValid ()) {
                             startActivity (new Intent (activity_login.this, activity_home.class));
                         } else if (authState.getType ().equals ("User Data Failed to load"))
                             startActivity (new Intent (activity_login.this, activity_profile.class));
                     });
-                }));
+                });
+            }
+        });
 
         //Login Button
         binding.btnLogin.setOnClickListener (view -> {
@@ -145,6 +150,7 @@ public class activity_login extends AppCompatActivity {
                 startActivity (new Intent (activity_login.this, activity_home.class)
                         .putExtra ("fromNotification", true)
                         .putExtra ("orderId", getIntent ().getStringExtra ("orderId"))
+                        .putExtra ("courierId", getIntent ().getStringExtra ("courierId"))
                         .putExtra ("type", getIntent ().getStringExtra ("type")));
             });
         }

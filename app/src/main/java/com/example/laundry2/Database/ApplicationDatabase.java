@@ -7,7 +7,7 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
 @Database(entities = {LaundryItemCache.class, AuthType.class, LaundryHouseCache.class,
-        OrderTracking.class, CurrentOrderCourierId.class}, version = 29, exportSchema = false)
+        OrderTracking.class, CurrentOrderCourierId.class}, version = 30, exportSchema = false)
 public abstract class ApplicationDatabase extends RoomDatabase {
 
     private static volatile ApplicationDatabase INSTANCE;

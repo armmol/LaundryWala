@@ -41,17 +41,27 @@ public class NotificationService extends FirebaseMessagingService {
         int resourceImage = R.drawable.user;
         NotificationCompat.Builder builder = new NotificationCompat.Builder (this, "CHANNEL_ID");
         builder.setSmallIcon (resourceImage);
-        Intent intent;
+        Intent intent = new Intent (this, activity_start.class);
         if (remoteMessage.getNotification ().getBody ().trim ().contains ("Customer")) {
-            intent = new Intent (this, activity_start.class)
-                    .putExtra ("authtype", "Customer").putExtra ("fromNotification", true)
+            intent.putExtra ("authtype", "Customer").putExtra ("fromNotification", true)
                     .putExtra ("orderId", remoteMessage.getNotification ().getBody ().split ("-")[2])
+                    .putExtra ("courierId", remoteMessage.getNotification ().getBody ().split ("-")[3])
                     .putExtra ("type", remoteMessage.getNotification ().getBody ().split ("-")[1]);
-        } else
-            intent = new Intent (this, activity_start.class)
-                    .putExtra ("authtype", "Laundry House").putExtra ("fromNotification", true)
+            notificationFunction (intent, "Your courier has arrived!", builder, remoteMessage);
+        } else if (remoteMessage.getNotification ().getBody ().trim ().contains ("Laundry House")) {
+            intent.putExtra ("authtype", "Laundry House").putExtra ("fromNotification", true)
                     .putExtra ("orderId", remoteMessage.getNotification ().getBody ().split ("-")[2])
+                    .putExtra ("courierId", remoteMessage.getNotification ().getBody ().split ("-")[3])
                     .putExtra ("type", remoteMessage.getNotification ().getBody ().split ("-")[1]);
+            notificationFunction (intent, "Your courier has arrived!", builder, remoteMessage);
+        } else if (remoteMessage.getNotification ().getBody ().trim ().contains ("Update")) {
+            intent.putExtra ("update", "update")
+                    .putExtra ("orderId", remoteMessage.getNotification ().getBody ().split ("-")[1]);
+            notificationFunction (intent, "Update on your order!", builder, remoteMessage);
+        }
+    }
+
+    private void notificationFunction (Intent intent, String type, NotificationCompat.Builder builder, @NonNull RemoteMessage remoteMessage) {
         PendingIntent pendingIntent = PendingIntent.getActivity (this, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentTitle (remoteMessage.getNotification ().getTitle ());
         builder.setContentText (remoteMessage.getNotification ().getBody ());
@@ -63,9 +73,7 @@ public class NotificationService extends FirebaseMessagingService {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             String channelId = "Your_channel_id";
             NotificationChannel channel = new NotificationChannel (
-                    channelId,
-                    "Your Courier has arrived",
-                    NotificationManager.IMPORTANCE_HIGH);
+                    channelId, type, NotificationManager.IMPORTANCE_HIGH);
             mNotificationManager.createNotificationChannel (channel);
             builder.setChannelId (channelId);
         }

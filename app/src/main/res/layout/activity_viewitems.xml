@@ -7,6 +7,7 @@
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/viewItemsConstraintLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#80FFFFFF">
@@ -15,7 +16,7 @@
             android:id="@+id/layout_itemsview"
             android:layout_width="320dp"
             android:layout_height="374dp"
-            android:background="@drawable/laundryhouseadapterbackground"
+            android:background="@drawable/orderbackgorund"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

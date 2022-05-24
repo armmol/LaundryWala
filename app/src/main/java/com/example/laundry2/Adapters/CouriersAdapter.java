@@ -43,10 +43,10 @@ public class CouriersAdapter extends RecyclerView.Adapter<CouriersAdapter.MyView
 
     @Override
     public void onBindViewHolder (@NonNull MyViewHolder holder, int position) {
-        holder.courierName.setText (couriers.get (position).getName ());
+        holder.courierName.setText (String.format ("Name: %s",couriers.get (position).getName ()));
         holder.courierOrderNumber.setText (String.format ("Orders in queue: %s", couriers.get (position).getOrderId ().size ()));
-        holder.courierDistanceCustomer.setText (String.format ("Distance from Customer: %s", couriers.get (position).getDistanceFromCustomer ()));
-        holder.courierDistanceToLaundryHouse.setText (String.format ("Distance from Laundry House: %s", couriers.get (position).getDistanceFromLaundryHouse ()));
+        holder.courierDistanceCustomer.setText (String.format ("Distance from Customer: %skm", couriers.get (position).getDistanceFromCustomer ()));
+        holder.courierDistanceToLaundryHouse.setText (String.format ("Distance from Laundry House: %skm", couriers.get (position).getDistanceFromLaundryHouse ()));
     }
 
     @Override

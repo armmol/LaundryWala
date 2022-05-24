@@ -23,6 +23,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProvider;
@@ -32,12 +33,18 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.laundry2.Adapters.CouriersAdapter;
 import com.example.laundry2.Adapters.LaundryHousesAdapter;
+import com.example.laundry2.Adapters.LaundryItemsAdapter;
 import com.example.laundry2.Adapters.OrdersAdapter;
 import com.example.laundry2.AuthenticationViewModel;
 import com.example.laundry2.DataClasses.Courier;
+import com.example.laundry2.DataClasses.LaundryItem;
 import com.example.laundry2.DataClasses.Order;
+import com.example.laundry2.Database.LaundryItemCache;
 import com.example.laundry2.ExpressoIdlingResource;
+import com.example.laundry2.R;
 import com.example.laundry2.databinding.ActivityHomeUserBinding;
+
+import java.util.ArrayList;
 
 
 public class activity_home extends AppCompatActivity {
@@ -65,6 +72,10 @@ public class activity_home extends AppCompatActivity {
                 Toast.makeText (getApplicationContext (), authState.getType (), Toast.LENGTH_SHORT).show ();
             }
         });
+        viewModel.getCurrentSignInUser ().observe (this, user -> {
+            applicationUserId = user.getUid ();
+            viewModel.checkIsForProfileCompleted ("", applicationUserId);
+        });
         viewModel.getAuthType ().observe (this, authType -> {
             if (authType != null) {
                 String authtype = authType.authtype;
@@ -75,7 +86,7 @@ public class activity_home extends AppCompatActivity {
                 viewModel.getState ().observe (this, authState -> {
                     if (!authState.isValid () && authState.getType ().equals ("User Data Failed to load")) {
                         startActivity (new Intent (activity_home.this, activity_profile.class));
-                        Toast.makeText (this, "You must complete Profile before using application", Toast.LENGTH_SHORT).show ();
+                        Toast.makeText (this, "Complete Profile before using application! \n If you want to change your user type logout and sign up again", Toast.LENGTH_LONG).show ();
                     }
                 });
                 mapsOnclick (authtype);
@@ -110,10 +121,10 @@ public class activity_home extends AppCompatActivity {
                                 viewModel.loadAllLaundryHouses (applicationUserId);
                                 viewModel.getCourierArrivalMutableLiveData ().observe (this, isHere ->
                                         viewModel.getOrders ().observe (this, orders -> {
-                                    for (Order order : orders) {
-                                        viewModel.getNotified (order.getOrderId ());
-                                    }
-                                }));
+                                            for (Order order : orders) {
+                                                viewModel.getNotified (order.getOrderId ());
+                                            }
+                                        }));
                                 viewModel.getLaundryHouses ().observe (this, laundryHouses -> {
                                     laundryHousesAdapter = new LaundryHousesAdapter (activity_home.this, laundryHouses);
                                     binding.recyclerViewUserhome.setAdapter (laundryHousesAdapter);
@@ -143,19 +154,20 @@ public class activity_home extends AppCompatActivity {
                         if (getIntent ().hasExtra ("fromNotification"))
                             sendNotificationResponse (authtype);
                         ExpressoIdlingResource.increment ();
+                        viewModel.orderIDChange (authtype, applicationUserId);
                         viewModel.getOrders ().observe (this, orders -> {
                             ordersAdapter = new OrdersAdapter (activity_home.this, orders, authtype);
                             viewModel.getCourierArrivalMutableLiveData ().observe (this, isHere -> {
                                 for (Order order : orders)
                                     viewModel.getNotified (order.getOrderId ());
                             });
-                            if (ordersAdapter.getOrders ().size () != 0) {
+//                            if (ordersAdapter.getOrders ().size () != 0) {
                                 binding.recyclerViewUserhome.setAdapter (ordersAdapter);
                                 ExpressoIdlingResource.decrement ();
-                            }
+//                            }
                             ordersAdapter.onItemSelectedListenerCustom (status ->
                                     ordersAdapter.setOnOrderClickListener (order -> {
-                                        if (!status.equals ("Order Status")) {
+                                        if (!status.equals ("Select Order Status")) {
                                             if (status.equals ("In Process") || status.equals ("Completed"))
                                                 viewModel.unassignOrder (order.getOrderId ());
                                             viewModel.updateOrderStatus (status, order.getOrderId ());
@@ -172,12 +184,13 @@ public class activity_home extends AppCompatActivity {
                                         swipeRefreshLayout.setRefreshing (false);
                                     });
                                     RecyclerView recyclerView = popupWindowView.findViewById (id.recyclerview_assigncouriers);
+                                    ConstraintLayout layout = popupWindowView.findViewById (id.assignOrdersConstraintLayout);
+                                    layout.setOnClickListener (view -> window.dismiss ());
                                     recyclerView.setLayoutManager (new LinearLayoutManager (getApplicationContext ()));
                                     viewModel.getCouriers ().observe (this, couriers -> {
-                                        for (Courier courier : couriers) {
+                                        for (Courier courier : couriers)
                                             if (!courier.isActive ())
                                                 couriers.remove (courier);
-                                        }
                                         couriersAdapter = new CouriersAdapter (this, couriers);
                                         recyclerView.setAdapter (couriersAdapter);
                                         couriersAdapter.onItemCourierListener (courier -> {
@@ -196,7 +209,7 @@ public class activity_home extends AppCompatActivity {
                         });
                         break;
                     case "Courier":
-                        binding.imageButtonOrderhistory.setVisibility (View.INVISIBLE);
+                        viewModel.orderIDChange (authtype, applicationUserId);
                         viewModel.getOrders ().observe (this, orders -> {
                             ordersAdapter = new OrdersAdapter (activity_home.this, orders, authtype);
                             binding.recyclerViewUserhome.setAdapter (ordersAdapter);
@@ -211,14 +224,7 @@ public class activity_home extends AppCompatActivity {
                                         viewModel.loadAllOrders (authtype, applicationUserId, false);
                                     }
                                 });
-                                ordersAdapter.setOnAssignClickListener (order -> {
-                                    viewModel.getUserAndLaundryHouseMarkerLocation (order.getOrderId ());
-                                    viewModel.getLatLngMutableLiveData ().observe (this, latLngList -> {
-                                        if (latLngList.size () > 1) {
-                                            getPermissions ();
-                                        }
-                                    });
-                                });
+                                ordersAdapter.setOnAssignClickListener (this::onItemCheckClick);
                             });
                         });
                         binding.swiperefreshlayoutHome.setOnRefreshListener (() -> {
@@ -253,15 +259,12 @@ public class activity_home extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult (int requestCode, @NonNull String[] permissions,
-                                            @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult (int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult (requestCode, permissions, grantResults);
         if (requestCode == 131) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 getPermissions ();
-            } else
-                startActivity (new Intent ());
-            Toast.makeText (this, "Permission denied", Toast.LENGTH_SHORT).show ();
+            else Toast.makeText (this, "Permission denied", Toast.LENGTH_SHORT).show ();
         }
     }
 
@@ -291,15 +294,16 @@ public class activity_home extends AppCompatActivity {
         binding.recyclerViewUserhome.setVisibility (View.INVISIBLE);
         String orderId = getIntent ().getStringExtra ("orderId");
         String type = getIntent ().getStringExtra ("type");
+        String courierId = getIntent ().getStringExtra ("courierId");
         binding.textViewNotification.setText (String.format ("%s %s", binding.textViewNotification.getText (), type));
         binding.checkboxYes.setOnClickListener (view -> {
-            viewModel.changeOrderPickDropStatus (orderId, authtype, type, true);
+            viewModel.changeOrderPickDropStatus (orderId, courierId, authtype, type, true);
             Toast.makeText (this, "Confirmed! Thank you for your response", Toast.LENGTH_SHORT).show ();
             binding.confirmOrderWindow.setVisibility (View.INVISIBLE);
             binding.recyclerViewUserhome.setVisibility (View.VISIBLE);
         });
         binding.checkboxNo.setOnClickListener (view -> {
-            viewModel.changeOrderPickDropStatus (orderId, authtype, type, false);
+            viewModel.changeOrderPickDropStatus (orderId, courierId, authtype, type, false);
             binding.confirmOrderWindow.setVisibility (View.INVISIBLE);
             binding.recyclerViewUserhome.setVisibility (View.VISIBLE);
         });
@@ -326,5 +330,18 @@ public class activity_home extends AppCompatActivity {
                     .setIcon (android.R.drawable.ic_dialog_alert)
                     .show ();
         }
+    }
+
+    private void onItemCheckClick (Order order) {
+        View windowView = createPopUpWindow (R.layout.activity_viewitems);
+        RecyclerView recyclerView = windowView.findViewById (R.id.recyclerView_confirmorder);
+        ArrayList<LaundryItemCache> laundryItemCaches = new ArrayList<> ();
+        for (LaundryItem laundryItem : order.getItems ())
+            laundryItemCaches.add (new LaundryItemCache (laundryItem.getType () + "," + laundryItem.getCost ()));
+        LaundryItemsAdapter laundryItemsAdapter = new LaundryItemsAdapter (this, laundryItemCaches, 1);
+        recyclerView.setLayoutManager (new LinearLayoutManager (getApplicationContext ()));
+        recyclerView.setAdapter (laundryItemsAdapter);
+        laundryItemsAdapter.setOnItemClickListener (laundryItem ->
+                Toast.makeText (this, "Cannot change order Once placed", Toast.LENGTH_SHORT).show ());
     }
 }

@@ -11,8 +11,8 @@
     app:layout_constraintTop_toTopOf="parent">
 
     <androidx.cardview.widget.CardView
-        android:layout_width="383dp"
-        android:layout_height="262dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
         android:layout_marginEnd="8dp"
@@ -26,13 +26,16 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@drawable/laundryhouseadapterbackground">
+            android:background="@drawable/orderbackgorund">
 
             <TextView
                 android:id="@+id/txt_ordernumber"
-                android:layout_width="331dp"
+                android:layout_width="0dp"
                 android:layout_height="38dp"
+                android:layout_marginStart="4dp"
                 android:layout_marginTop="4dp"
+                android:layout_marginEnd="4dp"
+                android:textAlignment="center"
                 android:textColor="#651FFF"
                 android:textSize="14sp"
                 android:textStyle="bold|italic"
@@ -97,9 +100,9 @@
                 android:layout_width="36dp"
                 android:layout_height="24dp"
                 app:layout_constraintBottom_toBottomOf="@+id/txt_card_ordercost"
-                app:layout_constraintEnd_toStartOf="@+id/txt_card_ordercost_display"
-                app:layout_constraintHorizontal_bias="0.176"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/button_assign"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="@+id/button_assign"
                 app:layout_constraintTop_toTopOf="@+id/txt_card_ordercost"
                 app:layout_constraintVertical_bias="1.0"
                 app:srcCompat="@drawable/money" />
@@ -109,9 +112,9 @@
                 android:layout_width="36dp"
                 android:layout_height="24dp"
                 app:layout_constraintBottom_toBottomOf="@+id/txt_card_ordertime"
-                app:layout_constraintEnd_toStartOf="@+id/txt_card_ordercost_display"
+                app:layout_constraintEnd_toEndOf="@+id/imageView4"
                 app:layout_constraintHorizontal_bias="0.178"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/imageView4"
                 app:layout_constraintTop_toTopOf="@+id/txt_card_ordertime"
                 app:layout_constraintVertical_bias="0.0"
                 app:srcCompat="@drawable/clock" />
@@ -132,6 +135,7 @@
                 android:id="@+id/button_assign"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
                 android:text="@string/assign"
                 app:layout_constraintEnd_toEndOf="@+id/spinner_status"
                 app:layout_constraintHorizontal_bias="0.0"
@@ -142,10 +146,12 @@
                 android:id="@+id/button_changestatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="2dp"
                 android:text="@string/change_status"
                 app:layout_constraintEnd_toEndOf="@+id/spinner_status"
                 app:layout_constraintHorizontal_bias="1.0"
-                app:layout_constraintStart_toStartOf="@+id/spinner_status"
+                app:layout_constraintStart_toEndOf="@+id/button_assign"
                 app:layout_constraintTop_toTopOf="@+id/button_assign" />
 
             <TextView
@@ -153,10 +159,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
+                android:layout_marginBottom="8dp"
                 android:textColor="#651FFF"
+                android:textSize="12sp"
                 android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="@+id/txt_card_orders_orderstatus"
-                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="@+id/txt_card_orders_orderstatus"
                 app:layout_constraintTop_toBottomOf="@+id/txt_card_orders_orderstatus" />
 
@@ -165,9 +173,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#651FFF"
+                android:textSize="12sp"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.101"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/txt_card_ordertime_display" />
         </androidx.constraintlayout.widget.ConstraintLayout>

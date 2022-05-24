@@ -9,11 +9,14 @@ public class Courier implements Comparable<Courier>{
     String uid;
     LatLng location;
     ArrayList<String> OrderId;
+    ArrayList<String> ordersFromLaundryHouseToCustomer;
+    ArrayList<String> ordersFromCustomerToLaundryHouse;
     double distanceFromCustomer;
     double distanceFromLaundryHouse;
     boolean active;
 
-    public Courier (String name, String uid, LatLng location, ArrayList<String> orderId, double distanceFromCustomer, double distanceFromLaundryHouse, boolean active) {
+    public Courier (String name, String uid, LatLng location, ArrayList<String> orderId,ArrayList<String> ordersFromLaundryHouseToCustomer,
+            ArrayList<String> ordersFromCustomerToLaundryHouse, double distanceFromCustomer, double distanceFromLaundryHouse, boolean active) {
         this.name = name;
         this.uid = uid;
         this.location = location;
@@ -21,6 +24,8 @@ public class Courier implements Comparable<Courier>{
         this.distanceFromCustomer = distanceFromCustomer;
         this.distanceFromLaundryHouse = distanceFromLaundryHouse;
         this.active = active;
+        this.ordersFromCustomerToLaundryHouse = ordersFromCustomerToLaundryHouse;
+        this.ordersFromLaundryHouseToCustomer = ordersFromLaundryHouseToCustomer;
     }
 
     public double getDistanceFromCustomer () {
@@ -55,8 +60,16 @@ public class Courier implements Comparable<Courier>{
         return active;
     }
 
+    public ArrayList<String> getOrdersFromLaundryHouseToCustomer () {
+        return ordersFromLaundryHouseToCustomer;
+    }
+
+    public ArrayList<String> getOrdersFromCustomerToLaundryHouse () {
+        return ordersFromCustomerToLaundryHouse;
+    }
+
     @Override
     public int compareTo (Courier courier) {
-        return Integer.compare (OrderId.size (), this.OrderId.size ());
+        return Integer.compare (OrderId.size (),courier.OrderId.size ());
     }
 }

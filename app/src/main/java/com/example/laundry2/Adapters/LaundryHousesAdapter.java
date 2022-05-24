@@ -46,7 +46,7 @@ public class LaundryHousesAdapter extends RecyclerView.Adapter<LaundryHousesAdap
     @Override
     public void onBindViewHolder (@NonNull MyViewHolder holder, int position) {
         holder.name.setText (this.laundryHouseList.get (position).getName ());
-        holder.area.setText (this.laundryHouseList.get (position).getArea ());
+        holder.address.setText (this.laundryHouseList.get (position).getArea ());
         holder.deliverycost.setText (String.format ("%s €", this.laundryHouseList.get (position).getDeliveryPrice ()));
         holder.active.setChecked (this.laundryHouseList.get(position).isActive ());
         holder.active.setTextColor (this.laundryHouseList.get(position).isActive ()? Color.GREEN:Color.RED);
@@ -61,13 +61,13 @@ public class LaundryHousesAdapter extends RecyclerView.Adapter<LaundryHousesAdap
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
-        TextView name, area, deliverycost;
+        TextView name, address, deliverycost;
         CheckBox active;
 
         public MyViewHolder (@NonNull View itemView) {
             super (itemView);
             name = itemView.findViewById (R.id.txt_laundryhouse_name);
-            area = itemView.findViewById (R.id.txt_laundryhouse_address);
+            address = itemView.findViewById (R.id.txt_laundryhouse_address);
             deliverycost = itemView.findViewById (R.id.txt_laundryhouse_deliverycost);
             active = itemView.findViewById (R.id.checkBox_active);
             active.setEnabled (false);

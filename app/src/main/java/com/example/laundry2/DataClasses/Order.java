@@ -1,9 +1,12 @@
 package com.example.laundry2.DataClasses;
 
 import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Locale;
 
-public class Order{
+public class Order implements Comparable<Order> {
 
     String orderId;
     ArrayList<LaundryItem> items;
@@ -50,9 +53,12 @@ public class Order{
     public double getTotalCost () {
         double c = 0;
         for (LaundryItem item : this.items) {
-            c += item.cost + 0.16;
+            if (this.drying)
+                c += item.cost + 0.16;
+            else
+                c += item.cost;
         }
-        return new BigDecimal (c+ this.deliveryCost).setScale (2, BigDecimal.ROUND_DOWN).doubleValue () ;
+        return new BigDecimal (c + this.deliveryCost).setScale (2, BigDecimal.ROUND_DOWN).doubleValue ();
     }
 
     public boolean isDrying () {
@@ -123,4 +129,18 @@ public class Order{
         return laundryHouseDrop;
     }
 
+    @Override
+    public int compareTo (Order order) {
+        String[] a = order.dateTime.split (" ");
+        String[] b = dateTime.split (" ");
+        SimpleDateFormat formatter = new SimpleDateFormat ("dd-MMM-yyyy hh:mm:ss", Locale.ENGLISH);
+        String aDate = a[2] + "-" + a[1] + "-" + a[5]+ " " + a[3];
+        String bDate = b[2] + "-" + b[1] + "-" + b[5]+ " " + b[3];
+        try {
+            return formatter.parse (aDate).compareTo (formatter.parse (bDate));
+        } catch (ParseException e) {
+            e.printStackTrace ();
+        }
+        return Integer.compare (Integer.parseInt (order.dateTime.split (" ")[2]), Integer.parseInt (dateTime.split (" ")[2]));
+    }
 }
