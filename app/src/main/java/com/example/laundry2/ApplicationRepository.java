@@ -70,7 +70,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
-
 public class ApplicationRepository {
 
     private static final String TAG = "Application Repository";
@@ -348,9 +347,9 @@ public class ApplicationRepository {
     }
 
     private void SignUpCreateDocument (String authtype) {
-        firebaseFirestore.collection (authtype).document (mAuth.getUid ()).get ().addOnSuccessListener (documentSnapshot -> {
+        firebaseFirestore.collection (authtype).document (Objects.requireNonNull (mAuth.getUid ())).get ().addOnSuccessListener (documentSnapshot -> {
             DocumentReference df = firebaseFirestore.collection (authtype).document (mAuth.getUid ());
-            df.set (new ApplicationUser ("", "", authtype, mAuth.getCurrentUser ().getEmail (), 0.0, 0.0,
+            df.set (new ApplicationUser ("", "", authtype, Objects.requireNonNull (mAuth.getCurrentUser ()).getEmail (), 0.0, 0.0,
                     "", 0, false, new ArrayList<> ()));
             df.get ();
         });
@@ -410,7 +409,7 @@ public class ApplicationRepository {
         AtomicInteger flag = new AtomicInteger (0);
         AtomicInteger flagC = new AtomicInteger (0);
         AtomicInteger flagLH = new AtomicInteger (0);
-        firebaseFirestore.collection (application.getString (R.string.courier)).document (mAuth.getUid ())
+        firebaseFirestore.collection (application.getString (R.string.courier)).document (Objects.requireNonNull (mAuth.getUid ()))
                 .get ().addOnCompleteListener (task -> {
             if (task.isSuccessful ()) {
                 DocumentSnapshot document = task.getResult ();
@@ -430,8 +429,22 @@ public class ApplicationRepository {
                                         + " Change user type", false));
                         mAuth.signOut ();
                         flag.set (100);
-                    } else
-                        flag.set (101);
+                    }
+                } else
+                    flag.set (101);
+                //User is NOT REGISTERED but is trying LOGIN
+                if (requestCode == R.integer.Login && flagC.get () == 103 && flag.get () == 101 && flagLH.get () == 102) {
+                    authStateMutableLiveData.postValue (new AuthState
+                            ("You are not registered, sign up", false));
+                    mAuth.signOut ();
+                }
+                //User is NOT REGISTERED but is trying SIGNUP
+                else if (requestCode == R.integer.Signup && flagC.get () == 103 && flag.get () == 101 && flagLH.get () == 102) {
+                    userMutableLiveData.postValue (mAuth.getCurrentUser ());
+                    applicationDao.deleteAuthType ();
+                    applicationDao.insertAuthtype (new AuthType (authtype));
+                    authStateMutableLiveData.postValue (new AuthState
+                            ("Successfully Signed Up as " + authtype, true));
                 }
             }
         });
@@ -455,8 +468,22 @@ public class ApplicationRepository {
                                         + " Change user type", false));
                         mAuth.signOut ();
                         flagLH.set (100);
-                    } else
-                        flagLH.set (102);
+                    }
+                } else
+                    flagLH.set (102);
+                //User is NOT REGISTERED but is trying LOGIN
+                if (requestCode == R.integer.Login && flagC.get () == 103 && flag.get () == 101 && flagLH.get () == 102) {
+                    authStateMutableLiveData.postValue (new AuthState
+                            ("You are not registered, sign up", false));
+                    mAuth.signOut ();
+                }
+                //User is NOT REGISTERED but is trying SIGNUP
+                else if (requestCode == R.integer.Signup && flagC.get () == 103 && flag.get () == 101 && flagLH.get () == 102) {
+                    userMutableLiveData.postValue (mAuth.getCurrentUser ());
+                    applicationDao.deleteAuthType ();
+                    applicationDao.insertAuthtype (new AuthType (authtype));
+                    authStateMutableLiveData.postValue (new AuthState
+                            ("Successfully Signed Up as " + authtype, true));
                 }
             }
         });
@@ -480,26 +507,26 @@ public class ApplicationRepository {
                                         + " Change user type", false));
                         mAuth.signOut ();
                         flagC.set (100);
-                    } else
-                        flagC.set (103);
+                    }
+                } else
+                    flagC.set (103);
+                //User is NOT REGISTERED but is trying LOGIN
+                if (requestCode == R.integer.Login && flagC.get () == 103 && flag.get () == 101 && flagLH.get () == 102) {
+                    authStateMutableLiveData.postValue (new AuthState
+                            ("You are not registered, sign up", false));
+                    mAuth.signOut ();
                 }
+                //User is NOT REGISTERED but is trying SIGNUP
+                else if (requestCode == R.integer.Signup && flagC.get () == 103 && flag.get () == 101 && flagLH.get () == 102) {
+                    userMutableLiveData.postValue (mAuth.getCurrentUser ());
+                    applicationDao.deleteAuthType ();
+                    applicationDao.insertAuthtype (new AuthType (authtype));
+                    authStateMutableLiveData.postValue (new AuthState
+                            ("Successfully Signed Up as " + authtype, true));
+                }
+
             }
         });
-
-        //User is NOT REGISTERED but is trying LOGIN
-        if (requestCode == R.integer.Login && flagC.get () == 103 && flag.get () == 101 && flagLH.get () == 102) {
-            authStateMutableLiveData.postValue (new AuthState
-                    ("You are not registered, sign up", false));
-            mAuth.signOut ();
-        }
-        //User is NOT REGISTERED but is trying SIGNUP
-        else if (requestCode == R.integer.Signup && flagC.get () == 103 && flag.get () == 101 && flagLH.get () == 102) {
-            userMutableLiveData.postValue (mAuth.getCurrentUser ());
-            applicationDao.deleteAuthType ();
-            applicationDao.insertAuthtype (new AuthType (authtype));
-            authStateMutableLiveData.postValue (new AuthState
-                    ("Successfully Signed Up as " + authtype, true));
-        }
     }
 
 
@@ -606,13 +633,13 @@ public class ApplicationRepository {
     public void assignOrder (String courierId, String orderId) {
         firebaseFirestore.collection ("Courier").document (courierId).get ().addOnSuccessListener (courierDocumentSnapshot ->
                 firebaseFirestore.collection ("Order").document (orderId).get ().addOnSuccessListener (orderDocumentSnapshot -> {
-                    if (orderDocumentSnapshot.getString ("courierId").equals ("")) {
+                    if (Objects.requireNonNull (orderDocumentSnapshot.getString ("courierId")).equals ("")) {
                         DocumentReference dfCourier = firebaseFirestore.collection ("Courier").document (courierId);
                         DocumentReference dfOrder = firebaseFirestore.collection ("Order").document (orderId);
 
                         //Update Courier OrderId
                         ApplicationUser applicationUser = courierDocumentSnapshot.toObject (ApplicationUser.class);
-                        applicationUser.getOrderId ().add (orderId);
+                        Objects.requireNonNull (applicationUser).getOrderId ().add (orderId);
                         Map<String, Object> CourierInfo = new HashMap<> ();
                         CourierInfo.put ("orderId", applicationUser.getOrderId ());
                         dfCourier.update (CourierInfo);
@@ -641,7 +668,7 @@ public class ApplicationRepository {
 
                         //Update Courier OrderId
                         ApplicationUser applicationUser = courierDocumentSnapshot.toObject (ApplicationUser.class);
-                        applicationUser.getOrderId ().remove (orderId);
+                        Objects.requireNonNull (applicationUser).getOrderId ().remove (orderId);
                         Map<String, Object> CourierInfo = new HashMap<> ();
                         CourierInfo.put ("orderId", applicationUser.getOrderId ());
                         df.update (CourierInfo);
@@ -677,11 +704,11 @@ public class ApplicationRepository {
             if (!uid.equals ("")) {
                 firebaseFirestore.collection (authtype).document (uid).get ().addOnSuccessListener (documentSnapshot -> {
                     DocumentReference df = firebaseFirestore.collection (authtype).document (uid);
+                    Map<String, Object> UserInfo = new HashMap<> ();
+                    UserInfo.put ("name", name);
+                    UserInfo.put ("address", address);
+                    UserInfo.put ("area", area);
                     if (documentSnapshot.get ("name") != null) {
-                        Map<String, Object> UserInfo = new HashMap<> ();
-                        UserInfo.put ("name", name);
-                        UserInfo.put ("address", address);
-                        UserInfo.put ("area", area);
                         if (latitude != 0.0 && longitude != 0) {
                             UserInfo.put ("latitude", latitude);
                             UserInfo.put ("longitude", longitude);
@@ -690,6 +717,14 @@ public class ApplicationRepository {
                         df.get ();
                         authStateMutableLiveData.postValue (new AuthState ("Updated Successfully", true));
                     } else {
+                        UserInfo.put ("authType", authtype);
+                        UserInfo.put ("email", email);
+                        UserInfo.put ("latitude", latitude);
+                        UserInfo.put ("longitude", longitude);
+                        UserInfo.put ("orders", 0);
+                        UserInfo.put ("active", false);
+                        UserInfo.put ("orderId", new ArrayList<> ());
+                        df.set (UserInfo);
                         df.set (new ApplicationUser (address, area, authtype, email, latitude, longitude,
                                 name, 0, false, new ArrayList<> ()));
                         df.get ();
@@ -719,7 +754,7 @@ public class ApplicationRepository {
                                 int orderNumberCustomer = customerDocumentSnapshot.get ("orders", int.class);
                                 int orderNumberLaundryHouse = laundryHouseDocumentSnapshot.get ("orders", int.class);
                                 String orderId = uid + "_" + orderNumberCustomer + "_" + laundryHouseUID;
-                                Order tempOrder = new Order (orderId, "", newList,
+                                Order tempOrder = new Order (orderId, "", customerDocumentSnapshot.getString ("email"),newList,
                                         Calendar.getInstance ().getTime ().toString (), "Order Not Started",
                                         customerDocumentSnapshot.get ("latitude", Double.class), customerDocumentSnapshot.get ("longitude", Double.class),
                                         laundryHouseDocumentSnapshot.get ("latitude", Double.class), laundryHouseDocumentSnapshot.get ("longitude", Double.class),
@@ -801,10 +836,11 @@ public class ApplicationRepository {
         firebaseFirestore.collection ("Courier").document (uid)
                 .get ()
                 .addOnSuccessListener (documentSnapshot -> {
-                    documentSnapshot.get (type, ArrayList.class);
+//                    documentSnapshot.get (type, ArrayList.class);
                     ArrayList<String> ordersServed = new ArrayList<> ();
                     Map<String, Object> courierMap = new HashMap<> ();
                     if (documentSnapshot.get (type) != null)
+                        //no inspection
                         ordersServed = (ArrayList<String>) documentSnapshot.get (type);
                     ordersServed.add (orderId);
                     courierMap.put (type, ordersServed);
@@ -937,8 +973,8 @@ public class ApplicationRepository {
         applicationDao.deleteIsOrderTracking ();
     }
 
-    public void insertCurrentOrderCourierId (String courierId, String orderId) {
-        applicationDao.insertCurrentOrderCourierId (new CurrentOrderCourierId (courierId, orderId));
+    public void insertCurrentOrderCourierId (String courierId, String orderId, String deliveryCost) {
+        applicationDao.insertCurrentOrderCourierId (new CurrentOrderCourierId (courierId, orderId, deliveryCost));
     }
 
     public void removeCurrentOrderCourierId () {
@@ -1075,8 +1111,13 @@ public class ApplicationRepository {
         }).addOnFailureListener (e -> Log.d (TAG, "Failed to get data from firestore"));
     }
 
+    public void laundryHousesUpdate (String uid) {
+        firebaseFirestore.collection ("Laundry House")
+                .addSnapshotListener ((queryDocumentSnapshots, error) -> loadAllLaundryHouses (uid));
+    }
+
     public void loadAllOrders (String authtype, String uid, boolean isOrderHistory) {
-        ExpressoIdlingResource.increment ();
+        //ExpressoIdlingResource.increment ();
         ArrayList<Order> mArrayList = new ArrayList<> ();
         firebaseFirestore.collection ("Order").get ().addOnSuccessListener (queryDocumentSnapshots -> {
             for (DocumentSnapshot snapshot : queryDocumentSnapshots.getDocuments ()) {
@@ -1106,12 +1147,15 @@ public class ApplicationRepository {
             if (authtype.equals (application.getString (R.string.courier))) {
                 List<Order> refinedListForCourier = new ArrayList<> ();
                 for (Order order : refinedListForOrderHistory) {
-                    firebaseFirestore.collection (authtype).document (uid).get ().addOnSuccessListener (documentSnapshot -> {
+                    firebaseFirestore.collection (authtype).document (uid)
+                            .get ().addOnSuccessListener (documentSnapshot -> {
                         ArrayList<String> ordersServed = new ArrayList<> ();
                         ArrayList<String> ordersServed1 = new ArrayList<> ();
                         if (documentSnapshot.get ("ordersFromCustomerToLaundryHouse") != null)
+                            //noinspection unchecked
                             ordersServed = (ArrayList<String>) documentSnapshot.get ("ordersFromCustomerToLaundryHouse");
                         if (documentSnapshot.get ("ordersFromLaundryHouseToCustomer") != null)
+                            //noinspection unchecked
                             ordersServed1 = (ArrayList<String>) documentSnapshot.get ("ordersFromLaundryHouseToCustomer");
                         if (ordersServed.contains (order.getOrderId ()) && ordersServed1.contains (order.getOrderId ())) {
                             order.setStatus ("Served both deliveries");
@@ -1125,7 +1169,7 @@ public class ApplicationRepository {
                         }
                         if (isOrderHistory)
                             orderListMutableLiveData.postValue (refinedListForCourier);
-                        ExpressoIdlingResource.decrement ();
+                        //ExpressoIdlingResource.decrement ();
                     });
                 }
             } else {
@@ -1143,8 +1187,9 @@ public class ApplicationRepository {
             if (mArrayList.size () == queryDocumentSnapshots.size ()) {
                 if (isOrderHistory && !authtype.equals (application.getString (R.string.courier)))
                     orderListMutableLiveData.postValue (refinedListForOrderHistory);
-                else orderListMutableLiveData.postValue (refinedList);
-                ExpressoIdlingResource.decrement ();
+                else if (!isOrderHistory)
+                    orderListMutableLiveData.postValue (refinedList);
+                //ExpressoIdlingResource.decrement ();
             }
         }).addOnFailureListener (e -> Log.d (TAG, "Failed to get Orders"));
     }
@@ -1177,8 +1222,10 @@ public class ApplicationRepository {
                                         ArrayList<String> toLaundryHouse = new ArrayList<> ();
                                         ArrayList<String> toCustomer = new ArrayList<> ();
                                         if (courierDocumentSnapshot.get ("ordersFromLaundryHouseToCustomer") != null)
+                                            //noinspection unchecked
                                             toCustomer = (ArrayList<String>) courierDocumentSnapshot.get ("ordersFromLaundryHouseToCustomer");
                                         if (courierDocumentSnapshot.get ("ordersFromCustomerToLaundryHouse") != null)
+                                            //noinspection unchecked
                                             toLaundryHouse = (ArrayList<String>) courierDocumentSnapshot.get ("ordersFromCustomerToLaundryHouse");
                                         courierArrayList.add (new Courier (
                                                 courierDocumentSnapshot.getString ("name"),
@@ -1246,3 +1293,4 @@ public class ApplicationRepository {
     }
 
 }
+
