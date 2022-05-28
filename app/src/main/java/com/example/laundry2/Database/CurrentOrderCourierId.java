@@ -13,9 +13,11 @@ public class CurrentOrderCourierId {
     @ColumnInfo(name = "courier")
     public String courierId;
     public String orderId;
+    public String deliveryCost;
 
-    public CurrentOrderCourierId (@NonNull String courierId, String orderId) {
+    public CurrentOrderCourierId (@NonNull String courierId, String orderId, String deliveryCost) {
         this.courierId = courierId;
         this.orderId = orderId;
+        this.deliveryCost = deliveryCost;
     }
 }

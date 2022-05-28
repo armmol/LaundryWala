@@ -10,6 +10,7 @@ public class Order implements Comparable<Order> {
 
     String orderId;
     ArrayList<LaundryItem> items;
+    String customerEmail;
     String dateTime;
     String courierId;
     String status;
@@ -28,7 +29,7 @@ public class Order implements Comparable<Order> {
     public Order () {
     }
 
-    public Order (String orderId, String courierId, ArrayList<LaundryItem> items, String dateTime,
+    public Order (String orderId, String courierId, String customerEmail, ArrayList<LaundryItem> items, String dateTime,
                   String status, double customerDeliveryLocationLatitude, double customerDeliveryLocationLongitude,
                   double laundryHouseDeliveryLocationLatitude, double laundryHouseDeliveryLocationLongitude, double deliveryCost, boolean drying,
                   boolean courierHasArrived, boolean customerPickUp, boolean customerDrop, boolean laundryHousePickUp, boolean laundryHouseDrop) {
@@ -48,6 +49,7 @@ public class Order implements Comparable<Order> {
         this.customerDeliveryLocationLongitude = customerDeliveryLocationLongitude;
         this.laundryHouseDeliveryLocationLatitude = laundryHouseDeliveryLocationLatitude;
         this.laundryHouseDeliveryLocationLongitude = laundryHouseDeliveryLocationLongitude;
+        this.customerEmail = customerEmail;
     }
 
     public double getTotalCost () {
@@ -59,6 +61,10 @@ public class Order implements Comparable<Order> {
                 c += item.cost;
         }
         return new BigDecimal (c + this.deliveryCost).setScale (2, BigDecimal.ROUND_DOWN).doubleValue ();
+    }
+
+    public String getCustomerEmail () {
+        return customerEmail;
     }
 
     public boolean isDrying () {
