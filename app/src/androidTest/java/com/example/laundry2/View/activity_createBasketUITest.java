@@ -23,10 +23,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 
 import com.example.laundry2.AuthenticationViewModel;
-import com.example.laundry2.LaundryBasketViewModel;
-import com.example.laundry2.LiveDataUtil;
 import com.example.laundry2.Database.ApplicationDao;
 import com.example.laundry2.Database.ApplicationDatabase;
+import com.example.laundry2.LaundryBasketViewModel;
+import com.example.laundry2.LiveDataUtil;
 import com.example.laundry2.R;
 import com.example.laundry2.RecyclerViewMatcher;
 
@@ -98,13 +98,13 @@ public class activity_createBasketUITest {
     @Test
     public void addItemsToBasketAndConfirmOrder () throws InterruptedException {
         laundryBasketViewModel.clearLaundryItemCache ();
-        onView (withId (R.id.imgbtn_shirts_add)).perform (click ());
-        onView (withId (R.id.imgbtn_carpets)).perform (click ());
-        onView (withId (R.id.imgbtn_kgs)).perform (click ());
-        onView (withId (R.id.imgbtn_jackets)).perform (click ());
-        onView (withId (R.id.imgbtn_suits)).perform (click ());
-        onView (withId (R.id.imgbtn_pants)).perform (click ());
-        onView (withId (R.id.imgbtn_bedsheets)).perform (click ());
+        onView (withId (R.id.constraintlayout_shirt)).perform (click ());
+        onView (withId (R.id.constraintlayout_carpet)).perform (click ());
+        onView (withId (R.id.constraintlayout_kgs)).perform (click ());
+        onView (withId (R.id.constraintlayout_jacket)).perform (click ());
+        onView (withId (R.id.constraintlayout_suit)).perform (click ());
+        onView (withId (R.id.constarintlayout_pant)).perform (click ());
+        onView (withId (R.id.constraintlayout_bedsheet)).perform (click ());
         onView (withId(R.id.card_laundrybasket)).perform (click ());
         onView (withId (R.id.layout_itemsview)).check (matches(isDisplayed ()));
         pressBack ();
