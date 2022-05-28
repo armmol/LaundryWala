@@ -14,7 +14,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.laundry2.DataClasses.Order;
-import com.example.laundry2.ExpressoIdlingResource;
 import com.example.laundry2.R;
 
 import java.util.ArrayList;
@@ -65,7 +64,6 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.MyViewHold
         holder.ordertime.setText (this.orders.get (position).getDateTime ());
         holder.courierId.setText (String.format ("Courier ID-%s", this.orders.get (position).getCourierId ()));
         holder.orderStatus.setText (this.orders.get (position).getStatus ());
-        ExpressoIdlingResource.decrement ();
     }
 
     @Override
@@ -146,3 +144,4 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.MyViewHold
         }
     }
 }
+
