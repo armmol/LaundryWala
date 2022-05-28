@@ -6,24 +6,26 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static com.example.laundry2.TestUtil.dummyCustomer;
-import static com.example.laundry2.TestUtil.dummyCustomerId;
 import static org.junit.Assert.assertEquals;
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.room.Room;
 import androidx.test.core.app.ApplicationProvider;
+import androidx.test.espresso.IdlingRegistry;
 import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 
-import com.example.laundry2.Database.ApplicationDatabase;
-import com.example.laundry2.Database.AuthType;
 import com.example.laundry2.AuthenticationViewModel;
 import com.example.laundry2.DataClasses.LaundryHouse;
-import com.example.laundry2.LiveDataUtil;
 import com.example.laundry2.Database.ApplicationDao;
+import com.example.laundry2.Database.ApplicationDatabase;
+import com.example.laundry2.Database.AuthType;
+import com.example.laundry2.EspressoIdlingResource;
+import com.example.laundry2.LiveDataUtil;
 import com.example.laundry2.R;
+import com.example.laundry2.RecyclerViewMatcher;
 
 import org.junit.After;
 import org.junit.Before;
@@ -48,6 +50,7 @@ public class activity_homeUITestCustomer {
 
     @Before
     public void setUp () {
+        IdlingRegistry.getInstance ().register (EspressoIdlingResource.countingIdlingResource);
         db = Room.inMemoryDatabaseBuilder (ApplicationProvider.getApplicationContext (), ApplicationDatabase.class).build ();
         applicationDao = db.appDao ();
         authenticationViewModel = new AuthenticationViewModel (ApplicationProvider.getApplicationContext ());
@@ -58,6 +61,7 @@ public class activity_homeUITestCustomer {
 
     @After
     public void tearDown () {
+        IdlingRegistry.getInstance ().unregister (EspressoIdlingResource.countingIdlingResource);
         authenticationViewModel.signOut ();
         db.close ();
     }
@@ -78,7 +82,8 @@ public class activity_homeUITestCustomer {
     @Test
     public void checkLaundryHousesDisplayForCustomer () throws InterruptedException {
         authenticationViewModel.loginEmail (dummyCustomer.getEmail (), "123456", dummyCustomer.getAuthType ());
-        authenticationViewModel.loadAllLaundryHouses (dummyCustomerId);
+        authenticationViewModel.loadAllLaundryHouses ("yFWEG5TTE9MHf8BMCjbvGq9Y0dJ3");
+        RecyclerViewMatcher.atPositionOnView (R.id.recyclerView_userhome,1,R.id.constraintLayout_Inner_laundryHouseAdapter).matches (isDisplayed ());
         List<LaundryHouse> laundryHouseArrayList = LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getLaundryHouses ());
         assertEquals(laundryHouseArrayList.size (),4);
     }

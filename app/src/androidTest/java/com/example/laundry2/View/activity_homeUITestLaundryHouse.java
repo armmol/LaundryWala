@@ -21,11 +21,12 @@ import androidx.test.filters.LargeTest;
 import com.example.laundry2.AuthenticationViewModel;
 import com.example.laundry2.DataClasses.Order;
 import com.example.laundry2.Database.ApplicationDao;
-import com.example.laundry2.Database.AuthType;
 import com.example.laundry2.Database.ApplicationDatabase;
-import com.example.laundry2.ExpressoIdlingResource;
+import com.example.laundry2.Database.AuthType;
+import com.example.laundry2.EspressoIdlingResource;
 import com.example.laundry2.LiveDataUtil;
 import com.example.laundry2.R;
+import com.example.laundry2.RecyclerViewMatcher;
 
 import org.junit.After;
 import org.junit.Before;
@@ -50,7 +51,7 @@ public class activity_homeUITestLaundryHouse {
 
     @Before
     public void setUp () {
-        IdlingRegistry.getInstance ().register (ExpressoIdlingResource.countingIdlingResource);
+        IdlingRegistry.getInstance ().register (EspressoIdlingResource.countingIdlingResource);
         db = Room.inMemoryDatabaseBuilder (ApplicationProvider.getApplicationContext (), ApplicationDatabase.class).build ();
         applicationDao = db.appDao ();
         authenticationViewModel = new AuthenticationViewModel (ApplicationProvider.getApplicationContext ());
@@ -60,7 +61,7 @@ public class activity_homeUITestLaundryHouse {
 
     @After
     public void tearDown () {
-        IdlingRegistry.getInstance ().unregister (ExpressoIdlingResource.countingIdlingResource);
+        IdlingRegistry.getInstance ().unregister (EspressoIdlingResource.countingIdlingResource);
         authenticationViewModel.signOut ();
         db.close ();
     }
@@ -70,22 +71,20 @@ public class activity_homeUITestLaundryHouse {
         authenticationViewModel.loginEmail (dummyLaundryHouse.getEmail (), "123456", dummyLaundryHouse.getAuthType ());
         String authtype = LiveDataUtil.getOrAwaitValueForLiveData (applicationDao.getAuthType ()).authtype;
         assertEquals (authtype, dummyLaundryHouse.getAuthType ());
-        onView (withId (R.id.swiperefreshlayout_home)).check (matches (isDisplayed ()));
         onView (withId (R.id.imageButton_profile)).check (matches (isDisplayed ()));
         onView (withId (R.id.imageButton_map)).check (matches (isDisplayed ()));
         onView (withId (R.id.imageButton_orderhistory)).check (matches (isDisplayed ()));
         onView (withId (R.id.txt_userGreeting)).check (matches (withEffectiveVisibility (ViewMatchers.Visibility.VISIBLE)));
         onView (withId (R.id.recyclerView_userhome)).check (matches (isDisplayed ()));
-        onView (withId (R.id.switch_activestatus)).check (matches (withEffectiveVisibility (ViewMatchers.Visibility.VISIBLE)));
     }
 
     @Test
     public void checkOrdersDisplayForLaundryHouse () throws InterruptedException {
-        authenticationViewModel.loadAllOrders (dummyLaundryHouse.getAuthType (), dummyLaundryHouseId,false);
+        authenticationViewModel.loadAllOrders (dummyLaundryHouse.getAuthType (), dummyLaundryHouseId, false);
+        RecyclerViewMatcher.atPositionOnView (R.id.recyclerView_userhome,1,R.id.button_assign).matches (isDisplayed ());
         List<Order> arraylistOrder = LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getOrders ());
-        assertEquals (arraylistOrder.size (),2);
-//        onView (withId (R.id.recyclerView_userhome)).check (matches (isDisplayed ()));
-//        onView (RecyclerViewMatcher.atPositionOnView (R.id.recyclerView_userhome,1,R.id.button_assign)).perform (click ());
-//        onView (withId (R.id.recyclerview_assigncouriers)).check (matches (isDisplayed ()));
+        authenticationViewModel.loginEmail (dummyLaundryHouse.getEmail (), "123456", dummyLaundryHouse.getAuthType ());
+        authenticationViewModel.loadApplicationUserData (dummyLaundryHouse.getAuthType (), dummyLaundryHouseId);
+        assertEquals (arraylistOrder.size (), LiveDataUtil.getOrAwaitValueForMutableLiveData (authenticationViewModel.getApplicationUserData ()).getOrderId ().size ());
     }
 }
