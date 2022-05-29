@@ -16,6 +16,7 @@ import com.example.laundry2.Database.AuthType;
 import com.example.laundry2.Database.CurrentOrderCourierId;
 import com.example.laundry2.Database.LaundryHouseCache;
 import com.example.laundry2.Database.OrderTracking;
+import com.example.laundry2.Database.Permission;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.firebase.auth.FirebaseUser;
@@ -40,6 +41,7 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
     private final LiveData<LaundryHouseCache> laundryHouseCacheLiveData;
     private final LiveData<OrderTracking> orderTrackingLiveData;
     private final LiveData<CurrentOrderCourierId> currentOrderCourierIdLiveData;
+    private final LiveData<Permission> permissionLiveData;
 
     public AuthenticationViewModel (Application application) {
         super (application);
@@ -58,6 +60,7 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
         laundryHouseCacheLiveData = repository.getLaundryHouseCacheLiveData ();
         orderTrackingLiveData = repository.getOrderTrackingLiveData ();
         currentOrderCourierIdLiveData = repository.getCurrentOrderCourierIdLiveData ();
+        permissionLiveData = repository.getPermissionLiveData ();
     }
 
     @Override
@@ -78,6 +81,11 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
     @Override
     public LiveData<CurrentOrderCourierId> getCurrentOrderCourierId () {
         return currentOrderCourierIdLiveData;
+    }
+
+    @Override
+    public LiveData<Permission> getPermission () {
+        return permissionLiveData;
     }
 
     @Override
@@ -128,6 +136,11 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
     @Override
     public MutableLiveData<Double> getNewDeliveryCost () {
         return newDeliveryCostMutableLiveData;
+    }
+
+    @Override
+    public void laundryHousesUpdate (String uid) {
+        repository.laundryHousesUpdate (uid);
     }
 
     @Override
@@ -207,6 +220,16 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
     }
 
     @Override
+    public void insertPermission (String permission) {
+        repository.insertPermission (permission);
+    }
+
+    @Override
+    public void deletePermission () {
+        repository.deletePermission ();
+    }
+
+    @Override
     public void removeLaundryHouseCacheData () {
         repository.removerLaundryHouseCacheData ();
     }
@@ -222,8 +245,8 @@ public class AuthenticationViewModel extends AndroidViewModel implements Authent
     }
 
     @Override
-    public void insertCurrentOrderCourierId (String courierId, String orderId) {
-        repository.insertCurrentOrderCourierId (courierId, orderId);
+    public void insertCurrentOrderCourierId (String courierId, String orderId, String deliveryCost) {
+        repository.insertCurrentOrderCourierId (courierId, orderId, deliveryCost);
     }
 
     @Override
