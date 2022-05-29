@@ -42,7 +42,6 @@ public class activity_orderHistory extends AppCompatActivity {
 
     private ActivityOrderhistoryBinding binding;
     private AuthenticationViewModel viewModel;
-    private LocationViewModel locationViewModel;
     private boolean isOrderTracking;
     private PopupWindow window;
 
@@ -51,7 +50,6 @@ public class activity_orderHistory extends AppCompatActivity {
         super.onCreate (savedInstanceState);
         binding = DataBindingUtil.setContentView (this, R.layout.activity_orderhistory);
         viewModel = new ViewModelProvider (this).get (AuthenticationViewModel.class);
-        locationViewModel = new ViewModelProvider (this).get (LocationViewModel.class);
         AtomicInteger flag = new AtomicInteger (1);
         viewModel.getOrderTracking ().observe (this, orderTracking -> {
             if (flag.intValue () == 1 && orderTracking != null) {
@@ -90,11 +88,11 @@ public class activity_orderHistory extends AppCompatActivity {
                 });
             }
         });
+        binding.backButtonOrderhistory.setOnClickListener (this::goBack);
         OnBackPressedCallback callback = new OnBackPressedCallback (true) {
             @Override
             public void handleOnBackPressed () {
-                startActivity (new Intent (activity_orderHistory.this, activity_home.class));
-                viewModel.removeIsOrderTrackingData ();
+                goBack (null);
             }
         };
         this.getOnBackPressedDispatcher ().addCallback (callback);
@@ -161,6 +159,8 @@ public class activity_orderHistory extends AppCompatActivity {
             checkBox2 = windowView.findViewById (R.id.cardview_orderstatus_checkBox2);
             checkBox3 = windowView.findViewById (R.id.cardview_orderstatus_checkBox3);
             checkBox4 = windowView.findViewById (R.id.cardview_orderstatus_checkBox4);
+            checkBox1.setVisibility (order.getDeliveryCost () > 1 ? View.VISIBLE : View.INVISIBLE);
+            checkBox4.setVisibility (order.getDeliveryCost () > 1 ? View.VISIBLE : View.INVISIBLE);
             checkBox1.setChecked (order.getCustomerPickUp ());
             checkBox2.setChecked (order.getLaundryHouseDrop ());
             checkBox3.setChecked (order.getLaundryHousePickUp ());
@@ -173,16 +173,18 @@ public class activity_orderHistory extends AppCompatActivity {
     }
 
     private void trackerOnClick (Order order) {
-        locationViewModel.getCustomerOrder (order.getOrderId ());
-        AtomicBoolean toastDone = new AtomicBoolean (false);
-        locationViewModel.getOrder ().observe (this, order1 -> {
-            if (!order1.getCourierId ().equals ("")) {
-                viewModel.insertCurrentOrderCourierId (order1.getCourierId (), order1.getOrderId ());
-                getPermissions ();
-            } else if (!toastDone.get ()) {
-                Toast.makeText (this, order.getStatus () + "\nNo Courier assigned", Toast.LENGTH_SHORT).show ();
-                toastDone.set (true);
-            }
-        });
+        if (!order.getCourierId ().equals ("")) {
+            viewModel.insertCurrentOrderCourierId (order.getCourierId (), order.getOrderId (), order.getDeliveryCost () + "");
+            getPermissions ();
+        } else if (order.getDeliveryCost () < 1) {
+            viewModel.insertCurrentOrderCourierId (order.getCourierId (), order.getOrderId (), order.getDeliveryCost () + "");
+            getPermissions ();
+        } else
+            Toast.makeText (this, order.getStatus () + "\nNo Courier assigned", Toast.LENGTH_SHORT).show ();
+    }
+
+    private void goBack (View view) {
+        viewModel.removeIsOrderTrackingData ();
+        startActivity (new Intent (activity_orderHistory.this, activity_home.class));
     }
 }
