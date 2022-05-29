@@ -43,6 +43,8 @@
                     android:id="@+id/textView_notification"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
                     android:text="Confirm Order "
                     android:textColor="@color/purple_500"
                     android:textSize="16sp"
