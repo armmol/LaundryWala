@@ -109,6 +109,7 @@ public class ApplicationRepository {
     private final LiveData<LaundryHouseCache> laundryHouseCacheLiveData;
     private final LiveData<OrderTracking> orderTrackingLiveData;
     private final LiveData<CurrentOrderCourierId> currentOrderCourierIdLiveData;
+    private final LiveData<Permission> permissionLiveData;
 
     @SuppressLint("MissingPermission")
     public ApplicationRepository (Application application) {
@@ -128,6 +129,7 @@ public class ApplicationRepository {
         laundryHouseCacheLiveData = applicationDao.getLaundryHouseCache ();
         orderTrackingLiveData = applicationDao.getIsOrderTracking ();
         currentOrderCourierIdLiveData = applicationDao.getCurrentOrderCourierId ();
+        permissionLiveData = applicationDao.getPermission ();
         //Payments
         paymentsClient = PaymentsUtil.createPaymentsClient (application);
         //MutableLiveData
@@ -285,6 +287,10 @@ public class ApplicationRepository {
 
     public LiveData<CurrentOrderCourierId> getCurrentOrderCourierIdLiveData () {
         return currentOrderCourierIdLiveData;
+    }
+
+    public LiveData<Permission> getPermissionLiveData () {
+        return permissionLiveData;
     }
 
     public void getOrder (String orderId) {
@@ -754,7 +760,7 @@ public class ApplicationRepository {
                                 int orderNumberCustomer = customerDocumentSnapshot.get ("orders", int.class);
                                 int orderNumberLaundryHouse = laundryHouseDocumentSnapshot.get ("orders", int.class);
                                 String orderId = uid + "_" + orderNumberCustomer + "_" + laundryHouseUID;
-                                Order tempOrder = new Order (orderId, "", customerDocumentSnapshot.getString ("email"),newList,
+                                Order tempOrder = new Order (orderId, "", customerDocumentSnapshot.getString ("email"), newList,
                                         Calendar.getInstance ().getTime ().toString (), "Order Not Started",
                                         customerDocumentSnapshot.get ("latitude", Double.class), customerDocumentSnapshot.get ("longitude", Double.class),
                                         laundryHouseDocumentSnapshot.get ("latitude", Double.class), laundryHouseDocumentSnapshot.get ("longitude", Double.class),
@@ -963,6 +969,14 @@ public class ApplicationRepository {
                 }
             }
         });
+    }
+
+    public void insertPermission (String permission) {
+        applicationDao.insertPermission (new Permission (permission));
+    }
+
+    public void deletePermission () {
+        applicationDao.deletePermission ();
     }
 
     public void insertOrderTracking (String isOrderTracking) {
@@ -1293,4 +1307,5 @@ public class ApplicationRepository {
     }
 
 }
+
 
