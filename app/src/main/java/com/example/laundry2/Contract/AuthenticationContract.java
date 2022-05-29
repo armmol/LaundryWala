@@ -12,6 +12,7 @@ import com.example.laundry2.Database.AuthType;
 import com.example.laundry2.Database.CurrentOrderCourierId;
 import com.example.laundry2.Database.LaundryHouseCache;
 import com.example.laundry2.Database.OrderTracking;
+import com.example.laundry2.Database.Permission;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.firebase.auth.FirebaseUser;
@@ -27,6 +28,8 @@ public interface AuthenticationContract {
     LiveData<OrderTracking> getOrderTracking();
 
     LiveData<CurrentOrderCourierId> getCurrentOrderCourierId();
+
+    LiveData<Permission> getPermission();
 
     MutableLiveData<FirebaseUser> getCurrentSignInUser ();
 
@@ -47,6 +50,8 @@ public interface AuthenticationContract {
     MutableLiveData<Boolean> getCourierArrivalMutableLiveData();
 
     MutableLiveData<Double> getNewDeliveryCost();
+
+    void laundryHousesUpdate (String uid);
 
     void getNewDeliveryCost (Place place, String laundryHouseUid);
 
@@ -79,13 +84,17 @@ public interface AuthenticationContract {
 
     void insertLaundryHouseCacheData(String laundryHouseId, String deliveryCost);
 
+    void insertPermission(String permission);
+
+    void deletePermission();
+
     void removeLaundryHouseCacheData();
 
     void insertIsOrderTrackingData(String isOrderTracking);
 
     void removeIsOrderTrackingData();
 
-    void insertCurrentOrderCourierId (String courierId, String orderId);
+    void insertCurrentOrderCourierId (String courierId, String orderId, String deliveryCost);
 
     void removeCurrentOrderCourierId ();
 
