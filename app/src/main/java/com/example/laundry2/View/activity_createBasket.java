@@ -29,6 +29,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.laundry2.Adapters.LaundryItemsAdapter;
 import com.example.laundry2.AuthenticationViewModel;
+import com.example.laundry2.BuildConfig;
 import com.example.laundry2.Database.LaundryItemCache;
 import com.example.laundry2.LaundryBasketViewModel;
 import com.example.laundry2.PaymentsViewModel;
@@ -68,7 +69,6 @@ import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-
 public class activity_createBasket extends AppCompatActivity {
 
     private PopupWindow window;
@@ -98,13 +98,12 @@ public class activity_createBasket extends AppCompatActivity {
                     if (result.getResultCode () == RESULT_OK) {
                         if (result.getData () != null) {
                             Place place = Autocomplete.getPlaceFromIntent (result.getData ());
-                            confirmAddress (cost, place.getAddress ());
                             address = place.getAddress ();
+                            AtomicBoolean deliveryUpdated = new AtomicBoolean (false);
                             if (place.getAddress ().split (",")[1].contains ("Kaunas")) {
                                 authenticationViewModel.getNewDeliveryCost (place, laundryHouseUid);
-                                authenticationViewModel.getNewDeliveryCost ().observe (this, cost -> {
-                                    staticDelivery = cost;
-                                    deliveryCost = binding.checkBoxINeedACourier.isChecked () ? staticDelivery : 0;
+                                authenticationViewModel.getNewDeliveryCost ().observe (this, newDeliveryCost -> {
+                                    deliveryCost = binding.checkBoxINeedACourier.isChecked () ? newDeliveryCost : 0;
                                     binding.deliverypriceCreatebasket.setText (String.format ("Delivery Cost - %s", deliveryCost));
                                     double costAfterDeliveryChange = 0;
                                     if (viewModel.getCachedItems ().getValue ().size () != 0) {
@@ -116,16 +115,23 @@ public class activity_createBasket extends AppCompatActivity {
                                                 new BigDecimal (costAfterDeliveryChange + deliveryCost + dryingCost).
                                                         setScale (2, BigDecimal.ROUND_HALF_DOWN).doubleValue ()));
                                     }
-                                    Toast.makeText (activity_createBasket.this, "Delivery Price was updated", Toast.LENGTH_SHORT).show ();
+                                    if (!deliveryUpdated.get ()) {
+                                        deliveryUpdated.set (true);
+                                        confirmAddress (cost, place.getAddress ());
+                                        if (deliveryCost != 0) {
+                                            Toast.makeText (activity_createBasket.this, "Delivery Price was updated", Toast.LENGTH_SHORT).show ();
+                                            cost = (Double.parseDouble (cost) - deliveryCost + newDeliveryCost) + "";
+                                            staticDelivery = newDeliveryCost;
+                                        } else
+                                            Toast.makeText (activity_createBasket.this, "Delivery Price was updated but you wont be charged", Toast.LENGTH_SHORT).show ();
+                                    }
                                 });
-                                AtomicBoolean isKaunas = new AtomicBoolean (false);
                                 authenticationViewModel.getCurrentSignInUser ().observe (activity_createBasket.this, firebaseUser -> {
                                     authenticationViewModel.loadApplicationUserData (getString (R.string.customer), firebaseUser.getUid ());
-                                    authenticationViewModel.getApplicationUserData ().observe (activity_createBasket.this, user -> {
-                                        authenticationViewModel.enterIntoDB (firebaseUser.getUid (), firebaseUser.getEmail (), getString (R.string.customer),
-                                                user.getName (), place.getAddress (), place.getAddress ().split (",")[1],
-                                                place.getLatLng ().latitude, place.getLatLng ().longitude);
-                                    });
+                                    authenticationViewModel.getApplicationUserData ().observe (activity_createBasket.this, user ->
+                                            authenticationViewModel.enterIntoDB (firebaseUser.getUid (), firebaseUser.getEmail (), getString (R.string.customer),
+                                                    user.getName (), place.getAddress (), place.getAddress ().split (",")[1],
+                                                    place.getLatLng ().latitude, place.getLatLng ().longitude));
                                 });
                             } else
                                 Toast.makeText (activity_createBasket.this, "We do not serve outside Kaunas :(", Toast.LENGTH_SHORT).show ();
@@ -152,13 +158,13 @@ public class activity_createBasket extends AppCompatActivity {
                     }
                 });
 
-        binding.imgbtnShirtsAdd.setOnClickListener (view -> viewModel.addItem ("Shirt"));
-        binding.imgbtnPants.setOnClickListener (view -> viewModel.addItem ("Pant"));
-        binding.imgbtnSuits.setOnClickListener (view -> viewModel.addItem ("Suit/Blazer/Coat"));
-        binding.imgbtnJackets.setOnClickListener (view -> viewModel.addItem ("Jackets/Woolen"));
-        binding.imgbtnCarpets.setOnClickListener (view -> viewModel.addItem ("Carpet/Rug"));
-        binding.imgbtnBedsheets.setOnClickListener (view -> viewModel.addItem ("Bedsheet/Duvet"));
-        binding.imgbtnKgs.setOnClickListener (view -> viewModel.addItem ("Kg"));
+        binding.constraintlayoutShirt.setOnClickListener (view -> viewModel.addItem ("Shirt"));
+        binding.constarintlayoutPant.setOnClickListener (view -> viewModel.addItem ("Pant"));
+        binding.constraintlayoutSuit.setOnClickListener (view -> viewModel.addItem ("Suit/Blazer/Coat"));
+        binding.constraintlayoutJacket.setOnClickListener (view -> viewModel.addItem ("Jackets/Woolen"));
+        binding.constraintlayoutCarpet.setOnClickListener (view -> viewModel.addItem ("Carpet/Rug"));
+        binding.constraintlayoutBedsheet.setOnClickListener (view -> viewModel.addItem ("Bedsheet/Duvet"));
+        binding.constraintlayoutKgs.setOnClickListener (view -> viewModel.addItem ("Kg"));
 
         AtomicInteger flag = new AtomicInteger (1);
         authenticationViewModel.getLaundryHouseCacheData ().observe (this, laundryHouseCache -> {
@@ -172,9 +178,7 @@ public class activity_createBasket extends AppCompatActivity {
         AtomicBoolean addressWatch = new AtomicBoolean (false);
         authenticationViewModel.getCurrentSignInUser ().observe (this, user -> authenticationViewModel.loadApplicationUserData ("Customer", user.getUid ()));
         authenticationViewModel.getApplicationUserData ().observe (this, applicationUser -> {
-            if(!addressWatch.get ()){
-                address = applicationUser.getAddress ();
-            }
+            if (!addressWatch.get ()) address = applicationUser.getAddress ();
         });
         binding.checkBoxINeedACourier.setChecked (false);
         binding.deliverypriceCreatebasket.setText (String.format ("Delivery Cost - %s", deliveryCost));
@@ -212,70 +216,14 @@ public class activity_createBasket extends AppCompatActivity {
             }
         });
         binding.btnConfrimandpayCreatebasket.setOnClickListener (view -> {
-            if (binding.txtLaundrybasketcounter.getText ().equals ("0")) {
+            if (binding.txtLaundrybasketcounter.getText ().equals ("0"))
                 Toast.makeText (this, "Nothing in basket", Toast.LENGTH_SHORT).show ();
-            }
         });
-        viewModel.getCachedItems ().observe (this, laundryItemList -> {
-            binding.txtLaundrybasketcounter.setText (MessageFormat.format ("{0}", laundryItemList.size ()));
-            //Cost for the payment
-            double a = 0;
-            int kgs = 0, shirts = 0, pants = 0, suits = 0, jackets = 0, carpets = 0, bedsheets = 0;
-            for (LaundryItemCache item : laundryItemList) {
-                if (item.getType ().split (",")[0].equals ("Kg")) kgs++;
-                if (item.getType ().split (",")[0].equals ("Shirt")) shirts++;
-                if (item.getType ().split (",")[0].equals ("Pant")) pants++;
-                if (item.getType ().split (",")[0].equals ("Suit/Blazer/Coat")) suits++;
-                if (item.getType ().split (",")[0].equals ("Jackets/Woolen")) jackets++;
-                if (item.getType ().split (",")[0].equals ("Carpet/Rug")) carpets++;
-                if (item.getType ().split (",")[0].equals ("Bedsheet/Duvet")) bedsheets++;
-                a += Double.parseDouble (item.getType ().split (",")[1]);
-            }
-            binding.textViewKgcounter.setText (String.format ("%s Kg", kgs));
-            binding.textView6.setText (MessageFormat.format ("{0}\n({1})", getString (R.string.jackets_woolens), jackets));
-            binding.textView8.setText (MessageFormat.format ("{0}\n({1})", getString (R.string.bedsheets_duvets), bedsheets));
-            binding.textView4.setText (MessageFormat.format ("{0}\n({1})", getString (R.string.suits_blazers_coats), suits));
-            binding.textView5.setText (MessageFormat.format ("{0}\n({1})", getString (R.string.pants_any), pants));
-            binding.textView3.setText (MessageFormat.format ("{0}\n({1})", getString (R.string.shirts_any), shirts));
-            binding.textView7.setText (MessageFormat.format ("{0}\n({1})", getString (R.string.carpets_rugs), carpets));
-            if (binding.checkBoxINeedDrying.isChecked ()) {
-                dryingCost = 0.16 * laundryItemList.size ();
-            }
-            binding.dryingpriceCreatebasket.setText (String.format ("Drying Cost - %s", dryingCost));
-            a += deliveryCost + dryingCost;
-            cost = "" + new BigDecimal (a).setScale (2, BigDecimal.ROUND_HALF_DOWN).doubleValue ();
-            if (laundryItemList.size () != 0)
-                binding.txtLaundrybasketcost.setText (String.format ("%s €", cost));
-            else
-                binding.txtLaundrybasketcost.setText ("0 €");
-            binding.cardLaundrybasket.setOnClickListener (view -> {
-                if (laundryItemList.size () != 0) {
-                    View popupWindowView = createPopUpWindow (R.layout.activity_viewitems);
-                    ConstraintLayout layout = popupWindowView.findViewById (R.id.viewItemsConstraintLayout);
-                    layout.setOnClickListener (mView -> window.dismiss ());
-                    RecyclerView recyclerView = popupWindowView.findViewById (R.id.recyclerView_confirmorder);
-                    TextView clearAll = popupWindowView.findViewById (R.id.textView_clearBasket);
-                    clearAll.setVisibility (View.VISIBLE);
-                    clearAll.setOnClickListener (view1 -> {
-                        viewModel.clearBasket ();
-                        Toast.makeText (this, "Basket Cleared", Toast.LENGTH_SHORT).show ();
-                        window.dismiss ();
-                    });
-                    adapter = new LaundryItemsAdapter (this, laundryItemList, 0);
-                    recyclerView.setLayoutManager (new LinearLayoutManager (getApplicationContext ()));
-                    recyclerView.setAdapter (adapter);
-                    adapter.setOnItemClickListener (laundryItem -> viewModel.removeItem (laundryItem));
-                } else
-                    Toast.makeText (this, "Nothing in Basket", Toast.LENGTH_SHORT).show ();
-            });
-
-            binding.btnConfrimandpayCreatebasket.setOnClickListener (view -> {
-                if (laundryItemList.size () == 0) {
-                    Toast.makeText (this, "Nothing in basket", Toast.LENGTH_SHORT).show ();
-                } else
-                    confirmAddress (binding.txtLaundrybasketcost.getText ().toString ().split (" ")[0], address);
-            });
+        binding.backButtonCreatebasket.setOnClickListener (view -> {
+            startActivity (new Intent (activity_createBasket.this, activity_home.class));
+            authenticationViewModel.removeLaundryHouseCacheData ();
         });
+        viewModel.getCachedItems ().observe (this, this::onChanged);
         OnBackPressedCallback callback = new OnBackPressedCallback (true) {
             @Override
             public void handleOnBackPressed () {
@@ -301,7 +249,7 @@ public class activity_createBasket extends AppCompatActivity {
     public void payPalRequestPayment (String cost) {
         CheckoutConfig config = new CheckoutConfig (getApplication (),
                 "AcQbITXPS5RpHeSWljf4ujWlgeUcWaR020JBGso7hHv7NLeZcDoMyeZS26ZIkr8dKNfv1JbXPVPLUZpj", Environment.SANDBOX,
-                "com.example.laundry2" + "://paypalpay", CurrencyCode.EUR, UserAction.PAY_NOW, PaymentButtonIntent.CAPTURE);
+                BuildConfig.APPLICATION_ID + "://paypalpay", CurrencyCode.EUR, UserAction.PAY_NOW, PaymentButtonIntent.CAPTURE);
         PayPalCheckout.setConfig (config);
         payPalButton.setup (
                 createOrderActions -> {
@@ -326,23 +274,20 @@ public class activity_createBasket extends AppCompatActivity {
                     });
                 }), (shippingChangeData, shippingChangeActions) -> Toast.makeText (this, "Shipping Address for PayPal was changed", Toast.LENGTH_SHORT).show (),
                 () -> Toast.makeText (this, "Payment Cancelled", Toast.LENGTH_SHORT).show (),
-                errorInfo -> Toast.makeText (this, "Error during payment", Toast.LENGTH_SHORT).show ());
+                errorInfo -> Toast.makeText (this, "Payment Cancelled", Toast.LENGTH_SHORT).show ());
     }
 
-    public void confirmAddress (String cost,String Naddress) {
-//        authenticationViewModel.getCurrentSignInUser ().observe (this, user ->
-//                authenticationViewModel.loadApplicationUserData (getString (R.string.customer), user.getUid ()));
+    public void confirmAddress (String cost, String Naddress) {
+        authenticationViewModel.getCurrentSignInUser ().observe (this, user ->
+                authenticationViewModel.loadApplicationUserData (getString (R.string.customer), user.getUid ()));
         View popupWindowView = createPopUpWindow (R.layout.activity_confirmaddress);
         ConstraintLayout layout = popupWindowView.findViewById (R.id.confirmaddressConstraintlayout);
         layout.setOnClickListener (view -> window.dismiss ());
         Button confirm, change;
-        TextView txt;
-        txt = popupWindowView.findViewById (R.id.textView_confirmaddress);
+        TextView txt = popupWindowView.findViewById (R.id.textView_confirmaddress);
         txt.setText (Naddress);
         confirm = popupWindowView.findViewById (R.id.button_confirmaddress_confirm);
         change = popupWindowView.findViewById (R.id.button_confirmaddress_change);
-//        authenticationViewModel.getApplicationUserData ().observe (this, user ->
-//                txt.setText (user.getAddress ()));
         change.setOnClickListener (view -> {
             List<Place.Field> fieldList = Arrays.asList (Place.Field.ADDRESS, Place.Field.LAT_LNG, Place.Field.NAME);
             findAddress.launch (new Autocomplete.IntentBuilder (AutocompleteActivityMode.OVERLAY
@@ -432,17 +377,67 @@ public class activity_createBasket extends AppCompatActivity {
         return popupWindowView;
     }
 
-    @Override
-    protected void onResume () {
-        super.onResume ();
-        authenticationViewModel.getCurrentSignInUser ().observe (this, user ->
-                authenticationViewModel.loadApplicationUserData (getString (R.string.customer), user.getUid ()));
-    }
+    private void onChanged (List<LaundryItemCache> laundryItemList) {
+        binding.txtLaundrybasketcounter.setText (MessageFormat.format ("{0}", laundryItemList.size ()));
+        //Cost for the payment
+        double a = 0;
+        int kgs = 0, shirts = 0, pants = 0, suits = 0, jackets = 0, carpets = 0, bedsheets = 0;
+        for (LaundryItemCache item : laundryItemList) {
+            if (item.getType ().split (",")[0].equals ("Kg")) kgs++;
+            if (item.getType ().split (",")[0].equals ("Shirt")) shirts++;
+            if (item.getType ().split (",")[0].equals ("Pant")) pants++;
+            if (item.getType ().split (",")[0].equals ("Suit/Blazer/Coat")) suits++;
+            if (item.getType ().split (",")[0].equals ("Jackets/Woolen")) jackets++;
+            if (item.getType ().split (",")[0].equals ("Carpet/Rug")) carpets++;
+            if (item.getType ().split (",")[0].equals ("Bedsheet/Duvet")) bedsheets++;
+            a += Double.parseDouble (item.getType ().split (",")[1]);
+        }
+        binding.textViewKgcounter.setText (String.format ("%s Kg", kgs));
+        binding.textView6.setText (MessageFormat.format ("{0}\n({1})", getString (R.string.jackets_woolens), jackets));
+        binding.textView8.setText (MessageFormat.format ("{0}\n({1})", getString (R.string.bedsheets_duvets), bedsheets));
+        binding.textView4.setText (MessageFormat.format ("{0}\n({1})", getString (R.string.suits_blazers_coats), suits));
+        binding.textView5.setText (MessageFormat.format ("{0}\n({1})", getString (R.string.pants_any), pants));
+        binding.textView3.setText (MessageFormat.format ("{0}\n({1})", getString (R.string.shirts_any), shirts));
+        binding.textView7.setText (MessageFormat.format ("{0}\n({1})", getString (R.string.carpets_rugs), carpets));
+        if (binding.checkBoxINeedDrying.isChecked ()) {
+            dryingCost = 0.16 * laundryItemList.size ();
+        }
+        binding.dryingpriceCreatebasket.setText (String.format ("Drying Cost - %s", dryingCost));
+        a += deliveryCost + dryingCost;
+        cost = "" + new BigDecimal (a).setScale (2, BigDecimal.ROUND_HALF_DOWN).doubleValue ();
+        if (laundryItemList.size () != 0)
+            binding.txtLaundrybasketcost.setText (String.format ("%s €", cost));
+        else
+            binding.txtLaundrybasketcost.setText ("0 €");
+        binding.cardLaundrybasket.setOnClickListener (view -> {
+            if (laundryItemList.size () != 0) {
+                View popupWindowView = createPopUpWindow (R.layout.activity_viewitems);
+                ConstraintLayout layout = popupWindowView.findViewById (R.id.viewItemsConstraintLayout);
+                layout.setOnClickListener (mView -> window.dismiss ());
+                RecyclerView recyclerView = popupWindowView.findViewById (R.id.recyclerView_confirmorder);
+                TextView clearAll = popupWindowView.findViewById (R.id.textView_clearBasket);
+                clearAll.setVisibility (View.VISIBLE);
+                clearAll.setOnClickListener (view1 -> {
+                    viewModel.clearBasket ();
+                    Toast.makeText (this, "Basket Cleared", Toast.LENGTH_SHORT).show ();
+                    window.dismiss ();
+                });
+                adapter = new LaundryItemsAdapter (this, laundryItemList, 0);
+                recyclerView.setLayoutManager (new LinearLayoutManager (getApplicationContext ()));
+                recyclerView.setAdapter (adapter);
+                adapter.setOnItemClickListener (laundryItem -> viewModel.removeItem (laundryItem));
+            } else
+                Toast.makeText (this, "Nothing in Basket", Toast.LENGTH_SHORT).show ();
+        });
 
-    @Override
-    protected void onStart () {
-        super.onStart ();
-        authenticationViewModel.getCurrentSignInUser ().observe (this, user ->
-                authenticationViewModel.loadApplicationUserData (getString (R.string.customer), user.getUid ()));
+        binding.btnConfrimandpayCreatebasket.setOnClickListener (view -> {
+            if (laundryItemList.size () == 0) {
+                Toast.makeText (this, "Nothing in basket", Toast.LENGTH_SHORT).show ();
+            } else {
+                if (deliveryCost == 0)
+                    Toast.makeText (this, "Don't worry, you wont be charged", Toast.LENGTH_SHORT).show ();
+                confirmAddress (binding.txtLaundrybasketcost.getText ().toString ().split (" ")[0], address);
+            }
+        });
     }
 }

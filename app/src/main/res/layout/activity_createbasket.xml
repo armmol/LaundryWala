@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:tools="http://schemas.android.com/tools"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
@@ -15,10 +14,22 @@
         android:backgroundTint="@color/white"
         android:textAlignment="center">
 
+        <ImageView
+            android:id="@+id/backButton_createbasket"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:background="#3B651FFF"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="?attr/actionModeCloseDrawable" />
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/constraintLayout"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_marginTop="32dp"
             app:layout_constraintBottom_toTopOf="@+id/constraintLayout4"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -39,6 +50,7 @@
                     android:orientation="vertical">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/constraintlayout_shirt"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@drawable/img">
@@ -78,6 +90,7 @@
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
                     <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/constarintlayout_pant"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@drawable/img">
@@ -111,6 +124,7 @@
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
                     <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/constraintlayout_jacket"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@drawable/img">
@@ -144,6 +158,7 @@
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
                     <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/constraintlayout_suit"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@drawable/img">
@@ -177,6 +192,7 @@
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
                     <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/constraintlayout_bedsheet"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@drawable/img">
@@ -210,6 +226,7 @@
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
                     <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/constraintlayout_carpet"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@drawable/img">
@@ -242,6 +259,7 @@
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
                     <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/constraintlayout_kgs"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@drawable/img">
