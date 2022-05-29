@@ -62,4 +62,12 @@ public interface ApplicationDao {
 
     @Query ("Delete FROM CurrentOrderCourierId")
     void deleteCurrentOrderCourierId();
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    void insertPermission(Permission permission);
+
+    @Query ("SELECT * FROM Permission")
+    LiveData<Permission> getPermission();
+
+    @Query ("Delete FROM Permission")
+    void deletePermission();
 }
